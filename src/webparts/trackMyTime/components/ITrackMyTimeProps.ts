@@ -1,6 +1,5 @@
 import { string } from "prop-types";
 
-
 export interface IUser {
   title: string;
   initials?: string;  //Single person column
@@ -44,6 +43,8 @@ export interface ITrackMyTimeProps {
   analyticsWeb?: string;
   analyticsList?: string;
 
+  roundTime: string; //Up 5 minutes, Down 5 minutes, No Rounding;
+  
   webPartScenario: string; //Choice used to create mutiple versions of the webpart.
 
   allowUserProjects: boolean; //Will build list of ProjectsUser based on existing data from TrackMyTime list
