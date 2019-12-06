@@ -1,2 +1,39 @@
-# TrackMyTime
-Simple Webpart with lists to track user or group of people's time
+## track-my-time
+
+This is where you include your WebPart documentation.
+
+### Additional npm installs
+```
+//Copied from Pivot-Tiles
+npm install @pnp/logging @pnp/common @pnp/odata @pnp/sp --save
+npm install @pnp/sp  ( Required to get list items from web )
+npm install --save @pnp/polyfill-ie11 ( Required for Internet Explorer Expand/Select calls )
+npm install @pnp/spfx-controls-react --save --save-exact
+
+```
+
+### Get pre-configured options from Pivot-Tiles
+
+
+### Building the code
+
+```bash
+git clone the repo
+npm i
+npm i -g gulp
+gulp
+```
+
+This package produces the following:
+
+* lib/* - intermediate-stage commonjs build artifacts
+* dist/* - the bundled script, along with other resources
+* deploy/* - all resources which should be uploaded to a CDN.
+
+### Build options
+
+gulp clean - TODO
+gulp test - TODO
+gulp serve - TODO
+gulp bundle - TODO
+gulp package-solution - TODO
