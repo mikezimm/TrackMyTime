@@ -21,7 +21,9 @@ export default class TrackMyTimeWebPart extends BaseClientSideWebPart<ITrackMyTi
     const element: React.ReactElement<ITrackMyTimeProps > = React.createElement(
       TrackMyTime,
       {
-        description: this.properties.description
+        description: this.properties.description,
+        analyticsList: strings.analyticsList,
+        analyticsWeb: strings.analyticsWeb,
       }
     );
 
