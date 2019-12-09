@@ -3,7 +3,7 @@ import styles from './TrackMyTime.module.scss';
 import { ITrackMyTimeProps } from './ITrackMyTimeProps';
 import { escape } from '@microsoft/sp-lodash-subset';
 
-export default class TrackMyTime extends React.Component<ITrackMyTimeProps, {}> {
+export default class TrackMyTime extends React.Component<ITrackMyTimeProps, {ITrackMyTimeState}> {
   public render(): React.ReactElement<ITrackMyTimeProps> {
     return (
       <div className={ styles.trackMyTime }>

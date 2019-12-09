@@ -1,40 +1,6 @@
 import { string } from "prop-types";
 
-export interface IUser {
-  title: string;
-  initials?: string;  //Single person column
-  email?: string;  //Single person column
-  id: any;
-}
 
-export interface ILink {
-  description: string;
-  url: string;
-}
-
-export interface IUser {
-  title: string;
-  initials?: string;  //Single person column
-  email?: string;  //Single person column
-  id: any;
-}
-
-export interface ITimeEntry {
-  titleProject: string;
-  user: IUser;  //Single person column
-  startTime: any; //Time stamp
-  endTime: any; // Time stamp
-  duration: any; //Number
-
-  category1?: string[];
-  category2?: string[];
-  leader?: IUser;  //Likely single person column
-  team?: IUser[];  //Likely multi person column
-
-  sourceProject?: ILink; //Link back to the source project list item.
-  settings?: string;
-
-}
 
 export interface ITrackMyTimeProps {
   description: string;
