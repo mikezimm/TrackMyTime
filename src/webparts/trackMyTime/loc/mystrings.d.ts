@@ -1,4 +1,5 @@
 declare interface ITrackMyTimeWebPartStrings {
+  PropertyPaneAbout: string;
   PropertyPaneDescription: string;
   BasicGroupName: string;
   DescriptionFieldLabel: string;

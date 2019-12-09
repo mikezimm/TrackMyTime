@@ -11,6 +11,10 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import TrackMyTime from './components/TrackMyTime';
 import { ITrackMyTimeProps } from './components/ITrackMyTimeProps';
 
+import { propertyPaneBuilder } from '../../services/propPane/PropPaneBuilder';
+import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../services/createAnalytics';
+
+
 export interface ITrackMyTimeWebPartProps {
   // 1 - Analytics options
   useListAnalytics: boolean;
@@ -54,6 +58,7 @@ export interface ITrackMyTimeWebPartProps {
 
   // 9 - Other web part options
   webPartScenario: string; //Choice used to create mutiple versions of the webpart.
+  scenario: string // pre-set through json defaults... used to determine what is available by default in web part
 
 }
 
@@ -121,24 +126,51 @@ export default class TrackMyTimeWebPart extends BaseClientSideWebPart<ITrackMyTi
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
-    return {
-      pages: [
-        {
-          header: {
-            description: strings.PropertyPaneDescription
-          },
-          groups: [
-            {
-              groupName: strings.BasicGroupName,
-              groupFields: [
-                PropertyPaneTextField('description', {
-                  label: strings.DescriptionFieldLabel
-                })
-              ]
-            }
-          ]
-        }
-      ]
-    };
+    return propertyPaneBuilder.getPropertyPaneConfiguration(this.properties);
+  }
+
+  protected onPropertyPaneFieldChanged(propertyPath: string, oldValue: any, newValue: any): void {
+
+    /**
+     * Use this section when there are multiple web part configurations
+     */
+      /*
+          let newMap : any = {};
+          if (this.properties.scenario === 'DEV' ) {
+            //newMap = availableListMapping.getListColumns(newValue);
+          } else if (this.properties.scenario === 'TEAM') {
+            //newMap = availableListMapping.getListColumns(newValue);  
+          } else if (this.properties.scenario === 'CORP') {
+            //newMap = availableListMapping.getListColumns(newValue); 
+          }
+
+          const hasValues = Object.keys(newMap).length;
+
+          if (hasValues !== 0) {
+            //this.properties.listTitle = newMap.listDisplay;
+          } else {
+            console.log('Did NOT List Defintion... updating column name props');
+          }
+          this.context.propertyPane.refresh();
+
+      /**
+     * Use this section when there are multiple web part configurations
+     */
+
+    /**
+     * This section is used to determine when to refresh the pane options
+     */
+    let updateOnThese = [
+      'setSize','setTab','otherTab','setTab','otherTab','setTab','otherTab','setTab','otherTab'
+    ];
+
+    if (updateOnThese.indexOf(propertyPath) > -1 ) {
+      this.properties[propertyPath] = newValue;   
+      this.context.propertyPane.refresh();
+
+    } else { //This can be removed if it works
+
+    }
+    this.render();
   }
 }

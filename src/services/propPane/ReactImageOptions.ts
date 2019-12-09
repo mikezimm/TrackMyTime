@@ -12,7 +12,7 @@ import {
   import { Pivot, IPivotStyles, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabric-react/lib/Pivot';
   import { Image, ImageFit, ImageCoverStyle,IImageProps,IImageState } from 'office-ui-fabric-react/lib/Image';
 
-  import * as strings from 'PivotTilesWebPartStrings';
+  import * as strings from 'TrackMyTimeWebPartStrings';
 
   export class ImageOptionsGroup {
 
