@@ -37,7 +37,12 @@ define([], function() {
 
     // 9 - Other web part options
     "propLabelWebPartScenario": "Should come from webpart", //Choice used to create mutiple versions of the webpart.
+    "propLabelToggleOffText": "Off",
+    "propLabelToggleOnText": "On",
 
+    "setPivSize": "setPivSize",
+    "setPivFormat": "setPivFormat",    
+    "setPivOptions": "setPivOptions",
 
   }
 });

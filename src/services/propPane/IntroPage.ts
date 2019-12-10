@@ -87,25 +87,25 @@ export class IntroPage {
         { groupName: 'Basic list info',
         groupFields: [
           PropertyPaneTextField('projectListWeb', {
-              label: strings.listWebURL
+              label: strings.propLabelProjectListWeb
           }),
           PropertyPaneTextField('projectListTitle', {
-            label: strings.setTab
+            label: strings.propLabelProjectListTitle
           }),
           PropertyPaneTextField('timeTrackListWeb', {
-            label: strings.otherTab
+            label: strings.propLabelTimeTrackListWeb
           }),
           PropertyPaneTextField('timeTrackListTitle', {
-            label: strings.otherTab
+            label: strings.propLabelTimeTrackListTitle
           }),
         ]}, // this group
-
+/* */
         { groupName: 'Pivot Styles',
           groupFields: [
             PropertyPaneToggle('advancedPivotStyles', {
               label: '',
-              offText: strings.Property_ShowHero_OffText,
-              onText: strings.Property_ShowHero_OnText
+              offText: strings.propLabelToggleOffText,
+              onText: strings.propLabelToggleOnText,
             }),
           ]}, // this group
 
