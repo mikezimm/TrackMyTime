@@ -5,8 +5,7 @@ import {
 import {
   introPage,
   webPartSettingsPage,
-  listMappingPage1,
-  listMappingPage2,
+
 } from './index';
 
 /*
@@ -21,8 +20,7 @@ export class PropertyPaneBuilder {
       pages: [
         introPage.getPropertyPanePage(webPartProps),
         webPartSettingsPage.getPropertyPanePage(webPartProps),
-        listMappingPage1.getPropertyPanePage(webPartProps),
-        listMappingPage2.getPropertyPanePage(),
+
       ]
     };
   } // getPropertyPaneConfiguration()

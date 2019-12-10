@@ -5,6 +5,7 @@ import { ITrackMyTimeProps } from './ITrackMyTimeProps';
 
 
 export class TrackMyProjectsLoad {
+    /*
     public siteUsers: SPSiteUser[];
     public siteGroups: SPSiteGroup[];
     public roleDefinitions: SPRoleDefinition[];
@@ -18,10 +19,14 @@ export class TrackMyProjectsLoad {
       this.lists = new Array<SPList>();
   
     }
+    */
+
   }
 
 
 export class Helpers {
+
+    /*
 
   public loadData(): Promise<TrackMyProjectsLoad> {
         let trackMyProjects: TrackMyProjectsLoad = new TrackMyProjectsLoad();
@@ -57,5 +62,8 @@ export class Helpers {
         });
 
 
+
+
     }    //LoadData 
+            */
 }

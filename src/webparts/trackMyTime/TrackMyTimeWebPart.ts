@@ -58,7 +58,10 @@ export interface ITrackMyTimeWebPartProps {
 
   // 9 - Other web part options
   webPartScenario: string; //Choice used to create mutiple versions of the webpart.
-  scenario: string // pre-set through json defaults... used to determine what is available by default in web part
+
+  pivotSize: string;
+  pivotFormat: string;
+  pivotOptions: string;
 
 }
 
@@ -110,6 +113,10 @@ export default class TrackMyTimeWebPart extends BaseClientSideWebPart<ITrackMyTi
       
         // 9 - Other web part options
         webPartScenario: this.properties.webPartScenario, //Choice used to create mutiple versions of the webpart.
+          
+        pivotSize: this.properties.pivotSize,
+        pivotFormat: this.properties.pivotFormat,
+        pivotOptions: this.properties.pivotOptions,
 
       }
     );

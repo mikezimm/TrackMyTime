@@ -58,7 +58,11 @@ import { pivotOptionsGroup} from './index';
 
   // 9 - Other web part options
   webPartScenario: string; //Choice used to create mutiple versions of the webpart.
-  scenario: string // pre-set through json defaults... used to determine what is available by default in web part
+
+  pivotSize: string;
+  pivotFormat: string;
+  pivotOptions: string;
+
 
     */
 
@@ -78,12 +82,12 @@ export class IntroPage {
 
             PropertyPaneLink('About Link' , {
               text: 'Github Repo:  Pivot-Tiles',
-              href: 'https://github.com/mikezimm/TrackMyTime',
+              href: 'https://github.com/mikezimm/TrackMyTime/wiki',
             }),
           ]
         },
 
-
+        // 2 - Source and destination list information    
         { groupName: 'Basic list info',
         groupFields: [
           PropertyPaneTextField('projectListWeb', {
@@ -100,27 +104,29 @@ export class IntroPage {
           }),
         ]}, // this group
 /* */
+        
+        // 9 - Other web part options
         { groupName: 'Pivot Styles',
           groupFields: [
             PropertyPaneToggle('advancedPivotStyles', {
               label: '',
-              offText: strings.propLabelToggleOffText,
-              onText: strings.propLabelToggleOnText,
+              offText: strings.propLabelToggleTextOff,
+              onText: strings.propLabelToggleTextOn,
             }),
           ]}, // this group
 
         { isCollapsed: !webPartProps.advancedPivotStyles,
           groupFields: [
-            PropertyPaneDropdown('setPivSize', <IPropertyPaneDropdownProps>{
-              label: strings.setPivSize,
+            PropertyPaneDropdown('pivotSize', <IPropertyPaneDropdownProps>{
+              label: strings.propLabelPivSize,
               options: pivotOptionsGroup.pivSizeChoices,
             }),
-            PropertyPaneDropdown('setPivFormat', <IPropertyPaneDropdownProps>{
-              label: strings.setPivFormat,
+            PropertyPaneDropdown('pivotFormat', <IPropertyPaneDropdownProps>{
+              label: strings.propLabelPivFormat,
               options: pivotOptionsGroup.pivFormatChoices,
             }),
-            PropertyPaneDropdown('setPivOptions', <IPropertyPaneDropdownProps>{
-              label: strings.setPivOptions,
+            PropertyPaneDropdown('pivotOptions', <IPropertyPaneDropdownProps>{
+              label: strings.propLabelPivOptions,
               options: pivotOptionsGroup.pivOptionsChoices,
               disabled: true,
             }),

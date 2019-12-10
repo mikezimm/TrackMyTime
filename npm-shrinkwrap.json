@@ -1686,6 +1686,21 @@
       "integrity": "sha512-sDhulvuVk65eMppYOE6fr6mMI6RUqs53KUg9deYzNCBpP+2FhR0OFB5innEfdtSedk0LK+1Ppu6MxkfiNjS/Cw==",
       "dev": true
     },
+    "@pnp/sp": {
+      "version": "1.3.8",
+      "resolved": "https://registry.npmjs.org/@pnp/sp/-/sp-1.3.8.tgz",
+      "integrity": "sha512-x85cQL/L5fBYJWqWvDL3e2sHdYZIqUeWifFndsGRk6iLFHTq2DsxNNzTnCpP7JCKUwK6jHpu0JzIuK98E8Hl9w==",
+      "requires": {
+        "tslib": "1.10.0"
+      },
+      "dependencies": {
+        "tslib": {
+          "version": "1.10.0",
+          "resolved": "https://registry.npmjs.org/tslib/-/tslib-1.10.0.tgz",
+          "integrity": "sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ=="
+        }
+      }
+    },
     "@pnpm/link-bins": {
       "version": "1.0.3",
       "resolved": "https://registry.npmjs.org/@pnpm/link-bins/-/link-bins-1.0.3.tgz",

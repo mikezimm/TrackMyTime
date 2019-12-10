@@ -48,4 +48,9 @@ export interface ITrackMyTimeProps {
   // 9 - Other web part options
   webPartScenario: string; //Choice used to create mutiple versions of the webpart.
 
+  pivotSize: string;
+  pivotFormat: string;
+  pivotOptions: string;
+  
+
 }

@@ -19,6 +19,8 @@ declare interface ITrackMyTimeWebPartStrings {
 
   // 3 - General how accurate do you want this to be
   propLabelRoundTime: string; //Up 5 minutes, Down 5 minutes, No Rounding;
+  propLabelForceCurrentUser: string; //Up 5 minutes, Down 5 minutes, No Rounding;
+  propLabelConfirmPrompt: string; //Up 5 minutes, Down 5 minutes, No Rounding;
 
   // 4 -Project options
   projectMasterPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
@@ -29,19 +31,27 @@ declare interface ITrackMyTimeWebPartStrings {
   propLabelDefaultTimePicker: string; //SinceLast, Slider, Manual???
 
   // 6 - User Feedback:
+
+  propLabelShowElapsedTimeSinceLast:  string; //Day, Week, Both?
+  propLabelShowTargetBar:  string; //Day, Week, Both?
+  propLabelShowTargetToggle:  string; //Day, Week, Both?
+  propLabelTargetValue:  string; //Day, Week, Both?
   propLabelTargetType:  string; //Day, Week, Both?
 
   // 7 - Slider Options
 
+  propLabelShowTimeSlider: string; // "Show Time Slider",
+  propLabelTimeSliderInc: string; // "Incriment of time slider",
+  propLabelTimeSliderMax: string; // "Max of time slider",
+
   // 9 - Other web part options
   webPartScenario: string; //Choice used to create mutiple versions of the webpart.
-  propLabelToggleOffText: string;
-  propLabelToggleOnText: string;
+  propLabelToggleTextOff: string;
+  propLabelToggleTextOn: string;
   
-  setPivSize: string;
-  setPivFormat: string;
-  setPivOptions: string;
-
+  propLabelPivSize: string;
+  propLabelPivFormat: string;
+  propLabelPivOptions: string;
 
 }
 
