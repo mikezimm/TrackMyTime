@@ -9,6 +9,8 @@ npm install @pnp/logging @pnp/common @pnp/odata @pnp/sp --save
 npm install @pnp/sp  ( Required to get list items from web )
 npm install --save @pnp/polyfill-ie11 ( Required for Internet Explorer Expand/Select calls )
 npm install @pnp/spfx-controls-react --save --save-exact
+npm install @microsoft/sp-webpart-base (Required for all Prop Pane Panel files)
+npm install @microsoft/sp-core-library (Required for base web part.ts)
 
 ```
 
