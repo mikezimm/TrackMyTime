@@ -86,6 +86,8 @@ export interface ITrackMyTimeState {
   // 1 - Analytics options
 
   // 2 - Source and destination list information
+  projectListURL?: string; //Get from list item
+  timeTrackerListURL?: string; //Get from list item
 
   // 3 - General how accurate do you want this to be
 

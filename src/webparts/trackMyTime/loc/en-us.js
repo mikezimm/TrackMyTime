@@ -6,6 +6,9 @@ define([], function() {
     "BasicGroupName": "Group Name",
     "DescriptionFieldLabel": "Description Field",
 
+    // 0 - Context
+    "DefaultProjectListTitle": "", // DO NOT CHANGE THIS IN DIFFERENT LANGUAGES
+    "DefaultTrackMyTimeListTitle": "", // DO NOT CHANGE THIS IN DIFFERENT LANGUAGES
 
     // 1 - Analytics options - Optional
     "FieldLabel_AnalyticsWeb": "Site where analytics are maintained",

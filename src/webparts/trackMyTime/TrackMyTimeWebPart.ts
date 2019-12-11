@@ -7,6 +7,9 @@ import {
   PropertyPaneTextField
 } from '@microsoft/sp-webpart-base';
 
+// npm install @pnp/logging @pnp/common @pnp/odata @pnp/sp --save
+import { sp, Web } from '@pnp/sp';
+
 import * as strings from 'TrackMyTimeWebPartStrings';
 import TrackMyTime from './components/TrackMyTime';
 import { ITrackMyTimeProps } from './components/ITrackMyTimeProps';
@@ -14,8 +17,12 @@ import { ITrackMyTimeProps } from './components/ITrackMyTimeProps';
 import { propertyPaneBuilder } from '../../services/propPane/PropPaneBuilder';
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../services/createAnalytics';
 
+import { PageContext } from '@microsoft/sp-page-context';
 
 export interface ITrackMyTimeWebPartProps {
+  // 0 - Context
+  pageContext: PageContext;
+
   // 1 - Analytics options
   useListAnalytics: boolean;
   analyticsWeb?: string;
@@ -69,11 +76,43 @@ export interface ITrackMyTimeWebPartProps {
 
 export default class TrackMyTimeWebPart extends BaseClientSideWebPart<ITrackMyTimeWebPartProps> {
 
+    //Added for Get List Data:  https://www.youtube.com/watch?v=b9Ymnicb1kc
+    public onInit():Promise<void> {
+      return super.onInit().then(_ => {
+        // other init code may be present
+  
+        //https://stackoverflow.com/questions/52010321/sharepoint-online-full-width-page
+        document.getElementById("workbenchPageContent").style.maxWidth = "none";
+        //console.log('window.location',window.location);
+        sp.setup({
+          spfxContext: this.context
+        });
+      });
+    }
+  
+    public getUrlVars(): {} {
+      var vars = {};
+      vars = location.search
+      .slice(1)
+      .split('&')
+      .map(p => p.split('='))
+      .reduce((obj, pair) => {
+        const [key, value] = pair.map(decodeURIComponent);
+        return ({ ...obj, [key]: value })
+      }, {});
+      return vars;
+    }
+
   public render(): void {
     const element: React.ReactElement<ITrackMyTimeProps > = React.createElement(
       TrackMyTime,
       {
         description: strings.description,
+
+        // 0 - Context
+        pageContext: this.context.pageContext,
+        tenant: this.context.pageContext.web.absoluteUrl.replace(this.context.pageContext.web.serverRelativeUrl,""),
+        urlVars: this.getUrlVars(),
 
         // 1 - Analytics options  
         useListAnalytics: this.properties.useListAnalytics,

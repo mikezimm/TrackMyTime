@@ -1,9 +1,14 @@
 import { string } from "prop-types";
 
-
+import { PageContext } from '@microsoft/sp-page-context';
 
 export interface ITrackMyTimeProps {
   description: string;
+
+  // 0 - Context
+  pageContext: PageContext;
+  tenant: string;
+  urlVars: {};
 
   // 1 - Analytics options
   useListAnalytics: boolean;

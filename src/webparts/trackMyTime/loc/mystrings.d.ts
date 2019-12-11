@@ -5,6 +5,10 @@ declare interface ITrackMyTimeWebPartStrings {
   DescriptionFieldLabel: string;
 
   description: string;
+  
+  // 0 - Context
+  DefaultProjectListTitle: string; // DO NOT CHANGE THIS IN DIFFERENT LANGUAGES
+  DefaultTrackMyTimeListTitle: string; // DO NOT CHANGE THIS IN DIFFERENT LANGUAGES
 
   // 1 - Analytics options
   analyticsWeb: string;
