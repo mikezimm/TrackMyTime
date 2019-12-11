@@ -10,7 +10,6 @@ import {
 } from '@microsoft/sp-webpart-base';
 
 import * as strings from 'TrackMyTimeWebPartStrings';
-import { imageOptionsGroup } from './index';
 import { pivotOptionsGroup} from './index';
 
 
@@ -77,11 +76,11 @@ export class IntroPage {
         {
           groupFields: [
             PropertyPaneLabel('About Text', {
-              text: 'This webpart gets tile defintion from a list in SharePoint :).'
+              text: 'This webpart gets helps track your time using SharePoint :).'
             }),
 
             PropertyPaneLink('About Link' , {
-              text: 'Github Repo:  Pivot-Tiles',
+              text: 'Github Repo:  TrackMyTime',
               href: 'https://github.com/mikezimm/TrackMyTime/wiki',
             }),
           ]
@@ -91,16 +90,16 @@ export class IntroPage {
         { groupName: 'Basic list info',
         groupFields: [
           PropertyPaneTextField('projectListWeb', {
-              label: strings.propLabelProjectListWeb
+              label: strings.FieldLabel_ProjectListWeb
           }),
           PropertyPaneTextField('projectListTitle', {
-            label: strings.propLabelProjectListTitle
+            label: strings.FieldLabel_ProjectListTitle
           }),
           PropertyPaneTextField('timeTrackListWeb', {
-            label: strings.propLabelTimeTrackListWeb
+            label: strings.FieldLabel_TimeTrackListWeb
           }),
           PropertyPaneTextField('timeTrackListTitle', {
-            label: strings.propLabelTimeTrackListTitle
+            label: strings.FieldLabel_TimeTrackListTitle
           }),
         ]}, // this group
 /* */
@@ -110,23 +109,23 @@ export class IntroPage {
           groupFields: [
             PropertyPaneToggle('advancedPivotStyles', {
               label: '',
-              offText: strings.propLabelToggleTextOff,
-              onText: strings.propLabelToggleTextOn,
+              offText: strings.FieldLabel_ToggleTextOff,
+              onText: strings.FieldLabel_ToggleTextOn,
             }),
           ]}, // this group
 
         { isCollapsed: !webPartProps.advancedPivotStyles,
           groupFields: [
             PropertyPaneDropdown('pivotSize', <IPropertyPaneDropdownProps>{
-              label: strings.propLabelPivSize,
+              label: strings.FieldLabel_PivSize,
               options: pivotOptionsGroup.pivSizeChoices,
             }),
             PropertyPaneDropdown('pivotFormat', <IPropertyPaneDropdownProps>{
-              label: strings.propLabelPivFormat,
+              label: strings.FieldLabel_PivFormat,
               options: pivotOptionsGroup.pivFormatChoices,
             }),
             PropertyPaneDropdown('pivotOptions', <IPropertyPaneDropdownProps>{
-              label: strings.propLabelPivOptions,
+              label: strings.FieldLabel_PivOptions,
               options: pivotOptionsGroup.pivOptionsChoices,
               disabled: true,
             }),

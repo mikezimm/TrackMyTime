@@ -19,7 +19,7 @@
     "group": { "default": "Other" },
     "title": { "default": "TrackMyTime" },
     "description": { "default": "This is where you enter your time" },
-    "officeFabricIconFontName": "Page",
+    "officeFabricIconFontName": "Timer",
     "properties": {
       "description": "TrackMyTime"
     }

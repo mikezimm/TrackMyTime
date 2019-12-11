@@ -41,6 +41,8 @@ export interface ITrackMyTimeWebPartProps {
   // 5 - UI Defaults
   defaultProjectPicker: string; //Recent, Your Projects, All Projects etc...
   defaultTimePicker: string; //SinceLast, Slider, Manual???
+  locationChoices: string;  //semi-colon separated choices
+  defaultLocation: string; //Office, Customer, Traveling, Home
 
   // 6 - User Feedback:
   showElapsedTimeSinceLast: boolean;  // Idea is that it can be like a clock showing how long it's been since your last entry.
@@ -48,8 +50,8 @@ export interface ITrackMyTimeWebPartProps {
   // Target will be used to provide user feedback on how much/well they are tracking time
   showTargetBar: boolean; //Eventually have some kind of way to tell user that x% of hours have been entered for day/week
   showTargetToggle: boolean; //Maybe give user option to toggle between day/week
-  targetType:  string; //Day, Week, Both?
-  targetValue: number; //Hours for typical day/week
+  dailyTarget: number; // Target hours per day to have tracked in a day - propLabelDailyTarget
+  weeklyTarget:  number;  // Target hours per day to have tracked in a week - propLabelWeeklyTarget
 
   // 7 - Slider Options
   showTimeSlider: boolean; //true allows you to define end time and slider for how long you spent
@@ -98,14 +100,16 @@ export default class TrackMyTimeWebPart extends BaseClientSideWebPart<ITrackMyTi
         // 5 - UI Defaults
         defaultProjectPicker: this.properties.defaultProjectPicker, //Recent, Your Projects, All Projects etc...
         defaultTimePicker: this.properties.defaultTimePicker, //SinceLast, Slider, Manual???
-      
+        locationChoices: this.properties.locationChoices,  //semi-colon separated choices
+        defaultLocation: this.properties.defaultLocation, //Office, Customer, Traveling, Home
+        
         // 6 - User Feedback:
         showElapsedTimeSinceLast: this.properties.showElapsedTimeSinceLast,  // Idea is that it can be like a clock showing how long it's been since your last entry.
         showTargetBar: this.properties.showTargetBar, //Eventually have some kind of way to tell user that x% of hours have been entered for day/week
         showTargetToggle: this.properties.showTargetToggle, //Maybe give user option to toggle between day/week
-        targetType:  this.properties.targetType, //Day, Week, Both?
-        targetValue: this.properties.targetValue, //Hours for typical day/week
-      
+        dailyTarget:  this.properties.dailyTarget, //Day, Week, Both?
+        weeklyTarget: this.properties.weeklyTarget, //Hours for typical day/week
+
         // 7 - Slider Options
         showTimeSlider: this.properties.showTimeSlider, //true allows you to define end time and slider for how long you spent
         timeSliderInc: this.properties.timeSliderInc, //incriment of time slider

@@ -30,15 +30,17 @@ export interface ITrackMyTimeProps {
   // 5 - UI Defaults
   defaultProjectPicker: string; //Recent, Your Projects, All Projects etc...
   defaultTimePicker: string; //SinceLast, Slider, Manual???
-
+  locationChoices: string;  //semi-colon separated choices
+  defaultLocation: string; //Office, Customer, Traveling, Home
+  
   // 6 - User Feedback:
   showElapsedTimeSinceLast: boolean;  // Idea is that it can be like a clock showing how long it's been since your last entry.
 
   // Target will be used to provide user feedback on how much/well they are tracking time
   showTargetBar: boolean; //Eventually have some kind of way to tell user that x% of hours have been entered for day/week
   showTargetToggle: boolean; //Maybe give user option to toggle between day/week
-  targetType:  string; //Day, Week, Both?
-  targetValue: number; //Hours for typical day/week
+  dailyTarget: number; // Target hours per day to have tracked in a day - propLabelDailyTarget
+  weeklyTarget:  number;  // Target hours per day to have tracked in a week - propLabelWeeklyTarget
 
   // 7 - Slider Options
   showTimeSlider: boolean; //true allows you to define end time and slider for how long you spent

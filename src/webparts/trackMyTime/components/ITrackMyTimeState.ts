@@ -94,6 +94,7 @@ export interface ITrackMyTimeState {
   // 5 - UI Defaults
   currentProjectPicker: string; //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
   currentTimePicker: string; //User selection of :defaultTimePicker  SinceLast, Slider, Manual???
+  locationChoice: string;  //semi-colon separated choices
 
   // 6 - User Feedback:
   showElapsedTimeSinceLast?: boolean;  // Idea is that it can be like a clock showing how long it's been since your last entry.
