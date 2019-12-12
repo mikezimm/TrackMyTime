@@ -13,26 +13,27 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
-import {IProject, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
+import {IProject, ITimeEntry, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
-  
-private createprojectInfo() {
+    
+  private createprojectInfo() {
 
-  let projectInfo = {} as IProjectInfo;
+    let projectInfo = {} as IProjectInfo;
 
-  projectInfo.master = [];
-  projectInfo.user = [];
-  projectInfo.masterPriority = [];
-  projectInfo.userPriority = [];
-  projectInfo.current = [];
-  projectInfo.lastFiltered = [];
-  projectInfo.lastProject = [];
-  projectInfo.all = [];
-  
-  return projectInfo;
+    projectInfo.master = [];
+    projectInfo.user = [];
+    projectInfo.masterPriority = [];
+    projectInfo.userPriority = [];
+    projectInfo.current = [];
+    projectInfo.lastFiltered = [];
+    projectInfo.lastProject = [];
+    projectInfo.all = [];
+    
+    return projectInfo;
 
-}
+  }
+
   public constructor(props:ITrackMyTimeProps){
     super(props);
     this.state = { 
@@ -101,30 +102,14 @@ private createprojectInfo() {
   }
 
   public componentDidMount() {
-    //Not using this function because it just did not want to work.
-    //this._loadListItems();
     this._getListItems();
-    //alert('this.props.heroCategory.length');
-    //alert(this.props);
   }
   
   public componentDidUpdate(prevProps){
 
-    //alert('componentDidUpdate 1');
-
     let rebuildTiles = false;
-
     if (this.props.defaultProjectPicker !== prevProps.defaultProjectPicker) {  rebuildTiles = true ; }
-    /*
-    if (this.props.setSize !== prevProps.setSize) {  rebuildTiles = true ; }
-    if (this.props.showHero !== prevProps.showHero) {  rebuildTiles = true ; }
-    if (this.props.heroType !== prevProps.heroType) {  rebuildTiles = true ; }
-    if (this.props.setRatio !== prevProps.setRatio) {  rebuildTiles = true ; }
-    if (this.props.setImgFit !== prevProps.setImgFit) {  rebuildTiles = true ; }
-    if (this.props.setImgCover !== prevProps.setImgCover) {  rebuildTiles = true ; }
-    if (this.props.heroCategory !== prevProps.heroCategory) {  rebuildTiles = true ; }
-    if (this.props.heroRatio !== prevProps.heroRatio) {  rebuildTiles = true ; }    
-    */
+
     if (rebuildTiles === true) {
       this._updateStateOnPropsChange({});
     }
@@ -197,10 +182,9 @@ private createprojectInfo() {
     let e: any = event;
  
     console.log('searchForItems: e',e);
-
-      console.log('searchForItems: item', item);
-      console.log('searchForItems: this', this);
-          /*
+    console.log('searchForItems: item', item);
+    console.log('searchForItems: this', this);
+    /*
     */
 
     let searchItems = [];
@@ -251,7 +235,8 @@ private createprojectInfo() {
       });
 
     } else {
-            //Filter tiles per clicked category
+
+      //Filter tiles per clicked category
 
       const defaultSelectedIndex = this.state.pivtTitles.indexOf(item.props.headerText);
       let defaultSelectedKey = defaultSelectedIndex.toString();
@@ -294,8 +279,7 @@ private createprojectInfo() {
     let e: any = event;
 
     this._updateStateOnPropsChange({
-      heroCategory: 'randDomTextIsNotACategory',
-      newCatColumn: item.props.itemKey,
+
     });
 
   } //End onClick
@@ -513,14 +497,50 @@ private createprojectInfo() {
     let projectWeb = new Web(useProjectWeb);
     let trackTimeWeb = new Web(useTrackMyTimeWeb);
 
+    let batch: any = sp.createBatch();
 
-
+    let loadProjectItems = new Array<IProjects>();
+    let loadTrackMyTimeItems = new Array<ITimeEntry>();
+    let trackMyProjectsInfo = {};
+    
     projectWeb.lists.getByTitle(useProjectList).items
-    .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).getAll()
+    .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
     .then((response) => {
-        this.processResponse(response);
+      loadProjectItems = response.map((p) => {
+            let project : any;
+
+            return project;
+        });
       }).catch((e) => {
         this.processCatch(e);
+      });
+
+      sp.web.siteUsers
+      .inBatch(batch).get().then((response) => {
+          console.table(response);
+          trackMyProjects.siteUsers = response.map((u) => {
+              let user: SPSiteUser = new SPSiteUser();
+              return user;
+          });
+          return trackMyProjects.siteUsers;
+      });
+
+      sp.web.siteGroups.expand("Users").select("Title", "Id", "IsHiddenInUI", "IsShareByEmailGuestUse", "IsSiteAdmin", "IsSiteAdmin")
+          .inBatch(batch).get().then((response) => {
+          let AdGroupPromises: Array<Promise<any>> = [];
+          // if group contains an ad group(PrincipalType=4) expand it
+          trackMyProjects.siteGroups = response.map((grp) => {
+              let siteGroup: SPSiteGroup = new SPSiteGroup();
+              return siteGroup;
+          });
+          return Promise.all(AdGroupPromises).then(() => {
+              return trackMyProjects.siteGroups;
+          });
+
+      });
+
+      return batch.execute().then(() => {
+          return trackMyProjects;
       });
 
 
