@@ -13,7 +13,7 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
-import {IProject, ITimeEntry, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
+import {IProject, IProjID, ITimeEntry, IProjectTarget, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
     
@@ -55,6 +55,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       pivtTitles:[],
       filteredCategory: this.props.defaultProjectPicker,
       pivotDefSelKey:"",
+      onlyActiveProjects: this.props.onlyActiveProjects,
 
       // 5 - UI Defaults
       currentProjectPicker: '', //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
@@ -434,20 +435,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   private _updateStateOnPropsChange(params: any ): void {
     this.setState({
 
@@ -499,52 +486,116 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     let batch: any = sp.createBatch();
 
-    let loadProjectItems = new Array<IProjects>();
+    let loadProjectItems = new Array<IProject>();
     let loadTrackMyTimeItems = new Array<ITimeEntry>();
-    let trackMyProjectsInfo = {};
+
+    let trackMyProjectsInfo = {
+      projectData: loadProjectItems,
+      timeTrackData: loadTrackMyTimeItems,
+    };
     
+
+    export class ProjectTarget {
+      public value: string; //value from field - ; separated options which could be parsed
+      public daily?: number; //Maybe have function see if something like daily=4 means 4 hours per day?
+      public weekly?: number; //Maybe have function see if something like weekly=8 means 8 hours per week?
+      public total?: number; //Maybe have function see if something like total=40 means 40 hours total?
+      public dailyStatus?: boolean;
+      public weeklyStatus?: boolean;
+      public totalStatus?: boolean;
+  
+      public constructor(value: string) {
+        let options = value.split(';');
+        let daily: any = false;
+        let weekly: any = false;
+        let total: any = false;
+  
+        for (let opt in options) {
+          let thisOption = opt.split('=');
+          if (thisOption[1] && thisOption[0].toLowerCase() === 'daily') {
+            daily = parseInt(thisOption[1]);
+          } else if (thisOption[1] && thisOption[0].toLowerCase() === 'weekly') {
+            weekly = parseInt(thisOption[1]);
+          } else if (thisOption[1] && thisOption[0].toLowerCase() === 'total') {
+            total = parseInt(thisOption[1]);
+          }
+        }
+  
+        this.value = value;
+        this.daily = daily ? daily : 0;
+        this.weekly = weekly ? weekly : 0 ; //
+        this.total = total ? total : 0 ; //
+        this.dailyStatus = daily ? true : false ; //
+        this.weeklyStatus = weekly ? true : false ; //
+        this.totalStatus = total ? true : false ; //
+      }
+    }
+  
+  
+    private function buildProjectID <IProjID> (projectID) {
+      let thisProj= {
+        value: projectID,
+        required: false,
+        default: 'x' ,
+        defaultIsPrefix: false,
+      };
+      return thisProj;
+    }
+  
+  
+  
+
     projectWeb.lists.getByTitle(useProjectList).items
     .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
     .then((response) => {
-      loadProjectItems = response.map((p) => {
-            let project : any;
+      trackMyProjectsInfo.projectData = response.map((p) => {
+          let targetInfo: ProjectTarget = new ProjectTarget(p.value);
 
-            return project;
+          let project : IProject = {
+            titleProject: p.Title,
+            active: p.Active,
+            everyone: p.Everyone,
+            sort: p.Sort,
+
+            category1: p.Category1,
+            category2: p.Category2,
+            // leader: ,
+            // team: ,
+
+            projectID1: buildProjectID(p.ProjectID1),
+            projectID2: buildProjectID(p.ProjectID2),
+
+            timeTarget: targetInfo,
+          
+            //Values that relate to project list item
+            // sourceProject: , //Add URL back to item
+          }
+          
+          
+          return project;
         });
+        return trackMyProjectsInfo.projectData;
       }).catch((e) => {
         this.processCatch(e);
       });
 
-      sp.web.siteUsers
-      .inBatch(batch).get().then((response) => {
-          console.table(response);
-          trackMyProjects.siteUsers = response.map((u) => {
-              let user: SPSiteUser = new SPSiteUser();
-              return user;
-          });
-          return trackMyProjects.siteUsers;
+    trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items
+    .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
+    .then((response) => {
+      trackMyProjectsInfo.timeTrackData = response.map((p) => {
+          let myTime : ITimeEntry;
+          
+          return project;
+        });
+        return trackMyProjectsInfo.timeTrackData;
+      }).catch((e) => {
+        this.processCatch(e);
       });
 
-      sp.web.siteGroups.expand("Users").select("Title", "Id", "IsHiddenInUI", "IsShareByEmailGuestUse", "IsSiteAdmin", "IsSiteAdmin")
-          .inBatch(batch).get().then((response) => {
-          let AdGroupPromises: Array<Promise<any>> = [];
-          // if group contains an ad group(PrincipalType=4) expand it
-          trackMyProjects.siteGroups = response.map((grp) => {
-              let siteGroup: SPSiteGroup = new SPSiteGroup();
-              return siteGroup;
-          });
-          return Promise.all(AdGroupPromises).then(() => {
-              return trackMyProjects.siteGroups;
-          });
-
-      });
 
       return batch.execute().then(() => {
           return trackMyProjects;
       });
-
-
-
 
   }  
   private processCatch(e) {

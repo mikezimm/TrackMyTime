@@ -31,6 +31,7 @@ export interface ITrackMyTimeProps {
   allowUserProjects: boolean; //Will build list of ProjectsUser based on existing data from TrackMyTime list
   projectMasterPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
   projectUserPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
+  onlyActiveProjects: boolean, //Only read in active projects.
 
   // 5 - UI Defaults
   defaultProjectPicker: string; //Recent, Your Projects, All Projects etc...
