@@ -2,6 +2,12 @@
 import { ITrackMyTimeProps } from './ITrackMyTimeProps';
 import { string } from 'prop-types';
 
+export interface theTime {
+  now: Date;
+  theTime : string;
+  milliseconds : number;
+}
+
 export interface IUser {
   title: string;
   initials?: string;  //Single person column
@@ -70,28 +76,39 @@ export interface IProjects {
 
 export interface IProjectInfo {
 
+  all: IProjects[];
   master: IProjects[]; //Projects coming from the Projects list
   user: IProjects[]; //Projects coming from TrackMyTime list
   masterPriority: IProjects[]; //Projects visible based on settings
   userPriority: IProjects[]; //Projects visible based on settings
   current: IProjects[]; //Makes up the choices
+  lastFiltered: IProjects[];
+  lastProject: IProject[];
+  newFiltered: IProjects[];
+
   
 }
 
 export interface ITrackMyTimeState {
-  description: string;
 
   projects?: IProjectInfo;
 
   // 1 - Analytics options
+  endTime?: theTime;
 
   // 2 - Source and destination list information
   projectListURL?: string; //Get from list item
   timeTrackerListURL?: string; //Get from list item
 
+  projectListName: string;  // Static Name of list (for URL) - used for links and determined by first returned item
+  timeTrackListName: string;  // Static Name of list (for URL) - used for links and determined by first returned item
+
   // 3 - General how accurate do you want this to be
 
   // 4 -Project options
+  pivtTitles?:string[];
+  filteredCategory?: string;
+  pivotDefSelKey?: string;
 
   // 5 - UI Defaults
   currentProjectPicker: string; //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
@@ -100,7 +117,7 @@ export interface ITrackMyTimeState {
 
   // 6 - User Feedback:
   showElapsedTimeSinceLast?: boolean;  // Idea is that it can be like a clock showing how long it's been since your last entry.
-  lastEntry?: IProject;  //Should be a time entry
+  lastEntry?: ITimeEntry;  //Should be a time entry
   elapsedTime?: any;  //Elapsed Time since last entry
 
   recentEntries?: ITimeEntry[]; //List of recent entries
@@ -114,6 +131,19 @@ export interface ITrackMyTimeState {
 
   // 9 - Other web part options
 
+  loadStatus?: string;
+
+  showTips?: string;
+  loadError?: string;
+
+  listError?: boolean;
+  itemsError?: boolean;
+  heroError?: boolean;
+
+  searchType?: string;
+  searchShow?: boolean;
+  searchCount?: number;
+  searchWhere?: string;
 
 
 }

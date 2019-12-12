@@ -13,6 +13,7 @@ declare interface ITrackMyTimeWebPartStrings {
   // 1 - Analytics options
   analyticsWeb: string;
   analyticsList: string;
+  minClickWeb: string;
 
   // 2 - Source and destination list information
 

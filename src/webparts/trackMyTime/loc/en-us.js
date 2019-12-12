@@ -7,8 +7,8 @@ define([], function() {
     "DescriptionFieldLabel": "Description Field",
 
     // 0 - Context
-    "DefaultProjectListTitle": "", // DO NOT CHANGE THIS IN DIFFERENT LANGUAGES
-    "DefaultTrackMyTimeListTitle": "", // DO NOT CHANGE THIS IN DIFFERENT LANGUAGES
+    "DefaultProjectListTitle": "Projects", // DO NOT CHANGE THIS IN DIFFERENT LANGUAGES
+    "DefaultTrackMyTimeListTitle": "TrackMyTime", // DO NOT CHANGE THIS IN DIFFERENT LANGUAGES
 
     // 1 - Analytics options - Optional
     "FieldLabel_AnalyticsWeb": "Site where analytics are maintained",
@@ -16,6 +16,8 @@ define([], function() {
 
     "analyticsList": "TilesCycleTesting",
     "analyticsWeb": "https://mcclickster.sharepoint.com/sites/Templates/SiteAudit/",
+    "minClickWeb": "",
+
 
     // 2 - Source and destination list information
     "FieldLabel_ProjectListTitle": "Project List Title",
