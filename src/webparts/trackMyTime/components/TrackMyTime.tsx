@@ -494,7 +494,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       timeTrackData: loadTrackMyTimeItems,
     };
     
- 
     function buildProjectID (projectID) {
 
       let projectText : string = projectID ;
@@ -515,6 +514,16 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       return thisProj;
     }
+/**
+ * projectWeb.lists.getByTitle(useProjectList).items
+ * 
+ * Another way.... go by full URL
+ * http://www.ktskumar.com/2017/04/get-list-based-url-using-pnp-javascript-library/
+ * $pnp.sp.web.getList("/sites/development/Lists/sample").items
+ * projectWeb.getList("/sites/Templates/Tmt/Lists/TrackMyTime/").items
+ * projectWeb.getList("/sites/Templates/Tmt/Lists/Projects").items
+ * projectWeb.getList().items
+ */
 
     projectWeb.lists.getByTitle(useProjectList).items
     .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
