@@ -30,6 +30,7 @@ export interface IUser {
 export interface ITimeEntry {
   //Values that would come from Project item
   titleProject: string;
+  comments: string;
   category1?: string[];
   category2?: string[];
   leader?: IUser;  //Likely single person column
@@ -40,7 +41,8 @@ export interface ITimeEntry {
 
   //Values that relate to project list item
   sourceProject?: ILink; //Link back to the source project list item.
-
+  activity?: ILink; //Link to the activity you worked on
+  
   //Values specific to Time Entry
   user: IUser;  //Single person column
   startTime: any; //Time stamp
@@ -48,10 +50,14 @@ export interface ITimeEntry {
   duration?: any; //Number  -- May not be needed based on current testing with start and end dates.
 
   //Saves what entry option was used... Since Last, Slider, Manual
-  entryOption?: string;
-  timeFromEntry?: any; //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
+  entryType?: string;
+  deltaT?: any; //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
+  timeEntryTBD1?: string;
+  timeEntryTBD2?: string;
+  timeEntryTBD3?: string;  
 
   //Other settings and information
+  location?: string; // Location
   settings?: string;
 
 }

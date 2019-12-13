@@ -567,27 +567,69 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     }).catch((e) => {
       this.processCatch(e);
     });
-/*
+
+
+
     trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items
     .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
     .then((response) => {
-      trackMyProjectsInfo.timeTrackData = response.map((p) => {
-          let myTime : ITimeEntry;
-          
-          return project;
-        });
-        return trackMyProjectsInfo.timeTrackData;
-      }).catch((e) => {
-        this.processCatch(e);
-      });
+      trackMyProjectsInfo.timeTrackData = response.map((item) => {
+        //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
 
-*/
-      return batch.execute().then(() => {
-        console.log('trackMyProjectsInfo 2:', trackMyProjectsInfo);
-          return trackMyProjectsInfo;
+
+        let timeEntry : ITimeEntry = {
+
+            //Values that would come from Project item
+          titleProject : item.Title ,
+          comments: item.Comments ,
+          category1 : item.Category1 ,
+          category2 : item.Category2 ,
+          //leader : item.Leader ,  //Likely single person column
+          //team : item.Team ,  //Likely multi person column
+
+          projectID1 : item.ProjectID1 ,  //Example Project # - look for strings starting with * and ?
+          projectID2 : item.ProjectID2 ,  //Example Cost Center # - look for strings starting with * and ?
+
+          //Values that relate to project list item
+          sourceProject : item.SourceProject , //Link back to the source project list item.
+          activity: item.Activity ,  //Link to the activity you worked on
+
+          //Values specific to Time Entry
+          user : item.User ,  //Single person column
+          startTime : item.StartTime , //Time stamp
+          endTime : item.EndTime , // Time stamp
+          duration : item.Hours , //Number  -- May not be needed based on current testing with start and end dates.
+
+          //Saves what entry option was used... Since Last, Slider, Manual
+          entryType : item.EntryType ,
+          deltaT : item.DeltaT , //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
+          timeEntryTBD1 : '' ,
+          timeEntryTBD2 : '' ,
+          timeEntryTBD3 : '' ,          
+
+          //Other settings and information
+          location : item.Location,
+          settings : item.Settings,
+
+        }
+
+        return timeEntry;
+
       });
+      console.log('trackMyProjectsInfo 2a:', trackMyProjectsInfo);
+      return trackMyProjectsInfo.timeTrackData;
+
+    }).catch((e) => {
+      this.processCatch(e);
+    });
+
+    return batch.execute().then(() => {
+      console.log('trackMyProjectsInfo 3:', trackMyProjectsInfo);
+        return trackMyProjectsInfo;
+    });
 
   }  
+
   private processCatch(e) {
     console.log("Can't load data");
     //var m = e.status === 404 ? "Tile List not found: " + useTileList : "Other message";
