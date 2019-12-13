@@ -13,7 +13,7 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
-import {IProject, IProjID, ITimeEntry, IProjectTarget, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
+import {IProject, ISmartText, ITimeEntry, IProjectTarget, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
     
@@ -494,18 +494,18 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       timeTrackData: loadTrackMyTimeItems,
     };
     
-    function buildProjectID (projectID) {
+    function buildSmartText (makeThisSmart) {
 
-      let projectText : string = projectID ;
+      let projectText : string = makeThisSmart ;
       let isRequired : boolean = ( projectText && projectText.indexOf("\*") === 0 ) ? true : false ;
-      let projectString = isRequired ? projectID.substring(1) : projectID;
+      let projectString = isRequired ? makeThisSmart.substring(1) : makeThisSmart;
       let isDefault : boolean = (projectString && projectString.indexOf("\?") === 0 ) ? true : false ;
       projectString = isDefault ? projectString.substring(1) : projectString;
       let lastIndexOfDots : number = projectString ? projectString.lastIndexOf("...") : -1;
       let prefix : string = (projectString && lastIndexOfDots === projectString.length -3 ) ? projectString.substring(0,lastIndexOfDots) : null ;
 
-      let thisProj : IProjID = {
-        value: projectID,
+      let thisProj : ISmartText = {
+        value: makeThisSmart,
         required: isRequired,
         default: projectString ,
         defaultIsPrefix: lastIndexOfDots > -1 ? true : false ,
@@ -559,7 +559,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         }
 
         let project : IProject = {
+          id: p.Id,
+          editLink: null , //Link to view/edit item link
           titleProject: p.Title,
+          comments: buildSmartText(p.Comments),
           active: p.Active,
           everyone: p.Everyone,
           sort: p.Sort,
@@ -569,8 +572,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           // leader: ,
           // team: ,
 
-          projectID1: buildProjectID(p.ProjectID1),
-          projectID2: buildProjectID(p.ProjectID2),
+          projectID1: buildSmartText(p.ProjectID1),
+          projectID2: buildSmartText(p.ProjectID2),
 
           timeTarget: targetInfo,
         
@@ -600,8 +603,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         let timeEntry : ITimeEntry = {
 
             //Values that would come from Project item
+          id: item.Id ,
+          editLink: null , //Link to view/edit item link
           titleProject : item.Title ,
-          comments: item.Comments ,
+          comments: buildSmartText(item.Comments),
           category1 : item.Category1 ,
           category2 : item.Category2 ,
           //leader : item.Leader ,  //Likely single person column
