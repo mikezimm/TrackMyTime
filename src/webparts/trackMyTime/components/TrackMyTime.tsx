@@ -494,45 +494,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       timeTrackData: loadTrackMyTimeItems,
     };
     
-
-    export class ProjectTarget {
-      public value: string; //value from field - ; separated options which could be parsed
-      public daily?: number; //Maybe have function see if something like daily=4 means 4 hours per day?
-      public weekly?: number; //Maybe have function see if something like weekly=8 means 8 hours per week?
-      public total?: number; //Maybe have function see if something like total=40 means 40 hours total?
-      public dailyStatus?: boolean;
-      public weeklyStatus?: boolean;
-      public totalStatus?: boolean;
-  
-      public constructor(value: string) {
-        let options = value.split(';');
-        let daily: any = false;
-        let weekly: any = false;
-        let total: any = false;
-  
-        for (let opt in options) {
-          let thisOption = opt.split('=');
-          if (thisOption[1] && thisOption[0].toLowerCase() === 'daily') {
-            daily = parseInt(thisOption[1]);
-          } else if (thisOption[1] && thisOption[0].toLowerCase() === 'weekly') {
-            weekly = parseInt(thisOption[1]);
-          } else if (thisOption[1] && thisOption[0].toLowerCase() === 'total') {
-            total = parseInt(thisOption[1]);
-          }
-        }
-  
-        this.value = value;
-        this.daily = daily ? daily : 0;
-        this.weekly = weekly ? weekly : 0 ; //
-        this.total = total ? total : 0 ; //
-        this.dailyStatus = daily ? true : false ; //
-        this.weeklyStatus = weekly ? true : false ; //
-        this.totalStatus = total ? true : false ; //
-      }
-    }
-  
-  
-    private function buildProjectID <IProjID> (projectID) {
+ 
+    function buildProjectID <IProjID> (projectID) {
       let thisProj= {
         value: projectID,
         required: false,
@@ -541,44 +504,70 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       };
       return thisProj;
     }
-  
-  
-  
 
     projectWeb.lists.getByTitle(useProjectList).items
     .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
     .then((response) => {
       trackMyProjectsInfo.projectData = response.map((p) => {
-          let targetInfo: ProjectTarget = new ProjectTarget(p.value);
+        //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
+        let daily: any = false;
+        let weekly: any = false;
+        let total: any = false;
 
-          let project : IProject = {
-            titleProject: p.Title,
-            active: p.Active,
-            everyone: p.Everyone,
-            sort: p.Sort,
-
-            category1: p.Category1,
-            category2: p.Category2,
-            // leader: ,
-            // team: ,
-
-            projectID1: buildProjectID(p.ProjectID1),
-            projectID2: buildProjectID(p.ProjectID2),
-
-            timeTarget: targetInfo,
-          
-            //Values that relate to project list item
-            // sourceProject: , //Add URL back to item
+        if (p.TimeTarget) {
+          let options = p.TimeTarget.split(';');
+          for (let opt of options) {
+            let thisOption = opt.split('=');
+            if (thisOption[1] && thisOption[0].toLowerCase() === 'daily') {
+              daily = parseInt(thisOption[1]);
+            } else if (thisOption[1] && thisOption[0].toLowerCase() === 'weekly') {
+              weekly = parseInt(thisOption[1]);
+            } else if (thisOption[1] && thisOption[0].toLowerCase() === 'total') {
+              total = parseInt(thisOption[1]);
+            }
           }
-          
-          
-          return project;
-        });
-        return trackMyProjectsInfo.projectData;
-      }).catch((e) => {
-        this.processCatch(e);
-      });
+        }
 
+        let targetInfo : IProjectTarget = {
+          value: p.TimeTarget,
+          daily: daily ? daily : 0,
+          weekly: weekly ? weekly : 0,
+          total: total ? total : 0,
+          dailyStatus: daily ? true : false,
+          weeklyStatus: weekly ? true : false,
+          totalStatus: total ? true : false,
+        }
+
+        let project : IProject = {
+          titleProject: p.Title,
+          active: p.Active,
+          everyone: p.Everyone,
+          sort: p.Sort,
+
+          category1: p.Category1,
+          category2: p.Category2,
+          // leader: ,
+          // team: ,
+
+          projectID1: buildProjectID(p.ProjectID1),
+          projectID2: buildProjectID(p.ProjectID2),
+
+          timeTarget: targetInfo,
+        
+          //Values that relate to project list item
+          // sourceProject: , //Add URL back to item
+        }
+
+        return project;
+
+      });
+      console.log('trackMyProjectsInfo:', trackMyProjectsInfo);
+      return trackMyProjectsInfo.projectData;
+
+    }).catch((e) => {
+      this.processCatch(e);
+    });
+/*
     trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items
     .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
     .then((response) => {
@@ -592,9 +581,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         this.processCatch(e);
       });
 
-
+*/
       return batch.execute().then(() => {
-          return trackMyProjects;
+        console.log('trackMyProjectsInfo 2:', trackMyProjectsInfo);
+          return trackMyProjectsInfo;
       });
 
   }  
