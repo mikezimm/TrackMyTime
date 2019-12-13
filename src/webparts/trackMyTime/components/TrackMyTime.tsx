@@ -638,7 +638,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           settings : item.Settings,
 
         }
-
+        //this.saveMyTime(timeEntry,'master');
         return timeEntry;
 
       });
@@ -757,23 +757,23 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         //Values that would come from Project item
         //editLink : ILink, //Link to view/edit item link
         Title: trackTimeItem.titleProject,
-        Comments: trackTimeItem.comments,
-        Category1: trackTimeItem.category1,
-        Category2: trackTimeItem.category2,
+        Comments: trackTimeItem.comments ? trackTimeItem.comments.value : null,
+        //Category1: trackTimeItem.category1,
+        //Category2: trackTimeItem.category2,
         //Leader: IUser,  //Likely single person column
         //Team: IUser[],  //Likely multi person column
 
-        ProjectID1: trackTimeItem.projectID1,  //Example Project # - look for strings starting with * and ?
-        ProjectID2: trackTimeItem.projectID2,  //Example Cost Center # - look for strings starting with * and ?
+        //ProjectID1: trackTimeItem.projectID1 ? trackTimeItem.projectID1.value : null,  //Example Project # - look for strings starting with * and ?
+        //ProjectID2: trackTimeItem.projectID2 ? trackTimeItem.projectID2.value : null,  //Example Cost Center # - look for strings starting with * and ?
 
         //Values that relate to project list item
-        SourceProject: trackTimeItem.sourceProject, //Link back to the source project list item.
-        Activity: trackTimeItem.activity, //Link to the activity you worked on
-        CCList: trackTimeItem.ccList, //Link to CC List to copy item
+        //SourceProject: trackTimeItem.sourceProject, //Link back to the source project list item.
+        //Activity: trackTimeItem.activity, //Link to the activity you worked on
+        //CCList: trackTimeItem.ccList, //Link to CC List to copy item
         CCEmail: trackTimeItem.ccEmail, //Email to CC List to copy item 
         
         //Values specific to Time Entry
-        User: trackTimeItem.user,  //Single person column
+        //User: trackTimeItem.user,  //Single person column
         StartTime: trackTimeItem.startTime, //Time stamp
         EndTime: trackTimeItem.endTime, // Time stamp
         //Duration: trackTimeItem.duration, //Number  -- May not be needed based on current testing with start and end dates.
@@ -790,7 +790,14 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         Settings: trackTimeItem.settings,
 
     }
-
+/*
+    const allKeys = Object.keys(saveThisItem);
+    let saveThisItemNew = {}; 
+    for (let key of allKeys){
+      let thisElement = saveThisItem[key];
+      if (saveThisItem[key]) { saveThisItemNew.push( {key : thisElement})}
+    }
+    */
      
     let useTrackMyTimeList: string = strings.DefaultTrackMyTimeListTitle;
     if ( this.props.timeTrackListTitle ) {
@@ -801,7 +808,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     if ( this.props.timeTrackListWeb ) {
       useTrackMyTimeWeb = this.props.timeTrackListWeb;
     }
-
+    console.log('this.props',this.props);
+    console.log('this.state',this.state);
+    console.log('useTrackMyTimeWeb',useTrackMyTimeWeb);
+    console.log('saveThisItem',saveThisItem);
     let trackTimeWeb = new Web(useTrackMyTimeWeb);
 
     if (masterOrRemote === 'master'){
