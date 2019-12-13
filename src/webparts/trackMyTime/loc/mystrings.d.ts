@@ -31,6 +31,7 @@ declare interface ITrackMyTimeWebPartStrings {
 
   // 4 -Project options
   PropPaneGroupLabel_ProjectOptions: string;
+  FieldLabel_OnlyActiveProjects: string;
   FieldLabel_AllowUserProjects: string; // Use to allow getting list of user write-in projects
   FieldLabel_ProjectMasterPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
   FieldLabel_ProjectUserPriority: string; //Use to determine what projects float to top.... your most recent?  last day?

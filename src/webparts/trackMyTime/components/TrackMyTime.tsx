@@ -13,26 +13,27 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
-import {IProject, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
+import {IProject, IProjID, ITimeEntry, IProjectTarget, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
-  
-private createprojectInfo() {
+    
+  private createprojectInfo() {
 
-  let projectInfo = {} as IProjectInfo;
+    let projectInfo = {} as IProjectInfo;
 
-  projectInfo.master = [];
-  projectInfo.user = [];
-  projectInfo.masterPriority = [];
-  projectInfo.userPriority = [];
-  projectInfo.current = [];
-  projectInfo.lastFiltered = [];
-  projectInfo.lastProject = [];
-  projectInfo.all = [];
-  
-  return projectInfo;
+    projectInfo.master = [];
+    projectInfo.user = [];
+    projectInfo.masterPriority = [];
+    projectInfo.userPriority = [];
+    projectInfo.current = [];
+    projectInfo.lastFiltered = [];
+    projectInfo.lastProject = [];
+    projectInfo.all = [];
+    
+    return projectInfo;
 
-}
+  }
+
   public constructor(props:ITrackMyTimeProps){
     super(props);
     this.state = { 
@@ -54,6 +55,7 @@ private createprojectInfo() {
       pivtTitles:[],
       filteredCategory: this.props.defaultProjectPicker,
       pivotDefSelKey:"",
+      onlyActiveProjects: this.props.onlyActiveProjects,
 
       // 5 - UI Defaults
       currentProjectPicker: '', //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
@@ -101,30 +103,14 @@ private createprojectInfo() {
   }
 
   public componentDidMount() {
-    //Not using this function because it just did not want to work.
-    //this._loadListItems();
     this._getListItems();
-    //alert('this.props.heroCategory.length');
-    //alert(this.props);
   }
   
   public componentDidUpdate(prevProps){
 
-    //alert('componentDidUpdate 1');
-
     let rebuildTiles = false;
-
     if (this.props.defaultProjectPicker !== prevProps.defaultProjectPicker) {  rebuildTiles = true ; }
-    /*
-    if (this.props.setSize !== prevProps.setSize) {  rebuildTiles = true ; }
-    if (this.props.showHero !== prevProps.showHero) {  rebuildTiles = true ; }
-    if (this.props.heroType !== prevProps.heroType) {  rebuildTiles = true ; }
-    if (this.props.setRatio !== prevProps.setRatio) {  rebuildTiles = true ; }
-    if (this.props.setImgFit !== prevProps.setImgFit) {  rebuildTiles = true ; }
-    if (this.props.setImgCover !== prevProps.setImgCover) {  rebuildTiles = true ; }
-    if (this.props.heroCategory !== prevProps.heroCategory) {  rebuildTiles = true ; }
-    if (this.props.heroRatio !== prevProps.heroRatio) {  rebuildTiles = true ; }    
-    */
+
     if (rebuildTiles === true) {
       this._updateStateOnPropsChange({});
     }
@@ -197,10 +183,9 @@ private createprojectInfo() {
     let e: any = event;
  
     console.log('searchForItems: e',e);
-
-      console.log('searchForItems: item', item);
-      console.log('searchForItems: this', this);
-          /*
+    console.log('searchForItems: item', item);
+    console.log('searchForItems: this', this);
+    /*
     */
 
     let searchItems = [];
@@ -251,7 +236,8 @@ private createprojectInfo() {
       });
 
     } else {
-            //Filter tiles per clicked category
+
+      //Filter tiles per clicked category
 
       const defaultSelectedIndex = this.state.pivtTitles.indexOf(item.props.headerText);
       let defaultSelectedKey = defaultSelectedIndex.toString();
@@ -294,8 +280,7 @@ private createprojectInfo() {
     let e: any = event;
 
     this._updateStateOnPropsChange({
-      heroCategory: 'randDomTextIsNotACategory',
-      newCatColumn: item.props.itemKey,
+
     });
 
   } //End onClick
@@ -450,20 +435,6 @@ private createprojectInfo() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   private _updateStateOnPropsChange(params: any ): void {
     this.setState({
 
@@ -513,20 +484,172 @@ private createprojectInfo() {
     let projectWeb = new Web(useProjectWeb);
     let trackTimeWeb = new Web(useTrackMyTimeWeb);
 
+    let batch: any = sp.createBatch();
 
+    let loadProjectItems = new Array<IProject>();
+    let loadTrackMyTimeItems = new Array<ITimeEntry>();
+
+    let trackMyProjectsInfo = {
+      projectData: loadProjectItems,
+      timeTrackData: loadTrackMyTimeItems,
+    };
+    
+    function buildProjectID (projectID) {
+
+      let projectText : string = projectID ;
+      let isRequired : boolean = ( projectText && projectText.indexOf("\*") === 0 ) ? true : false ;
+      let projectString = isRequired ? projectID.substring(1) : projectID;
+      let isDefault : boolean = (projectString && projectString.indexOf("\?") === 0 ) ? true : false ;
+      projectString = isDefault ? projectString.substring(1) : projectString;
+      let lastIndexOfDots : number = projectString ? projectString.lastIndexOf("...") : -1;
+      let prefix : string = (projectString && lastIndexOfDots === projectString.length -3 ) ? projectString.substring(0,lastIndexOfDots) : null ;
+
+      let thisProj : IProjID = {
+        value: projectID,
+        required: isRequired,
+        default: projectString ,
+        defaultIsPrefix: lastIndexOfDots > -1 ? true : false ,
+        prefix: prefix,
+      };
+
+      return thisProj;
+    }
+/**
+ * projectWeb.lists.getByTitle(useProjectList).items
+ * 
+ * Another way.... go by full URL
+ * http://www.ktskumar.com/2017/04/get-list-based-url-using-pnp-javascript-library/
+ * $pnp.sp.web.getList("/sites/development/Lists/sample").items
+ * projectWeb.getList("/sites/Templates/Tmt/Lists/TrackMyTime/").items
+ * projectWeb.getList("/sites/Templates/Tmt/Lists/Projects").items
+ * projectWeb.getList().items
+ */
 
     projectWeb.lists.getByTitle(useProjectList).items
-    .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).getAll()
+    .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
     .then((response) => {
-        this.processResponse(response);
-      }).catch((e) => {
-        this.processCatch(e);
+      trackMyProjectsInfo.projectData = response.map((p) => {
+        //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
+        let daily: any = false;
+        let weekly: any = false;
+        let total: any = false;
+
+        if (p.TimeTarget) {
+          let options = p.TimeTarget.split(';');
+          for (let opt of options) {
+            let thisOption = opt.split('=');
+            if (thisOption[1] && thisOption[0].toLowerCase() === 'daily') {
+              daily = parseInt(thisOption[1]);
+            } else if (thisOption[1] && thisOption[0].toLowerCase() === 'weekly') {
+              weekly = parseInt(thisOption[1]);
+            } else if (thisOption[1] && thisOption[0].toLowerCase() === 'total') {
+              total = parseInt(thisOption[1]);
+            }
+          }
+        }
+
+        let targetInfo : IProjectTarget = {
+          value: p.TimeTarget,
+          daily: daily ? daily : 0,
+          weekly: weekly ? weekly : 0,
+          total: total ? total : 0,
+          dailyStatus: daily ? true : false,
+          weeklyStatus: weekly ? true : false,
+          totalStatus: total ? true : false,
+        }
+
+        let project : IProject = {
+          titleProject: p.Title,
+          active: p.Active,
+          everyone: p.Everyone,
+          sort: p.Sort,
+
+          category1: p.Category1,
+          category2: p.Category2,
+          // leader: ,
+          // team: ,
+
+          projectID1: buildProjectID(p.ProjectID1),
+          projectID2: buildProjectID(p.ProjectID2),
+
+          timeTarget: targetInfo,
+        
+          //Values that relate to project list item
+          // sourceProject: , //Add URL back to item
+        }
+
+        return project;
+
       });
+      console.log('trackMyProjectsInfo:', trackMyProjectsInfo);
+      return trackMyProjectsInfo.projectData;
+
+    }).catch((e) => {
+      this.processCatch(e);
+    });
 
 
 
+    trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items
+    .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
+    .then((response) => {
+      trackMyProjectsInfo.timeTrackData = response.map((item) => {
+        //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
+
+
+        let timeEntry : ITimeEntry = {
+
+            //Values that would come from Project item
+          titleProject : item.Title ,
+          comments: item.Comments ,
+          category1 : item.Category1 ,
+          category2 : item.Category2 ,
+          //leader : item.Leader ,  //Likely single person column
+          //team : item.Team ,  //Likely multi person column
+
+          projectID1 : item.ProjectID1 ,  //Example Project # - look for strings starting with * and ?
+          projectID2 : item.ProjectID2 ,  //Example Cost Center # - look for strings starting with * and ?
+
+          //Values that relate to project list item
+          sourceProject : item.SourceProject , //Link back to the source project list item.
+          activity: item.Activity ,  //Link to the activity you worked on
+
+          //Values specific to Time Entry
+          user : item.User ,  //Single person column
+          startTime : item.StartTime , //Time stamp
+          endTime : item.EndTime , // Time stamp
+          duration : item.Hours , //Number  -- May not be needed based on current testing with start and end dates.
+
+          //Saves what entry option was used... Since Last, Slider, Manual
+          entryType : item.EntryType ,
+          deltaT : item.DeltaT , //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
+          timeEntryTBD1 : '' ,
+          timeEntryTBD2 : '' ,
+          timeEntryTBD3 : '' ,          
+
+          //Other settings and information
+          location : item.Location,
+          settings : item.Settings,
+
+        }
+
+        return timeEntry;
+
+      });
+      console.log('trackMyProjectsInfo 2a:', trackMyProjectsInfo);
+      return trackMyProjectsInfo.timeTrackData;
+
+    }).catch((e) => {
+      this.processCatch(e);
+    });
+
+    return batch.execute().then(() => {
+      console.log('trackMyProjectsInfo 3:', trackMyProjectsInfo);
+        return trackMyProjectsInfo;
+    });
 
   }  
+
   private processCatch(e) {
     console.log("Can't load data");
     //var m = e.status === 404 ? "Tile List not found: " + useTileList : "Other message";

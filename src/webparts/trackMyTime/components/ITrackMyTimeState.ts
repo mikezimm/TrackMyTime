@@ -30,14 +30,19 @@ export interface IUser {
 export interface ITimeEntry {
   //Values that would come from Project item
   titleProject: string;
+  comments: string;
   category1?: string[];
   category2?: string[];
   leader?: IUser;  //Likely single person column
   team?: IUser[];  //Likely multi person column
 
+  projectID1: IProjID;  //Example Project # - look for strings starting with * and ?
+  projectID2: IProjID;  //Example Cost Center # - look for strings starting with * and ?
+
   //Values that relate to project list item
   sourceProject?: ILink; //Link back to the source project list item.
-
+  activity?: ILink; //Link to the activity you worked on
+  
   //Values specific to Time Entry
   user: IUser;  //Single person column
   startTime: any; //Time stamp
@@ -45,22 +50,52 @@ export interface ITimeEntry {
   duration?: any; //Number  -- May not be needed based on current testing with start and end dates.
 
   //Saves what entry option was used... Since Last, Slider, Manual
-  entryOption?: string;
-  timeFromEntry?: any; //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
+  entryType?: string;
+  deltaT?: any; //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
+  timeEntryTBD1?: string;
+  timeEntryTBD2?: string;
+  timeEntryTBD3?: string;  
 
   //Other settings and information
+  location?: string; // Location
   settings?: string;
 
+}
+
+export interface IProjID {
+  value: string;
+  required: boolean;
+  default: string;
+  defaultIsPrefix: boolean;
+  prefix?: string;
+}
+
+export interface IProjectTarget {
+  value: string; //value from field - ; separated options which could be parsed
+  daily?: number; //Maybe have function see if something like daily=4 means 4 hours per day?
+  weekly?: number; //Maybe have function see if something like weekly=8 means 8 hours per week?
+  total?: number; //Maybe have function see if something like total=40 means 40 hours total?
+  dailyStatus?: boolean;
+  weeklyStatus?: boolean;
+  totalStatus?: boolean;
 }
 
 export interface IProject {
   //Values that would come from Project item
   titleProject: string;
+  active: boolean;  //Used to indicate inactive projects
+  everyone?: boolean; //Used to designate this option should be available to everyone.
+  sort: number; //Used to prioritize in choices.... ones with number go first in order, followed by empty
 
   category1?: string[];
   category2?: string[];
   leader?: IUser;  //Likely single person column
   team?: IUser[];  //Likely multi person column
+
+  projectID1: IProjID;  //Example Project # - look for strings starting with * and ?
+  projectID2: IProjID;  //Example Cost Center # - look for strings starting with * and ?
+
+  timeTarget: IProjectTarget;
 
   //This might be computed at the time page loads
   lastEntry?: any;  //Should be a time entry
@@ -85,7 +120,6 @@ export interface IProjectInfo {
   lastFiltered: IProjects[];
   lastProject: IProject[];
   newFiltered: IProjects[];
-
   
 }
 
@@ -109,6 +143,7 @@ export interface ITrackMyTimeState {
   pivtTitles?:string[];
   filteredCategory?: string;
   pivotDefSelKey?: string;
+  onlyActiveProjects?: boolean, //Only read in active projects.
 
   // 5 - UI Defaults
   currentProjectPicker: string; //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...

@@ -114,6 +114,12 @@ import {
           { groupName: strings.PropPaneGroupLabel_ProjectOptions,
             isCollapsed: webPartProps.setSize === "This does nothing yet" ? true : false ,
             groupFields: [
+              PropertyPaneToggle('onlyActiveProjects', {
+                label: strings.FieldLabel_OnlyActiveProjects,
+                offText: strings.FieldLabel_ToggleTextOff,
+                onText: strings.FieldLabel_ToggleTextOn
+              }),
+
               PropertyPaneToggle('allowUserProjects', {
                 label: strings.FieldLabel_AllowUserProjects,
                 offText: strings.FieldLabel_ToggleTextOff,

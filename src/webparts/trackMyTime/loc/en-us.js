@@ -34,6 +34,7 @@ define([], function() {
 
     // 4 -Project options
     "PropPaneGroupLabel_ProjectOptions": "Project options",
+    "FieldLabel_OnlyActiveProjects": "Only read in active projects",
     "FieldLabel_AllowUserProjects": "Allow User Projects (direct from history)",  // Use to allow getting list of user write-in projects
     "FieldLabel_ProjectMasterPriority": "Master Project Priority", //Use to determine what projects float to top.... your most recent?  last day?
     "FieldLabel_ProjectUserPriority": "User Project Priority", //Use to determine what projects float to top.... your most recent?  last day?
