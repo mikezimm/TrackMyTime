@@ -34,6 +34,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   }
 
+  
   public constructor(props:ITrackMyTimeProps){
     super(props);
     this.state = { 
@@ -747,6 +748,82 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     saveAnalytics(this.props,this.state);
     
     return true;
+
+  }
+
+  private saveMyTime (trackTimeItem: ITimeEntry , masterOrRemote : string) {
+
+    let saveThisItem = {
+        //Values that would come from Project item
+        //editLink : ILink, //Link to view/edit item link
+        Title: trackTimeItem.titleProject,
+        Comments: trackTimeItem.comments,
+        Category1: trackTimeItem.category1,
+        Category2: trackTimeItem.category2,
+        //Leader: IUser,  //Likely single person column
+        //Team: IUser[],  //Likely multi person column
+
+        ProjectID1: trackTimeItem.projectID1,  //Example Project # - look for strings starting with * and ?
+        ProjectID2: trackTimeItem.projectID2,  //Example Cost Center # - look for strings starting with * and ?
+
+        //Values that relate to project list item
+        SourceProject: trackTimeItem.sourceProject, //Link back to the source project list item.
+        Activity: trackTimeItem.activity, //Link to the activity you worked on
+        CCList: trackTimeItem.ccList, //Link to CC List to copy item
+        CCEmail: trackTimeItem.ccEmail, //Email to CC List to copy item 
+        
+        //Values specific to Time Entry
+        User: trackTimeItem.user,  //Single person column
+        StartTime: trackTimeItem.startTime, //Time stamp
+        EndTime: trackTimeItem.endTime, // Time stamp
+        //Duration: trackTimeItem.duration, //Number  -- May not be needed based on current testing with start and end dates.
+
+        //Saves what entry option was used... Since Last, Slider, Manual
+        EntryType: trackTimeItem.entryType,
+        DeltaT: trackTimeItem.deltaT, //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
+        //timeEntryTBD1: string,
+        //timeEntryTBD2: string,
+        //timeEntryTBD3: string,  
+
+        //Other settings and information
+        Location: trackTimeItem.location, // Location
+        Settings: trackTimeItem.settings,
+
+    }
+
+     
+    let useTrackMyTimeList: string = strings.DefaultTrackMyTimeListTitle;
+    if ( this.props.timeTrackListTitle ) {
+      useTrackMyTimeList = this.props.timeTrackListTitle;
+    }
+  
+    let useTrackMyTimeWeb: string = this.props.pageContext.web.absoluteUrl;
+    if ( this.props.timeTrackListWeb ) {
+      useTrackMyTimeWeb = this.props.timeTrackListWeb;
+    }
+
+    let trackTimeWeb = new Web(useTrackMyTimeWeb);
+
+    if (masterOrRemote === 'master'){
+      trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items.add( saveThisItem ).then((response) => {
+        //Reload the page
+        //location.reload();
+          alert('save successful');
+        }).catch((e) => {
+        //Throw Error
+          alert(e);
+      });
+    } else if (masterOrRemote === 'remote'){
+      trackTimeWeb.getList("/sites/Templates/Tmt/Lists/TrackMyTime/").items.add( saveThisItem ).then((response) => {
+        //Reload the page
+        //location.reload();
+          alert('save successful');
+        }).catch((e) => {
+        //Throw Error
+          alert(e);
+      });
+
+    }
 
   }
 
