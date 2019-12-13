@@ -495,13 +495,24 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     };
     
  
-    function buildProjectID <IProjID> (projectID) {
-      let thisProj= {
+    function buildProjectID (projectID) {
+
+      let projectText : string = projectID ;
+      let isRequired : boolean = ( projectText && projectText.indexOf("\*") === 0 ) ? true : false ;
+      let projectString = isRequired ? projectID.substring(1) : projectID;
+      let isDefault : boolean = (projectString && projectString.indexOf("\?") === 0 ) ? true : false ;
+      projectString = isDefault ? projectString.substring(1) : projectString;
+      let lastIndexOfDots : number = projectString ? projectString.lastIndexOf("...") : -1;
+      let prefix : string = (projectString && lastIndexOfDots === projectString.length -3 ) ? projectString.substring(0,lastIndexOfDots) : null ;
+
+      let thisProj : IProjID = {
         value: projectID,
-        required: false,
-        default: 'x' ,
-        defaultIsPrefix: false,
+        required: isRequired,
+        default: projectString ,
+        defaultIsPrefix: lastIndexOfDots > -1 ? true : false ,
+        prefix: prefix,
       };
+
       return thisProj;
     }
 

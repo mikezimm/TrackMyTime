@@ -67,6 +67,7 @@ export interface IProjID {
   required: boolean;
   default: string;
   defaultIsPrefix: boolean;
+  prefix?: string;
 }
 
 export interface IProjectTarget {
