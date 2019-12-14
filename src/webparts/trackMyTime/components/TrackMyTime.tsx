@@ -13,7 +13,7 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
-import {IProject, IProjID, ITimeEntry, IProjectTarget, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
+import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
     
@@ -34,6 +34,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   }
 
+  
   public constructor(props:ITrackMyTimeProps){
     super(props);
     this.state = { 
@@ -473,13 +474,28 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     let selectCols: string = "*";
     let expandThese = "";
+    let peopleColumns = ["Author","Editor","Team","Leader"];
+    let peopleProps = ["Title","ID","Name","EMail","UserName"];
+    let allColumns = [];
 
-    let allColumns = this.getKeysLike(this.props,"col","Begins");
+    for (let peep of peopleColumns){
+      for (let pro of peopleProps){
+        allColumns.push(peep + "/" +  pro)
+      }     
+    }
+
+    console.log('allColumns', allColumns);
+    
     let expColumns = this.getExpandColumns(allColumns);
     let selColumns = this.getSelectColumns(allColumns);
-
+    console.log('expColumns', expColumns);    
+    console.log('selColumns', selColumns);   
     selColumns.length > 0 ? selectCols += "," + selColumns.join(",") : selectCols = selectCols;
     if (expColumns.length > 0) { expandThese = expColumns.join(","); }
+
+    let expandTheseTrack = expandThese + ',User';
+    let selectColsTrack = selectCols + ',User/Title,User/ID,User/Name,User/EMail,User/UserName';   
+    console.log('selColumnsTrack', selectColsTrack);
 
     let projectWeb = new Web(useProjectWeb);
     let trackTimeWeb = new Web(useTrackMyTimeWeb);
@@ -494,18 +510,18 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       timeTrackData: loadTrackMyTimeItems,
     };
     
-    function buildProjectID (projectID) {
+    function buildSmartText (makeThisSmart) {
 
-      let projectText : string = projectID ;
+      let projectText : string = makeThisSmart ;
       let isRequired : boolean = ( projectText && projectText.indexOf("\*") === 0 ) ? true : false ;
-      let projectString = isRequired ? projectID.substring(1) : projectID;
+      let projectString = isRequired ? makeThisSmart.substring(1) : makeThisSmart;
       let isDefault : boolean = (projectString && projectString.indexOf("\?") === 0 ) ? true : false ;
       projectString = isDefault ? projectString.substring(1) : projectString;
       let lastIndexOfDots : number = projectString ? projectString.lastIndexOf("...") : -1;
       let prefix : string = (projectString && lastIndexOfDots === projectString.length -3 ) ? projectString.substring(0,lastIndexOfDots) : null ;
 
-      let thisProj : IProjID = {
-        value: projectID,
+      let thisProj : ISmartText = {
+        value: makeThisSmart,
         required: isRequired,
         default: projectString ,
         defaultIsPrefix: lastIndexOfDots > -1 ? true : false ,
@@ -529,6 +545,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
     .then((response) => {
       trackMyProjectsInfo.projectData = response.map((p) => {
+        console.log('response: Projects', response);
         //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
         let daily: any = false;
         let weekly: any = false;
@@ -558,21 +575,45 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           totalStatus: total ? true : false,
         }
 
+
+        let leader : IUser = {
+          title: 'p.' , //
+          initials: 'p.' , //Single person column
+          email: 'p.' , //Single person column
+          id: p.LeaderId , //
+        }
+
+        let team : IUser = {
+          title: 'p.' , //
+          initials: 'p.' , //Single person column
+          email: 'p.' , //Single person column
+          id: p.TeamId , //
+        }
+
         let project : IProject = {
+          id: p.Id,
+          editLink: null , //Link to view/edit item link
           titleProject: p.Title,
+          comments: buildSmartText(p.Comments),
           active: p.Active,
           everyone: p.Everyone,
           sort: p.Sort,
 
           category1: p.Category1,
           category2: p.Category2,
-          // leader: ,
-          // team: ,
 
-          projectID1: buildProjectID(p.ProjectID1),
-          projectID2: buildProjectID(p.ProjectID2),
+          leader: p.Leader ,
+          team: p.Team,
+
+          leaderId: p.LeaderId,
+          teamIds: p.TeamId,
+
+          projectID1: buildSmartText(p.ProjectID1),
+          projectID2: buildSmartText(p.ProjectID2),
 
           timeTarget: targetInfo,
+          ccEmail: p.CCEmail,
+          ccList: p.CCList,
         
           //Values that relate to project list item
           // sourceProject: , //Add URL back to item
@@ -591,8 +632,9 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
 
     trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items
-    .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
+    .select(selectColsTrack).expand(expandTheseTrack).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
     .then((response) => {
+      console.log('response: timeTrackData', response);
       trackMyProjectsInfo.timeTrackData = response.map((item) => {
         //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
 
@@ -600,12 +642,18 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         let timeEntry : ITimeEntry = {
 
             //Values that would come from Project item
+          id: item.Id ,
+          editLink: null , //Link to view/edit item link
           titleProject : item.Title ,
-          comments: item.Comments ,
+          comments: buildSmartText(item.Comments),
           category1 : item.Category1 ,
           category2 : item.Category2 ,
-          //leader : item.Leader ,  //Likely single person column
-          //team : item.Team ,  //Likely multi person column
+
+          leader : item.Leader ,  //Likely single person column
+          team : item.Team ,  //Likely multi person column
+
+          leaderId: item.LeaderId,
+          teamIds: item.TeamId,
 
           projectID1 : item.ProjectID1 ,  //Example Project # - look for strings starting with * and ?
           projectID2 : item.ProjectID2 ,  //Example Cost Center # - look for strings starting with * and ?
@@ -616,6 +664,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
           //Values specific to Time Entry
           user : item.User ,  //Single person column
+          userId : item.UserId ,  //Single person column
           startTime : item.StartTime , //Time stamp
           endTime : item.EndTime , // Time stamp
           duration : item.Hours , //Number  -- May not be needed based on current testing with start and end dates.
@@ -631,8 +680,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           location : item.Location,
           settings : item.Settings,
 
-        }
+          ccEmail: item.CCEmail,
+          ccList: item.CCList,
 
+        }
+        //this.saveMyTime(timeEntry,'master');
         return timeEntry;
 
       });
@@ -742,6 +794,103 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     saveAnalytics(this.props,this.state);
     
     return true;
+
+  }
+
+  private saveMyTime (trackTimeItem: ITimeEntry , masterOrRemote : string) {
+
+    let teamId = { results: [] };
+    if (trackTimeItem.teamIds) { teamId = { results: trackTimeItem.teamIds } }
+
+    let category1 = { results: [] };
+    if (trackTimeItem.category1) { category1 = { results: trackTimeItem.category1 } }
+
+    let category2 = { results: [] };
+    if (trackTimeItem.category2) { category2 = { results: trackTimeItem.category2 } }
+
+    let saveThisItem = {
+        //Values that would come from Project item
+        //editLink : ILink, //Link to view/edit item link
+        Title: trackTimeItem.titleProject,
+        Comments: trackTimeItem.comments ? trackTimeItem.comments.value : null,
+        Category1: category1,
+        Category2: category2,
+        LeaderId: trackTimeItem.leaderId,  //Likely single person column
+        TeamId: teamId,  //Likely multi person column
+
+        ProjectID1: trackTimeItem.projectID1 ? trackTimeItem.projectID1 : null,  //Example Project # - look for strings starting with * and ?
+        ProjectID2: trackTimeItem.projectID2 ? trackTimeItem.projectID2 : null,  //Example Cost Center # - look for strings starting with * and ?
+
+        //Values that relate to project list item
+        //SourceProject: trackTimeItem.sourceProject, //Link back to the source project list item.
+        Activity: trackTimeItem.activity, //Link to the activity you worked on
+        CCList: trackTimeItem.ccList, //Link to CC List to copy item
+        CCEmail: trackTimeItem.ccEmail, //Email to CC List to copy item 
+        
+        //Values specific to Time Entry
+        UserId: trackTimeItem.userId,  //Single person column
+        StartTime: trackTimeItem.startTime, //Time stamp
+        EndTime: trackTimeItem.endTime, // Time stamp
+        //Duration: trackTimeItem.duration, //Number  -- May not be needed based on current testing with start and end dates.
+
+        //Saves what entry option was used... Since Last, Slider, Manual
+        EntryType: trackTimeItem.entryType,
+        DeltaT: trackTimeItem.deltaT, //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
+        //timeEntryTBD1: string,
+        //timeEntryTBD2: string,
+        //timeEntryTBD3: string,  
+
+        //Other settings and information
+        Location: trackTimeItem.location, // Location
+        Settings: trackTimeItem.settings,
+
+    }
+/*
+    const allKeys = Object.keys(saveThisItem);
+    let saveThisItemNew = {}; 
+    for (let key of allKeys){
+      let thisElement = saveThisItem[key];
+      if (saveThisItem[key]) { saveThisItemNew.push( {key : thisElement})}
+    }
+    */
+     
+    let useTrackMyTimeList: string = strings.DefaultTrackMyTimeListTitle;
+    if ( this.props.timeTrackListTitle ) {
+      useTrackMyTimeList = this.props.timeTrackListTitle;
+    }
+  
+    let useTrackMyTimeWeb: string = this.props.pageContext.web.absoluteUrl;
+    if ( this.props.timeTrackListWeb ) {
+      useTrackMyTimeWeb = this.props.timeTrackListWeb;
+    }
+    //console.log('this.props',this.props);
+    //console.log('this.state',this.state);
+    console.log('trackTimeItem',trackTimeItem);
+    console.log('saveThisItem',saveThisItem);
+
+    
+    let trackTimeWeb = new Web(useTrackMyTimeWeb);
+
+    if (masterOrRemote === 'master'){
+      trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items.add( saveThisItem ).then((response) => {
+        //Reload the page
+        //location.reload();
+          alert('save successful');
+        }).catch((e) => {
+        //Throw Error
+          alert(e);
+      });
+    } else if (masterOrRemote === 'remote'){
+      trackTimeWeb.getList("/sites/Templates/Tmt/Lists/TrackMyTime/").items.add( saveThisItem ).then((response) => {
+        //Reload the page
+        //location.reload();
+          alert('save successful');
+        }).catch((e) => {
+        //Throw Error
+          alert(e);
+      });
+
+    }
 
   }
 
