@@ -684,7 +684,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           ccList: item.CCList,
 
         }
-        this.saveMyTime(timeEntry,'master');
+        //this.saveMyTime(timeEntry,'master');
         return timeEntry;
 
       });
