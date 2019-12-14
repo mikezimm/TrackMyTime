@@ -37,6 +37,8 @@ export interface ITimeEntry {
   category2?: string[];
   leader?: IUser;  //Likely single person column
   team?: IUser[];  //Likely multi person column
+  leaderId?: number;
+  teamIds?: number[];
 
   projectID1?: ISmartText;  //Example Project # - look for strings starting with * and ?
   projectID2?: ISmartText;  //Example Cost Center # - look for strings starting with * and ?
@@ -49,6 +51,7 @@ export interface ITimeEntry {
   
   //Values specific to Time Entry
   user: IUser;  //Single person column
+  userId: number;
   startTime: any; //Time stamp
   endTime: any; // Time stamp
   duration?: any; //Number  -- May not be needed based on current testing with start and end dates.
@@ -98,6 +101,8 @@ export interface IProject {
   category2?: string[];
   leader?: IUser;  //Likely single person column
   team?: IUser[];  //Likely multi person column
+  leaderId?: number;
+  teamIds?: number[];
 
   projectID1?: ISmartText;  //Example Project # - look for strings starting with * and ?
   projectID2?: ISmartText;  //Example Cost Center # - look for strings starting with * and ?
