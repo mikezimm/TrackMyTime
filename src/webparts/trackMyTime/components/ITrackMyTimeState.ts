@@ -40,6 +40,8 @@ export interface ITimeEntry {
   leaderId?: number;
   teamIds?: number[];
 
+  filterFlags?: string[]; // what flags does this match?  yourRecent, allRecent etc...
+
   projectID1?: ISmartText;  //Example Project # - look for strings starting with * and ?
   projectID2?: ISmartText;  //Example Cost Center # - look for strings starting with * and ?
 
@@ -67,6 +69,11 @@ export interface ITimeEntry {
   location?: string; // Location
   settings?: string;
 
+  created?: Date;
+  modified?: Date;
+  createdBy?: Number;
+  modifiedBy?: Number;
+
 }
 
 export interface ISmartText {
@@ -89,14 +96,15 @@ export interface IProjectTarget {
 
 export interface IProject {
   //Values that would come from Project item
+  projectType?: string; //master or user
   id?: any; //Item ID on list
   editLink? : ILink; //Link to view/edit item link
-  titleProject: string;
+  titleProject?: string;
   comments?: ISmartText; // syntax similar to ProjID?
-  active: boolean;  //Used to indicate inactive projects
+  active?: boolean;  //Used to indicate inactive projects
   everyone?: boolean; //Used to designate this option should be available to everyone.
-  sort: number; //Used to prioritize in choices.... ones with number go first in order, followed by empty
-
+  sort?: number; //Used to prioritize in choices.... ones with number go first in order, followed by empty
+  key?: string;
   category1?: string[];
   category2?: string[];
   leader?: IUser;  //Likely single person column
@@ -104,10 +112,12 @@ export interface IProject {
   leaderId?: number;
   teamIds?: number[];
 
+  filterFlags?: string[]; // what flags does this match?  yourRecent, allRecent etc...
+
   projectID1?: ISmartText;  //Example Project # - look for strings starting with * and ?
   projectID2?: ISmartText;  //Example Cost Center # - look for strings starting with * and ?
 
-  timeTarget: IProjectTarget;
+  timeTarget?: IProjectTarget;
 
   //This might be computed at the time page loads
   lastEntry?: any;  //Should be a time entry
@@ -117,6 +127,11 @@ export interface IProject {
   ccList?: ILink; //Link to CC List to copy item
   ccEmail?: string; //Email to CC List to copy item 
 
+  created?: Date;
+  modified?: Date;
+  createdBy?: Number;
+  modifiedBy?: Number;
+
 }
 
 export interface IProjects {
@@ -125,17 +140,20 @@ export interface IProjects {
 
 export interface IProjectInfo {
 
-  all: IProjects[];
-  master: IProjects[]; //Projects coming from the Projects list
-  user: IProjects[]; //Projects coming from TrackMyTime list
-  masterPriority: IProjects[]; //Projects visible based on settings
-  userPriority: IProjects[]; //Projects visible based on settings
-  current: IProjects[]; //Makes up the choices
-  lastFiltered: IProjects[];
+  all: IProject[];
+  master: IProject[]; //Projects coming from the Projects list
+  masterKeys: string[];
+  user: IProject[]; //Projects coming from TrackMyTime list
+  userKeys: string[],
+  masterPriority: IProject[]; //Projects visible based on settings
+  userPriority: IProject[]; //Projects visible based on settings
+  current: IProject[]; //Makes up the choices
+  lastFiltered: IProject[];
   lastProject: IProject[];
-  newFiltered: IProjects[];
+  newFiltered: IProject[];
   
 }
+
 
 export interface ITrackMyTimeState {
 
@@ -159,6 +177,10 @@ export interface ITrackMyTimeState {
   pivotDefSelKey?: string;
   onlyActiveProjects?: boolean, //Only read in active projects.
 
+  userCounts?: any;  // user based (from trackTimeList) projects that are assigned to current user.
+  projectCounts?: any;  // project based (from trackTimeList) projects that are assigned to current user.
+  allCounts?: any;
+
   // 5 - UI Defaults
   currentProjectPicker: string; //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
   currentTimePicker: string; //User selection of :defaultTimePicker  SinceLast, Slider, Manual???
@@ -180,20 +202,29 @@ export interface ITrackMyTimeState {
 
   // 9 - Other web part options
 
+
   loadStatus?: string;
+
+  projectsLoadStatus?: string;
+  projectsLoadError?: string;
+  projectsListError: boolean;
+  projectsItemsError: boolean;
+
+  timeTrackerLoadStatus?: string;
+  timeTrackerLoadError?: string;
+  timeTrackerListError: boolean;
+  timeTrackerItemsError: boolean;
 
   showTips?: string;
   loadError?: string;
 
   listError?: boolean;
   itemsError?: boolean;
-  heroError?: boolean;
 
   searchType?: string;
   searchShow?: boolean;
   searchCount?: number;
   searchWhere?: string;
-
 
 }
 

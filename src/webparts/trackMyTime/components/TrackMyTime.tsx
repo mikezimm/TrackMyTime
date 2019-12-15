@@ -16,7 +16,9 @@ import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services
 import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
-    
+  
+
+
   private createprojectInfo() {
 
     let projectInfo = {} as IProjectInfo;
@@ -76,7 +78,16 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       // 9 - Other web part options
 
-      loadStatus:"Loading",
+      projectsLoadStatus:"Loading",
+      projectsLoadError: "",
+      projectsListError: false,
+      projectsItemsError: false,
+
+      timeTrackerLoadStatus:"Loading",
+      timeTrackerLoadError: "",
+      timeTrackerListError: false,
+      timeTrackerItemsError: false,
+
       showTips: "none",
       loadError: "",
 
@@ -105,6 +116,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   public componentDidMount() {
     this._getListItems();
+    
   }
   
   public componentDidUpdate(prevProps){
@@ -117,8 +129,30 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     }
   }
 
+  public createProjectChoices(thisState){
+    let elemnts = [];
+    if (thisState.projects.all[0]){
+      elemnts = thisState.projects.all.map(project => (
+        <div>
+          { project.titleProject } { project.category1 } { project.category2 }
+        </div>
+        ));
+    }
+    return ( elemnts );
+  }
 
-
+  
+  public createHistoryItems(thisState){
+    let elemnts = [];
+    if (thisState.recentEntries[0]){
+      elemnts = thisState.recentEntries.map(project => (
+        <div>
+          { project.titleProject } { project.startTime } { project.endTime }
+        </div>
+        ));
+    }
+    return ( elemnts );
+  }
 
   public render(): React.ReactElement<ITrackMyTimeProps> {
     return (
@@ -127,11 +161,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           <div className={ styles.row }>
             <div className={ styles.column }>
               <span className={ styles.title }>Welcome to SharePoint!</span>
-              <p className={ styles.subTitle }>Customize SharePoint experiences using Web Parts.</p>
-              <p className={ styles.description }>{escape(this.props.description)}</p>
-              <a href="https://aka.ms/spfx" className={ styles.button }>
-                <span className={ styles.label }>Learn more</span>
-              </a>
+
+                { this.createProjectChoices(this.state) }
+                { this.createHistoryItems(this.state) }
+                
+
             </div>
           </div>
         </div>
@@ -468,9 +502,14 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     
     //const fixedURL = Utils.fixURLs(this.props.listWebURL, this.props.pageContext);
 
-    let restFilter: string = "";
+    let projectSort: string = "SortOrder";
+    let trackTimeSort: string = "EndTime";
 
-    let restSort: string = "Title";
+//    let projectRestFilter: string = "Team eq '" + 20 + "'";
+//    let trackTimeRestFilter: string = "User eq '" + 20 + "'";
+
+    let projectRestFilter: string = "";
+    let trackTimeRestFilter: string = "";
 
     let selectCols: string = "*";
     let expandThese = "";
@@ -484,18 +523,14 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       }     
     }
 
-    console.log('allColumns', allColumns);
-    
     let expColumns = this.getExpandColumns(allColumns);
     let selColumns = this.getSelectColumns(allColumns);
-    console.log('expColumns', expColumns);    
-    console.log('selColumns', selColumns);   
+ 
     selColumns.length > 0 ? selectCols += "," + selColumns.join(",") : selectCols = selectCols;
     if (expColumns.length > 0) { expandThese = expColumns.join(","); }
 
     let expandTheseTrack = expandThese + ',User';
     let selectColsTrack = selectCols + ',User/Title,User/ID,User/Name,User/EMail,User/UserName';   
-    console.log('selColumnsTrack', selectColsTrack);
 
     let projectWeb = new Web(useProjectWeb);
     let trackTimeWeb = new Web(useTrackMyTimeWeb);
@@ -542,10 +577,9 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
  */
 
     projectWeb.lists.getByTitle(useProjectList).items
-    .select(selectCols).expand(expandThese).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
+    .select(selectCols).expand(expandThese).filter(projectRestFilter).orderBy(projectSort,true).inBatch(batch).getAll()
     .then((response) => {
       trackMyProjectsInfo.projectData = response.map((p) => {
-        console.log('response: Projects', response);
         //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
         let daily: any = false;
         let weekly: any = false;
@@ -591,6 +625,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         }
 
         let project : IProject = {
+          projectType: 'Master',
           id: p.Id,
           editLink: null , //Link to view/edit item link
           titleProject: p.Title,
@@ -608,6 +643,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           leaderId: p.LeaderId,
           teamIds: p.TeamId,
 
+          filterFlags: [],
+
           projectID1: buildSmartText(p.ProjectID1),
           projectID2: buildSmartText(p.ProjectID2),
 
@@ -622,19 +659,20 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         return project;
 
       });
-      console.log('trackMyProjectsInfo:', trackMyProjectsInfo);
-      return trackMyProjectsInfo.projectData;
+      //console.log('trackMyProjectsInfo:', trackMyProjectsInfo);
+      this.processProjects(trackMyProjectsInfo.projectData);
+      //return trackMyProjectsInfo.projectData;
 
     }).catch((e) => {
       this.processCatch(e);
     });
 
-
+    //trackTimeSort
 
     trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items
-    .select(selectColsTrack).expand(expandTheseTrack).filter(restFilter).orderBy(restSort,true).inBatch(batch).getAll()
+    .select(selectColsTrack).expand(expandTheseTrack).filter(trackTimeRestFilter).orderBy(trackTimeSort,false).top(200).inBatch(batch).get()
     .then((response) => {
-      console.log('response: timeTrackData', response);
+      //console.log('response: timeTrackData', response);
       trackMyProjectsInfo.timeTrackData = response.map((item) => {
         //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
 
@@ -655,8 +693,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           leaderId: item.LeaderId,
           teamIds: item.TeamId,
 
-          projectID1 : item.ProjectID1 ,  //Example Project # - look for strings starting with * and ?
-          projectID2 : item.ProjectID2 ,  //Example Cost Center # - look for strings starting with * and ?
+          filterFlags: [],
+
+          projectID1 : buildSmartText(item.ProjectID1) ,  //Example Project # - look for strings starting with * and ?
+          projectID2 : buildSmartText(item.ProjectID2) ,  //Example Cost Center # - look for strings starting with * and ?
 
           //Values that relate to project list item
           sourceProject : item.SourceProject , //Link back to the source project list item.
@@ -688,16 +728,17 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         return timeEntry;
 
       });
-      console.log('trackMyProjectsInfo 2a:', trackMyProjectsInfo);
-      return trackMyProjectsInfo.timeTrackData;
+      
+      this.processTimeEntries(trackMyProjectsInfo.timeTrackData);
 
     }).catch((e) => {
       this.processCatch(e);
     });
 
     return batch.execute().then(() => {
-      console.log('trackMyProjectsInfo 3:', trackMyProjectsInfo);
-        return trackMyProjectsInfo;
+
+      //this.processResponse(trackMyProjectsInfo);
+      //return trackMyProjectsInfo;
     });
 
   }  
@@ -714,14 +755,204 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   }
 
-  private processResponse(response){
+  private processProjects(projectData){
+    //projectData
+    //console.log('projectData:  ', projectData);
 
-    if (response.length === 0){
+    /**
+     * Things we need to do during intial state
+     * Populate all these arrays:
+     * 
+          all: IProject[];
+          master: IProject[]; //Projects coming from the Projects list
+          masterPriority: IProject[]; //Projects visible based on settings
+          
+          current: IProject[]; //Makes up the choices
+          lastFiltered: IProject[];
+          lastProject: IProject[];
+          newFiltered: IProject[];
+            
+      *   Put them into state.projects
+      */
+     let master: IProject[] = [];
+      let masterKeys: string[] = [];
+
+     let userId = 20;
+     for (let i = 0; i < projectData.length; i++ ) {
+      let countThese = "all";
+      let fromProject = projectData[i];
+      let yours, team :boolean = false;
+
+      //Check if project is tagged to you
+      if (fromProject.teamIds && fromProject.teamIds.indexOf(userId) > -1 ) { team = true } ;
+      if (fromProject.leaderId === userId ) { yours = true } ;
+      if (yours) { fromProject.filterFlags.push('your') ; countThese = 'your' }
+      else if (team) { fromProject.filterFlags.push('team') ; countThese = 'team' }
+      fromProject.key = this.getProjectKey(fromProject);
+      if (masterKeys.indexOf(fromProject.key) < 0) { 
+        //This is a new project, add
+        master.push(fromProject);
+        masterKeys.push(fromProject.key);
+      }
+    }
+
+     let all: IProject[] = master.concat(this.state.projects.all);
+     let stateProjects = this.state.projects;
+     stateProjects.all = all;
+     stateProjects.master = master;
+     stateProjects.masterKeys = masterKeys;
+     let masterPriority: IProject[] = [];
+
+     if (this.state.timeTrackerLoadStatus === "Complete") { 
+       console.log('all complete 1');
+        /*NEED TO MERGE PROJECTS */ 
+        console.log(this.state);
+        console.log(stateProjects);
+      } else { console.log('processProjects complete 2') }
+
+    this.setState({  
+      projects: stateProjects,
+      projectsLoadStatus:"Complete",
+      projectsLoadError: "",
+      projectsListError: false,
+      projectsItemsError: false,
+    });
+
+  }
+
+  private createNewProjectCounts() {
+    function createMe(){
+      let yourCounts = {
+        total: 0,
+        today: 0,
+        week: 0,
+        month: 0,
+        quarter: 0,
+        recent: 0,
+      }
+      return yourCounts;
+    }
+    let counts = {
+      all: createMe(),
+      team: createMe(),
+      your: createMe(),
+    }
+
+    return counts;
+
+  }
+
+  private processTimeEntries(timeTrackData){
+    //trackMyProjectsInfo
+    //console.log('timeTrackData:  ', timeTrackData);
+    
+    /**
+      * Things we need to do during intial state
+      * Populate all these arrays:
+      *    user: IProject[]; //Projects coming from TrackMyTime list
+      *    userPriority: IProject[]; //Projects visible based on settings
+      *   Put them into state.projects
+    */
+    let counts = this.createNewProjectCounts();
+    let userKeys : string[] = [];
+
+    let user: IProject[] = [];
+    let userPriority: IProject[] = [];
+
+    let stateProjects = this.state.projects;
+    let userId = 20;
+    let recentDays = 4;
+    for (let i = 0; i < timeTrackData.length; i++ ) {
+      let countThese = "all";
+      let fromProject = this.convertToProject(timeTrackData[i]);
+      let yours, team, today, week, month, quarter, recent :boolean = false;
+
+      //Check if timeTrackData is tagged to you 
+      if (timeTrackData[i].userId === userId ) { yours = true } ;
+      if (yours) { fromProject.filterFlags.push('your') ; countThese = 'your' }
+
+      //Check if project is tagged to you
+      if (fromProject.teamIds.indexOf(userId) > -1 ) { team = true } ;
+      if (fromProject.leaderId === userId ) { team = true } ;
+      if (!yours  && team) { fromProject.filterFlags.push('team') ; countThese = 'team' }
+
+      let now = new Date();
+      let then = new Date(timeTrackData[i].endTime);
+      let daysSince = (now.getTime() - then.getTime()) / (1000 * 60 * 60 * 24);
+      counts[countThese].total ++;
+
+      if ( daysSince <= 1 ) { today = true;  fromProject.filterFlags.push('today') ; counts[countThese].today ++ }
+      else if ( daysSince <= 7 ) { week = true;  fromProject.filterFlags.push('week') ; counts[countThese].week ++ }
+      else if ( daysSince <= 31 ) { month = true;  fromProject.filterFlags.push('month') ; counts[countThese].month ++ }
+      else if ( daysSince <= 91 ) { month = true;  fromProject.filterFlags.push('quarter') ; counts[countThese].quarter ++ }
+      else if ( daysSince <= recentDays ) { recent = true; fromProject.filterFlags.push('recent') ; counts[countThese].recent ++ }
+      
+      if (userKeys.indexOf(fromProject.key) < 0) { 
+        //This is a new project, add
+        user.push(fromProject);
+        userKeys.push(fromProject.key);
+      }
+
+    }
+    //console.log('counts:', counts);
+    //console.log('userKeys:', userKeys);
+
+    /*
+     {   index: 0,   key: 'yourRecent', text: "Your most recently used"  },
+     {   index: 1,   key: 'yourToday', text: "Yours from today"  },
+     {   index: 2,   key: 'yourWeek', text: "Yours from last week"  },
+     {   index: 3,   key: 'allRecent', text: "All most recently used"  },
+     {   index: 4,   key: 'allToday', text: "All from today"  },
+     {   index: 5,   key: 'allWeek', text: "All from last week"  },
+    */
+
+   let all: IProject[] = this.state.projects.all.concat(user);
+   stateProjects.all = all;
+   stateProjects.user = user;
+   stateProjects.userKeys = userKeys;
+   
+   if (this.state.projectsLoadStatus === "Complete") { 
+    console.log('all complete 3');
+     /*NEED TO MERGE PROJECTS */ 
+     console.log(this.state);
+     console.log(stateProjects);
+   } else { console.log('processTimeEntries complete 4') }
+
+   this.setState({
+    projects: stateProjects,
+    userCounts: counts,
+    recentEntries: timeTrackData,
+    timeTrackerLoadStatus:"Complete",
+    timeTrackerLoadError: "",
+    timeTrackerListError: false,
+    timeTrackerItemsError: false,
+   });
+
+  }
+
+  private processResponse(trackMyProjectsInfo){
+    //trackMyProjectsInfo
+    console.log('processResponse:  trackMyProjectsInfo', trackMyProjectsInfo);
+
+    return;
+    console.log('trackMyProjectsInfo.projectData', trackMyProjectsInfo.projectData);
+    console.log('trackMyProjectsInfo.timeTrackData', trackMyProjectsInfo.timeTrackData);
+
+
+    let all: IProject[] = trackMyProjectsInfo.projectData;
+
+    let recentEntries: ITimeEntry[] = trackMyProjectsInfo.timeTrackData;
+    console.log('processResponse:  all', all);
+    console.log('processResponse:  recentEntries', recentEntries);
+
+    return;
+
+    if (trackMyProjectsInfo.length === 0){
       this.setState({  loadStatus: "NoItemsFound", itemsError: true,  });
       return ;
     }
 
-    console.log(response);
+    console.log(trackMyProjectsInfo);
 
 
     /*
@@ -794,6 +1025,78 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     saveAnalytics(this.props,this.state);
     
     return true;
+
+  }
+
+  /**
+   * This builds unique string key based on properties passed in through this.props.projectKey
+   * @param project 
+   */
+  private getProjectKey(project){
+
+    let key = "";
+    for (let k of this.props.projectKey ){
+      //console.log('timeTrackData',timeTrackData[k])
+      let partialKey = project[k];
+      if ( k === 'comments' || k === 'projectID1' || k === 'projectID2' || k === 'timeTarget') {
+        //These properties have custom object model to them so we need to check the .value
+        if ( project[k] ) { partialKey = project[k].value } else { partialKey = '' }
+      }
+      if ( typeof partialKey === 'object') {
+        if (partialKey) { key += partialKey.join(' '); }
+      } else if (partialKey) { key += partialKey;}
+      key += ' ';
+    }
+
+    return key;
+
+  }
+
+  private convertToProject(timeTrackData){
+
+    let thisProject: IProject = {
+
+        //Values that would come from Project item
+      projectType: 'User', //master or user
+      id: timeTrackData.id, //Item ID on list
+      editLink: timeTrackData.editLink, //Link to view/edit item link
+      titleProject: timeTrackData.titleProject,
+      comments: timeTrackData.comments, // syntax similar to ProjID?
+      active: timeTrackData.active,  //Used to indicate inactive projects
+      everyone: timeTrackData.everyone, //Used to designate this option should be available to everyone.
+      sort: timeTrackData.sort, //Used to prioritize in choices.... ones with number go first in order, followed by empty
+      key: this.getProjectKey(timeTrackData),
+
+      category1: timeTrackData.category1,
+      category2: timeTrackData.category2,
+      leader: timeTrackData.leader,  //Likely single person column
+      team: timeTrackData.team,  //Likely multi person column
+      leaderId: timeTrackData.leaderId,
+      teamIds: timeTrackData.teamIds ? timeTrackData.teamIds : [] ,
+
+      filterFlags: [], // what flags does this match?  yourRecent, allRecent etc...
+
+      projectID1: timeTrackData.projectID1,  //Example Project # - look for strings starting with * and ?
+      projectID2: timeTrackData.projectID2,  //Example Cost Center # - look for strings starting with * and ?
+
+      timeTarget: timeTrackData.timeTarget,
+
+      //This might be computed at the time page loads
+      lastEntry: timeTrackData.lastEntry,  //Should be a time entry
+
+      //Values that relate to project list item
+      sourceProject: timeTrackData.sourceProject, //Link back to the source project list item.
+      ccList: timeTrackData.ccList, //Link to CC List to copy item
+      ccEmail: timeTrackData.ccEmail, //Email to CC List to copy item 
+
+      created: timeTrackData.created,
+      modified: timeTrackData.modified,
+      createdBy: timeTrackData.createdBy,
+      modifiedBy: timeTrackData.modifiedBy,
+
+    };
+
+    return thisProject;
 
   }
 
