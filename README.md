@@ -5,8 +5,9 @@ This is where you include your WebPart documentation.
 ### Additional npm installs
 ```
 //Copied from Pivot-Tiles
-npm install @pnp/logging @pnp/common @pnp/odata @pnp/sp --save (Done Dec 11)
-npm install @microsoft/sp-page-context (Done Dec 11)
+npm install @pnp/logging @pnp/common @pnp/odata @pnp/sp --save ( Done Dec 11 )
+npm install @microsoft/sp-page-context ( Done Dec 11 )
+npm install @pnp/spfx-property-controls ( Dec 13 )
 npm install @pnp/sp  ( Required to get list items from web )
 npm install --save @pnp/polyfill-ie11 ( Required for Internet Explorer Expand/Select calls )
 npm install @pnp/spfx-controls-react --save --save-exact

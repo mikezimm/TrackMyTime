@@ -200,8 +200,8 @@ export interface ITrackMyTimeState {
   timeSliderValue: number; //incriment of time slider
 
   //These maybe other choices end user can use to find projects?
-  projectMasterPriorityChoice?: string; //Use to determine what projects float to top.... your most recent?  last day?
-  projectUserPriorityChoice?: string; //Use to determine what projects float to top.... your most recent?  last day?
+  projectMasterPriorityChoice?: string;  //Yours, Team, Others - Choice is the current one selected
+  projectUserPriorityChoice?: string;  //Yours, Team, Others - Choice is the current one selected
 
   // 9 - Other web part options
 

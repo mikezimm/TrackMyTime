@@ -57,10 +57,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       // 4 -Project options
       projects: this.createprojectInfo(),
       
-      pivtTitles:['Yours', 'Your Team','Others'],
+      pivtTitles:['Yours', 'Your Team','Everyone','Others'],
       filteredCategory: this.props.defaultProjectPicker,
       pivotDefSelKey:"",
       onlyActiveProjects: this.props.onlyActiveProjects,
+      projectType: this.props.projectType,
 
       // 5 - UI Defaults
       currentProjectPicker: '', //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
@@ -76,8 +77,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       // 7 - Slider Options
       timeSliderValue: 0,  //incriment of time slider
-      projectMasterPriorityChoice: '', //Use to determine what projects float to top.... your most recent?  last day?
-      projectUserPriorityChoice: '',  //Use to determine what projects float to top.... your most recent?  last day?
+      projectMasterPriorityChoice: this.props.projectMasterPriority, //Use to determine what projects float to top.... your most recent?  last day?
+      projectUserPriorityChoice: this.props.projectUserPriority,  //Use to determine what projects float to top.... your most recent?  last day?
 
       // 9 - Other web part options
 
@@ -138,14 +139,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     if (thisState.projects.all[0]){
       elemnts = thisState.projects.newFiltered.map(project => (
         <div>
-          { project.titleProject } { project.category1 } { project.category2 }
+          { project.projectType } <span>: </span>{ project.titleProject } <span> - </span>{ project.category1 } <span> - </span>{ project.category2 }
         </div>
         ));
     }
     return ( elemnts );
   }
 
-  
   public createHistoryItems(thisState){
     let elemnts = [];
     if (thisState.filteredEntries[0]){
@@ -174,8 +174,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   public render(): React.ReactElement<ITrackMyTimeProps> {
 
 
-    const defIndex = (this.state.pivotDefSelKey === '') ? Utils.convertCategoryToIndex(this.props.pivotTab) : Utils.convertCategoryToIndex(this.state.pivotDefSelKey);
-
+    let setPivot = !this.state.projectType ? this.state.projectMasterPriorityChoice :this.state.projectUserPriorityChoice ;
+    console.log('render defIndex:', setPivot);
     console.log('render props:', this.props);
     console.log('render state:', this.state);    
 
@@ -189,7 +189,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
               linkSize= { pivotOptionsGroup.getPivSize(this.props.pivotSize) }
               linkFormat= { pivotOptionsGroup.getPivFormat(this.props.pivotFormat) }
               onLinkClick= { this.onLinkClick.bind(this) }  //{this.specialClick.bind(this)}
-              defaultSelectedKey={ defIndex }
+              selectedKey={ setPivot }
               headersOnly={true}>
                 {this.createPivots(this.state,this.props)}
             </Pivot>
@@ -199,6 +199,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         </div>
 
           { this.createProjectChoices(this.state) }
+          <div></div><div><br/><br/></div>
           { this.createHistoryItems(this.state) }
 
         </div>
@@ -307,11 +308,12 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       //Filter tiles per clicked category
 
+      /*
       const defaultSelectedIndex = this.state.pivtTitles.indexOf(item.props.headerText);
       let defaultSelectedKey = defaultSelectedIndex.toString();
       defaultSelectedKey = item.props.headerText.toString();  // Added this because I think this needs to be the header text, not the index.
       defaultSelectedKey = Utils.convertCategoryToIndex(defaultSelectedKey);
-
+*/
 
 
 //      newFiltered = this.getOnClickFilteredProjects(pivotProps, pivotState, newCollection, heroIds, newHeros, thisCatColumn, lastCategory)
@@ -320,28 +322,31 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
 
       console.log('onLinkClick: this.state', this.state);
-      console.log('onLinkClick: item.props.headerText', item.props.headerText);
-      console.log('onLinkClick: defaultSelectedIndex', defaultSelectedIndex);
-      console.log('onLinkClick: defaultSelectedKey', defaultSelectedKey);
+//      console.log('onLinkClick: item.props.headerText', item.props.headerText);
+//      console.log('onLinkClick: defaultSelectedIndex', defaultSelectedIndex);
+//      console.log('onLinkClick: defaultSelectedKey', defaultSelectedKey);
       
       let thisFilter = [];
       if (item.props.headerText.toLowerCase().indexOf('team') > -1) { thisFilter.push('team')}
       else if (item.props.headerText.toLowerCase().indexOf('your') > -1) { thisFilter.push('your')}
+      else if (item.props.headerText.toLowerCase().indexOf('everyone') > -1) { thisFilter.push('everyone')}
       else { thisFilter.push('otherPeople')}
 
       let projects = this.state.projects;
-
-      projects.lastFiltered = projects.newFiltered;    
-      projects.newFiltered = this.getTheseProjects(this.state ,this.state.projectType, thisFilter);
+      projects.lastFiltered = projects.newFiltered;
+      let filterThese = this.state.projectType ? projects.user : projects.master ;
+      projects.newFiltered = this.getTheseProjects(filterThese, thisFilter);
       //projects.lastFiltered = (searchType === 'all' ? this.state.projects.all : this.state.lastFilteredProjects );
 
       this.setState({
         filteredCategory: item.props.headerText,
+        projectMasterPriorityChoice: !this.state.projectType ? thisFilter[0] : this.state.projectMasterPriorityChoice,
+        projectUserPriorityChoice: this.state.projectType ? thisFilter[0] : this.state.projectUserPriorityChoice,
         projects: projects,
         //searchCount: newFilteredProjects.length,
         searchType: '',
         searchWhere: ' in ' + item.props.headerText,
-        pivotDefSelKey: defaultSelectedKey,
+        //pivotDefSelKey: defaultSelectedKey,
 
       });
 
@@ -349,13 +354,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   } //End onClick
 
-  public getTheseProjects(thisState: ITrackMyTimeState ,projectType: boolean, filterFlags : string[]){
+  public getTheseProjects(startingProjects: IProject[], filterFlags : string[]){
 
-    let startingProjects: IProject[] = [];
+    console.log('getTheseProjects: filterFlags', filterFlags);
+
     let filteredProjects: IProject[] = [];
-    if (projectType === false) {
-      startingProjects = thisState.projects.master;
-    } else {startingProjects = thisState.projects.user;}
 
     if (filterFlags.length === 0) {
       return startingProjects;
@@ -366,6 +369,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         filteredProjects.push(thisItem);
       }
     }
+    console.log('getTheseProjects: filteredProjects', filteredProjects);
     return filteredProjects;
   }
   
@@ -378,8 +382,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     console.log('toggleType from ' +  this.state.projectType + ' to ' + newProjectType);
     let projects = this.state.projects;
 
-    projects.lastFiltered = projects.newFiltered;    
-    projects.newFiltered = this.getTheseProjects(this.state ,newProjectType, []);
+    projects.lastFiltered = projects.newFiltered;
+    let filterThese = newProjectType ? projects.user : projects.master ;
+
+    let setPivot = newProjectType ? this.state.projectUserPriorityChoice  :this.state.projectMasterPriorityChoice ;
+    projects.newFiltered = this.getTheseProjects(filterThese, [setPivot]);
     
     this.setState({
       projectType: newProjectType,
@@ -539,10 +546,24 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   //http://react.tips/how-to-create-reactjs-components-dynamically/ - based on createImage
   public createPivot(pivT) {
-    console.log('createPivot: ', pivT);
+    //console.log('createPivot: ', pivT);
     const thisItemKey :string = Utils.convertCategoryToIndex(pivT);
       return (
-        <PivotItem headerText={pivT} itemKey={thisItemKey}/>
+        <PivotItem 
+        headerText={pivT} 
+        itemKey={thisItemKey}
+        //https://github.com/OfficeDev/office-ui-fabric-react/issues/4066#issuecomment-487705294
+        //
+        /*
+        <Pivot styles={{ 
+          linkIsSelected: { width: '25%' }, 
+          link: { width: '25%' }, 
+          text: { overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }
+         }}
+        */
+        //style={linkIsSelected='true'}
+        
+        />
       );
   }
 
@@ -552,7 +573,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
        thisState.pivtTitles.push(thisProps.otherTab);
     }
     let piv = thisState.pivtTitles.map(this.createPivot);
-    console.log('createPivots: ', piv);
+    //console.log('createPivots: ', piv);
     return (
       piv
     );
@@ -903,7 +924,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       //Check if project is tagged to you
       if (fromProject.teamIds && fromProject.teamIds.indexOf(userId) > -1 ) { team = true } ;
       if (fromProject.leaderId === userId ) { yours = true } ;
-      if (yours) { fromProject.filterFlags.push('your') ; countThese = 'your' }
+      if (fromProject.everyone) { fromProject.filterFlags.push('everyone') ; countThese = 'everyone' }
+      else if (yours) { fromProject.filterFlags.push('your') ; countThese = 'your' }
       else if (team) { fromProject.filterFlags.push('team') ; countThese = 'team' }
       else { fromProject.filterFlags.push('otherPeople') ; countThese = 'otherPeople' }
       fromProject.key = this.getProjectKey(fromProject);
@@ -914,13 +936,20 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       }
     }
 
+
      let all: IProject[] = master.concat(this.state.projects.all);
      let stateProjects = this.state.projects;
+
      stateProjects.all = all;
      stateProjects.master = master;
      stateProjects.masterKeys = masterKeys;
-     stateProjects.lastFiltered = all;
-     stateProjects.newFiltered = all;
+
+     let filterThese = this.state.projectType ? stateProjects.user : stateProjects.master ;
+
+     let setPivot = !this.state.projectType ? this.state.projectMasterPriorityChoice :this.state.projectUserPriorityChoice ;
+     stateProjects.newFiltered = this.getTheseProjects(filterThese, [setPivot]);
+     stateProjects.lastFiltered = this.state.projectType === false ? master : stateProjects.user ;
+
      let masterPriority: IProject[] = [];
 
      if (this.state.timeTrackerLoadStatus === "Complete") { 
@@ -995,6 +1024,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       //Check if project is tagged to you
       if (fromProject.teamIds.indexOf(userId) > -1 ) { team = true } ;
       if (fromProject.leaderId === userId ) { team = true } ;
+      
       if (!yours  && team) { fromProject.filterFlags.push('team') ; countThese = 'team' }
       if (!yours && !team) { fromProject.filterFlags.push('otherPeople') ; countThese = 'otherPeople' }
 
@@ -1031,8 +1061,12 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
    let all: IProject[] = this.state.projects.all.concat(user);
    stateProjects.all = all;
    stateProjects.user = user;
-   stateProjects.lastFiltered = all;
-   stateProjects.newFiltered = all;
+
+   let filterThese = this.state.projectType ? stateProjects.user : stateProjects.master ;
+   let setPivot = !this.state.projectType ? this.state.projectMasterPriorityChoice :this.state.projectUserPriorityChoice ;
+   stateProjects.newFiltered = this.getTheseProjects(filterThese, [setPivot]);
+   stateProjects.lastFiltered = stateProjects.newFiltered ;
+
    stateProjects.userKeys = userKeys;
    
    if (this.state.projectsLoadStatus === "Complete") { 
