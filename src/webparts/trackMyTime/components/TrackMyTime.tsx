@@ -8,12 +8,14 @@ import { Pivot, PivotItem, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabr
 import { DefaultButton, autobind } from 'office-ui-fabric-react';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 import { Link } from 'office-ui-fabric-react/lib/Link';
+import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 
 import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
 import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
+import { pivotOptionsGroup, } from '../../../services/propPane';
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
   
@@ -55,7 +57,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       // 4 -Project options
       projects: this.createprojectInfo(),
       
-      pivtTitles:[],
+      pivtTitles:['Yours', 'Your Team','Others'],
       filteredCategory: this.props.defaultProjectPicker,
       pivotDefSelKey:"",
       onlyActiveProjects: this.props.onlyActiveProjects,
@@ -69,7 +71,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       showElapsedTimeSinceLast: true,  // Idea is that it can be like a clock showing how long it's been since your last entry.
       elapsedTime: 0,   //Elapsed Time since last entry
 
-      recentEntries: [],  //List of recent entries
+      allEntries: [], // List of all entries
+      filteredEntries: [],  //List of recent entries
 
       // 7 - Slider Options
       timeSliderValue: 0,  //incriment of time slider
@@ -105,6 +108,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     //  the component to the function so it can get access to the
     //  components properties (this.props)... otherwise "this" is undefined
     this.onLinkClick = this.onLinkClick.bind(this);
+    this.toggleType = this.toggleType.bind(this);
     this.toggleTips = this.toggleTips.bind(this);
     this.minimizeTiles = this.minimizeTiles.bind(this);
     this.searchMe = this.searchMe.bind(this);
@@ -132,7 +136,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   public createProjectChoices(thisState){
     let elemnts = [];
     if (thisState.projects.all[0]){
-      elemnts = thisState.projects.all.map(project => (
+      elemnts = thisState.projects.newFiltered.map(project => (
         <div>
           { project.titleProject } { project.category1 } { project.category2 }
         </div>
@@ -144,8 +148,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   
   public createHistoryItems(thisState){
     let elemnts = [];
-    if (thisState.recentEntries[0]){
-      elemnts = thisState.recentEntries.map(project => (
+    if (thisState.filteredEntries[0]){
+      elemnts = thisState.filteredEntries.map(project => (
         <div>
           { project.titleProject } { project.startTime } { project.endTime }
         </div>
@@ -154,20 +158,49 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     return ( elemnts );
   }
 
+  public createProjectTypeToggle(thisState){
+
+    let togglePart = <Toggle label="" 
+      onText={strings.ToggleLabel_History } 
+      offText={strings.ToggleLabel_Projects} 
+      onChange={this.toggleType.bind(this)} 
+      checked={this.state.projectType}
+      styles={{ root: { width: 120 } }}
+      />
+    return togglePart;
+
+  }
+
   public render(): React.ReactElement<ITrackMyTimeProps> {
+
+
+    const defIndex = (this.state.pivotDefSelKey === '') ? Utils.convertCategoryToIndex(this.props.pivotTab) : Utils.convertCategoryToIndex(this.state.pivotDefSelKey);
+
+    console.log('render props:', this.props);
+    console.log('render state:', this.state);    
+
     return (
       <div className={ styles.trackMyTime }>
         <div className={ styles.container }>
-          <div className={ styles.row }>
-            <div className={ styles.column }>
-              <span className={ styles.title }>Welcome to SharePoint!</span>
+        <div className={styles.floatLeft}>
 
-                { this.createProjectChoices(this.state) }
-                { this.createHistoryItems(this.state) }
-                
+            <Pivot 
+              style={{ flexGrow: 1, paddingLeft: '10px' }}
+              linkSize= { pivotOptionsGroup.getPivSize(this.props.pivotSize) }
+              linkFormat= { pivotOptionsGroup.getPivFormat(this.props.pivotFormat) }
+              onLinkClick= { this.onLinkClick.bind(this) }  //{this.specialClick.bind(this)}
+              defaultSelectedKey={ defIndex }
+              headersOnly={true}>
+                {this.createPivots(this.state,this.props)}
+            </Pivot>
 
-            </div>
-          </div>
+            { this.createProjectTypeToggle(this.state) }
+              
+        </div>
+
+          { this.createProjectChoices(this.state) }
+          { this.createHistoryItems(this.state) }
+
         </div>
       </div>
     );
@@ -279,9 +312,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       defaultSelectedKey = item.props.headerText.toString();  // Added this because I think this needs to be the header text, not the index.
       defaultSelectedKey = Utils.convertCategoryToIndex(defaultSelectedKey);
 
-      let newFilteredProjects = [];
-      let pivotProps = this.props;
-      let pivotState = this.state;
+
 
 //      newFiltered = this.getOnClickFilteredProjects(pivotProps, pivotState, newCollection, heroIds, newHeros, thisCatColumn, lastCategory)
 
@@ -293,6 +324,92 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       console.log('onLinkClick: defaultSelectedIndex', defaultSelectedIndex);
       console.log('onLinkClick: defaultSelectedKey', defaultSelectedKey);
       
+      let thisFilter = [];
+      if (item.props.headerText.toLowerCase().indexOf('team') > -1) { thisFilter.push('team')}
+      else if (item.props.headerText.toLowerCase().indexOf('your') > -1) { thisFilter.push('your')}
+      else { thisFilter.push('otherPeople')}
+
+      let projects = this.state.projects;
+
+      projects.lastFiltered = projects.newFiltered;    
+      projects.newFiltered = this.getTheseProjects(this.state ,this.state.projectType, thisFilter);
+      //projects.lastFiltered = (searchType === 'all' ? this.state.projects.all : this.state.lastFilteredProjects );
+
+      this.setState({
+        filteredCategory: item.props.headerText,
+        projects: projects,
+        //searchCount: newFilteredProjects.length,
+        searchType: '',
+        searchWhere: ' in ' + item.props.headerText,
+        pivotDefSelKey: defaultSelectedKey,
+
+      });
+
+    }
+
+  } //End onClick
+
+  public getTheseProjects(thisState: ITrackMyTimeState ,projectType: boolean, filterFlags : string[]){
+
+    let startingProjects: IProject[] = [];
+    let filteredProjects: IProject[] = [];
+    if (projectType === false) {
+      startingProjects = thisState.projects.master;
+    } else {startingProjects = thisState.projects.user;}
+
+    if (filterFlags.length === 0) {
+      return startingProjects;
+    }
+
+    for (let thisItem of startingProjects) {
+      if (Utils.arrayContainsArray(thisItem.filterFlags,filterFlags)) {
+        filteredProjects.push(thisItem);
+      }
+    }
+    return filteredProjects;
+  }
+  
+  public toggleType = (item): void => {
+    //This sends back the correct pivot category which matches the category on the tile.
+    let e: any = event;
+
+    let newProjectType = !this.state.projectType;
+    console.log('toggleType: item', item);
+    console.log('toggleType from ' +  this.state.projectType + ' to ' + newProjectType);
+    let projects = this.state.projects;
+
+    projects.lastFiltered = projects.newFiltered;    
+    projects.newFiltered = this.getTheseProjects(this.state ,newProjectType, []);
+    
+    this.setState({
+      projectType: newProjectType,
+      projects: projects,
+    });
+
+
+    return; 
+
+    if (e.ctrlKey) {
+      //Set clicked pivot as the hero pivot
+
+    } else if (e.altKey) {
+      //Enable-disable ChangePivots options
+      this.setState({
+        
+      });
+
+    } else {
+
+      //Filter tiles per clicked category
+
+      let newFilteredProjects = [];
+      let pivotProps = this.props;
+      let pivotState = this.state;
+
+//      newFiltered = this.getOnClickFilteredProjects(pivotProps, pivotState, newCollection, heroIds, newHeros, thisCatColumn, lastCategory)
+
+     // newFilteredProjects = this.getOnClickFilteredProjects(pivotProps, pivotState, this.state.projects.all, this.state.heroIds, this.state.heroTiles, this.state.thisCatColumn, item.props.headerText)
+      
       let projects = this.state.projects;
       //projects.lastFiltered = (searchType === 'all' ? this.state.projects.all : this.state.lastFilteredProjects );
 
@@ -302,7 +419,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         searchCount: newFilteredProjects.length,
         searchType: '',
         searchWhere: ' in ' + item.props.headerText,
-        pivotDefSelKey: defaultSelectedKey,
+        //pivotDefSelKey: defaultSelectedKey,
 
       });
 
@@ -775,7 +892,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       *   Put them into state.projects
       */
      let master: IProject[] = [];
-      let masterKeys: string[] = [];
+    let masterKeys: string[] = [];
 
      let userId = 20;
      for (let i = 0; i < projectData.length; i++ ) {
@@ -788,6 +905,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       if (fromProject.leaderId === userId ) { yours = true } ;
       if (yours) { fromProject.filterFlags.push('your') ; countThese = 'your' }
       else if (team) { fromProject.filterFlags.push('team') ; countThese = 'team' }
+      else { fromProject.filterFlags.push('otherPeople') ; countThese = 'otherPeople' }
       fromProject.key = this.getProjectKey(fromProject);
       if (masterKeys.indexOf(fromProject.key) < 0) { 
         //This is a new project, add
@@ -801,6 +919,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
      stateProjects.all = all;
      stateProjects.master = master;
      stateProjects.masterKeys = masterKeys;
+     stateProjects.lastFiltered = all;
+     stateProjects.newFiltered = all;
      let masterPriority: IProject[] = [];
 
      if (this.state.timeTrackerLoadStatus === "Complete") { 
@@ -836,6 +956,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       all: createMe(),
       team: createMe(),
       your: createMe(),
+      otherPeople: createMe(),
     }
 
     return counts;
@@ -875,6 +996,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       if (fromProject.teamIds.indexOf(userId) > -1 ) { team = true } ;
       if (fromProject.leaderId === userId ) { team = true } ;
       if (!yours  && team) { fromProject.filterFlags.push('team') ; countThese = 'team' }
+      if (!yours && !team) { fromProject.filterFlags.push('otherPeople') ; countThese = 'otherPeople' }
 
       let now = new Date();
       let then = new Date(timeTrackData[i].endTime);
@@ -909,6 +1031,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
    let all: IProject[] = this.state.projects.all.concat(user);
    stateProjects.all = all;
    stateProjects.user = user;
+   stateProjects.lastFiltered = all;
+   stateProjects.newFiltered = all;
    stateProjects.userKeys = userKeys;
    
    if (this.state.projectsLoadStatus === "Complete") { 
@@ -921,7 +1045,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
    this.setState({
     projects: stateProjects,
     userCounts: counts,
-    recentEntries: timeTrackData,
+    allEntries: timeTrackData,
+    filteredEntries: timeTrackData,
     timeTrackerLoadStatus:"Complete",
     timeTrackerLoadError: "",
     timeTrackerListError: false,
@@ -941,9 +1066,9 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     let all: IProject[] = trackMyProjectsInfo.projectData;
 
-    let recentEntries: ITimeEntry[] = trackMyProjectsInfo.timeTrackData;
+    let filteredEntries: ITimeEntry[] = trackMyProjectsInfo.timeTrackData;
     console.log('processResponse:  all', all);
-    console.log('processResponse:  recentEntries', recentEntries);
+    console.log('processResponse:  filteredEntries', filteredEntries);
 
     return;
 

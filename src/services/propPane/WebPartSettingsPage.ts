@@ -10,6 +10,7 @@ import {
     PropertyPaneSlider,
     PropertyPaneToggle
   } from '@microsoft/sp-webpart-base';
+  import { PropertyFieldMultiSelect } from '@pnp/spfx-property-controls/lib/PropertyFieldMultiSelect';
   
   import * as strings from 'TrackMyTimeWebPartStrings';
   import { pivotOptionsGroup, trackTimeOptionsGroup } from './index';
@@ -113,6 +114,7 @@ import {
 
           { groupName: strings.PropPaneGroupLabel_ProjectOptions,
             isCollapsed: webPartProps.setSize === "This does nothing yet" ? true : false ,
+
             groupFields: [
               PropertyPaneToggle('onlyActiveProjects', {
                 label: strings.FieldLabel_OnlyActiveProjects,
@@ -124,6 +126,13 @@ import {
                 label: strings.FieldLabel_AllowUserProjects,
                 offText: strings.FieldLabel_ToggleTextOff,
                 onText: strings.FieldLabel_ToggleTextOn
+              }),
+
+              //Projects = 0 History = 1
+              PropertyPaneToggle('projectType', {
+                label: strings.FieldLabel_DefaultProjectsOrHistory,
+                offText: strings.ToggleLabel_Projects,
+                onText: strings.ToggleLabel_History
               }),
 
               PropertyPaneDropdown('projectMasterPriority', <IPropertyPaneDropdownProps>{

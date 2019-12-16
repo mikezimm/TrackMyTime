@@ -165,6 +165,23 @@ export default class Utils {
     }
   }
 
+  /**
+ * Returns TRUE if the first specified array contains all elements
+ * from the second one. FALSE otherwise.
+ * https://github.com/lodash/lodash/issues/1743#issue-125967660
+ * @param {array} superset
+ * @param {array} subset
+ *
+ * @returns {boolean}
+ */
+public static arrayContainsArray (superset, subset) {
+  if (0 === subset.length) {
+    return false;
+  }
+  return subset.every(function (value) {
+    return (superset.indexOf(value) >= 0);
+  });
+}
 
 }
 

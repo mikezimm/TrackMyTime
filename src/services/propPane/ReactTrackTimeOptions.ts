@@ -95,7 +95,26 @@ import {
         return findMe;
     }
 
+    public targetItemsChoices: IPropertyPaneDropdownOption[] = <IPropertyPaneDropdownOption[]>[
+        {   index: 0,   key: 'your', text: strings.FieldLabel_Yours  },
+        {   index: 1,   key: 'team', text: strings.FieldLabel_YourTeam  },
+        {   index: 2,   key: 'others', text: strings.FieldLabel_Others  },
+    ];
     
+    //Currently may not be neccessary
+    public getTargetItemsChoices (findMe) {
+
+        if (findMe === 'your') {
+            return findMe;
+        } else if (findMe === 'team') {
+            return findMe;
+        } else if (findMe === 'others') {
+            return findMe;
+        }
+
+        return 'notSure';
+        
+    }
 
   }
 
