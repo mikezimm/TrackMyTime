@@ -31,12 +31,11 @@ import {
     }
 
     public projectMasterPriorityChoices: IPropertyPaneDropdownOption[] = <IPropertyPaneDropdownOption[]>[
-        {   index: 0,   key: 'yourRecent', text: "Your most recently used"  },
-        {   index: 1,   key: 'yourToday', text: "Yours from today"  },
-        {   index: 2,   key: 'yourWeek', text: "Yours from last week"  },
-        {   index: 3,   key: 'allRecent', text: "All most recently used"  },
-        {   index: 4,   key: 'allToday', text: "All from today"  },
-        {   index: 5,   key: 'allWeek', text: "All from last week"  },
+        {   index: 0,   key: 'your', text: "Your projects (you are Leading)"  },
+        {   index: 1,   key: 'team', text: "Your projects (you are on the team)"  },
+        {   index: 2,   key: 'everyone', text: "Projects designated for Everyone"  },
+        {   index: 2,   key: 'other', text: "All other projects"  },
+
     ];
     
     //Currently may not be neccessary
@@ -45,12 +44,10 @@ import {
     }
 
     public projectUserPriorityChoices: IPropertyPaneDropdownOption[] = <IPropertyPaneDropdownOption[]>[
-        {   index: 0,   key: 'yourRecent', text: "projectUserPriority -Your most recently used"  },
-        {   index: 1,   key: 'yourToday', text: "Yours from today"  },
-        {   index: 2,   key: 'yourWeek', text: "Yours from last week"  },
-        {   index: 3,   key: 'allRecent', text: "All most recently used"  },
-        {   index: 4,   key: 'allToday', text: "All from today"  },
-        {   index: 5,   key: 'allWeek', text: "All from last week"  },
+        {   index: 0,   key: 'your', text: "Your projects (you are Leading)"  },
+        {   index: 1,   key: 'team', text: "Your projects (you are on the team)"  },
+        {   index: 2,   key: 'everyone', text: "Projects designated for Everyone"  },
+        {   index: 2,   key: 'other', text: "All other projects"  },
     ];
     
     //Currently may not be neccessary

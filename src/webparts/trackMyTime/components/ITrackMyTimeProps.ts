@@ -29,8 +29,8 @@ export interface ITrackMyTimeProps {
 
   // 4 -Project options
   allowUserProjects: boolean; //Will build list of ProjectsUser based on existing data from TrackMyTime list
-  projectMasterPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
-  projectUserPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
+  projectMasterPriority: string; //Yours, Team, Others?
+  projectUserPriority: string; //Yours, Team, Others?
   onlyActiveProjects: boolean, //Only read in active projects.
   projectKey: string[];
 
@@ -62,7 +62,6 @@ export interface ITrackMyTimeProps {
   pivotSize: string;
   pivotFormat: string;
   pivotOptions: string;
-  pivotTab: string;
-  
+  pivotTab: string;  //May not be needed because we have projectMasterPriority
 
 }
