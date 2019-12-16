@@ -39,6 +39,15 @@ define([], function() {
     "FieldLabel_ProjectMasterPriority": "Master Project Priority", //Use to determine what projects float to top.... your most recent?  last day?
     "FieldLabel_ProjectUserPriority": "User Project Priority", //Use to determine what projects float to top.... your most recent?  last day?
 
+
+    "FieldLabel_DefaultProjectsOrHistory": "Default projects:  Projects or History?", //Label to ask for default setting: Projects or User History?
+
+    "FieldLabel_Yours": "Yours", //Heading and label for "Your" projects or history
+    "FieldLabel_YourTeam": "Your Team", //Heading and label for "Your Team's" projects or history
+    "FieldLabel_Others": "Others", //Heading and label for "Your Team's" projects or history
+    "ToggleLabel_Projects": "Projects", //Projects or Time History
+    "ToggleLabel_History": "History", //Projects or Time History
+
     // 5 - UI Defaults
     "PropPaneGroupLabel_UIDefaults": "UI Defaults",
     "FieldLabel_DefaultProjectPicker": "Default Project Category", //Recent, Your Projects, All Projects etc...

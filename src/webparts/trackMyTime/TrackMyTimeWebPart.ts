@@ -47,6 +47,8 @@ export interface ITrackMyTimeWebPartProps {
   onlyActiveProjects: boolean, //Only read in active projects.
   projectKey: string[], // project props used to determine a unique user project in the choice list
 
+  projectType?:boolean; //Projects = 0 History = 1
+
   // 5 - UI Defaults
   defaultProjectPicker: string; //Recent, Your Projects, All Projects etc...
   defaultTimePicker: string; //SinceLast, Slider, Manual???
@@ -73,6 +75,7 @@ export interface ITrackMyTimeWebPartProps {
   pivotSize: string;
   pivotFormat: string;
   pivotOptions: string;
+  pivotTab: string;
 
 }
 
@@ -140,6 +143,8 @@ export default class TrackMyTimeWebPart extends BaseClientSideWebPart<ITrackMyTi
         onlyActiveProjects: this.properties.onlyActiveProjects, //Only read in active projects.
         projectKey: ['titleProject','projectID2'], // project props used to determine a unique user project in the choice list
 
+        projectType: this.properties.projectType, //Projects = 0 History = 1
+
         // 5 - UI Defaults
         defaultProjectPicker: this.properties.defaultProjectPicker, //Recent, Your Projects, All Projects etc...
         defaultTimePicker: this.properties.defaultTimePicker, //SinceLast, Slider, Manual???
@@ -164,6 +169,7 @@ export default class TrackMyTimeWebPart extends BaseClientSideWebPart<ITrackMyTi
         pivotSize: this.properties.pivotSize,
         pivotFormat: this.properties.pivotFormat,
         pivotOptions: this.properties.pivotOptions,
+        pivotTab: 'Projects', //this.properties.pivotTab (was setTab in pivot-tiles)
 
       }
     );

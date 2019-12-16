@@ -181,6 +181,8 @@ export interface ITrackMyTimeState {
   projectCounts?: any;  // project based (from trackTimeList) projects that are assigned to current user.
   allCounts?: any;
 
+  projectType?:boolean; //Projects = 0 History = 1
+
   // 5 - UI Defaults
   currentProjectPicker: string; //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
   currentTimePicker: string; //User selection of :defaultTimePicker  SinceLast, Slider, Manual???
@@ -191,7 +193,8 @@ export interface ITrackMyTimeState {
   lastEntry?: ITimeEntry;  //Should be a time entry
   elapsedTime?: any;  //Elapsed Time since last entry
 
-  recentEntries?: ITimeEntry[]; //List of recent entries
+  allEntries?: ITimeEntry[]; //List of all entries
+  filteredEntries?: ITimeEntry[]; //List of recent entries
 
   // 7 - Slider Options
   timeSliderValue: number; //incriment of time slider
@@ -225,6 +228,7 @@ export interface ITrackMyTimeState {
   searchShow?: boolean;
   searchCount?: number;
   searchWhere?: string;
+
 
 }
 

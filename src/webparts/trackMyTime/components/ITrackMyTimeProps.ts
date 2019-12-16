@@ -34,6 +34,8 @@ export interface ITrackMyTimeProps {
   onlyActiveProjects: boolean, //Only read in active projects.
   projectKey: string[];
 
+  projectType:boolean; //Projects = 0 History = 1
+
   // 5 - UI Defaults
   defaultProjectPicker: string; //Recent, Your Projects, All Projects etc...
   defaultTimePicker: string; //SinceLast, Slider, Manual???
@@ -60,6 +62,7 @@ export interface ITrackMyTimeProps {
   pivotSize: string;
   pivotFormat: string;
   pivotOptions: string;
+  pivotTab: string;
   
 
 }
