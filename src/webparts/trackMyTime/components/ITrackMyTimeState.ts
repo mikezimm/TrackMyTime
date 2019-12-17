@@ -182,6 +182,7 @@ export interface ITrackMyTimeState {
   allCounts?: any;
 
   projectType?:boolean; //Projects = 0 History = 1
+  syncProjectPivotsOnToggle, //always keep pivots in sync when toggling projects/history
 
   // 5 - UI Defaults
   currentProjectPicker: string; //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...

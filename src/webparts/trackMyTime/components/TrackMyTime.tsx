@@ -62,7 +62,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       pivotDefSelKey:"",
       onlyActiveProjects: this.props.onlyActiveProjects,
       projectType: this.props.projectType,
-
+      syncProjectPivotsOnToggle: this.props.syncProjectPivotsOnToggle, //always keep pivots in sync when toggling projects/history
       // 5 - UI Defaults
       currentProjectPicker: '', //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
       currentTimePicker: '', //User selection of :defaultTimePicker  SinceLast, Slider, Manual???
@@ -193,16 +193,28 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     console.log('render props:', this.props);
     console.log('render state:', this.state);
 
+    /**
+     * this section was added to keep pivots in sync when syncProjectPivotsOnToggle === true
+     */
     let display1 = this.state.projectType === true ? "block" :"none";
-    let display2 = this.state.projectType === true ? "none" :"block";      
+    let display2 = this.state.projectType === true ? "none" :"block";
+    let choice1 = this.state.projectMasterPriorityChoice;
+    let choice2 = this.state.projectUserPriorityChoice;
+
+    if (this.state.syncProjectPivotsOnToggle){
+      display1 = "block";
+      display2 = "none";
+      choice1 = this.state.projectMasterPriorityChoice;
+      choice2 = this.state.projectMasterPriorityChoice;
+    }
 
     return (
       <div className={ styles.trackMyTime }>
         <div className={ styles.container }>
         <div className={styles.floatLeft}>
 
-            { this.createPivotObject(this.state.projectMasterPriorityChoice, display2)  }
-            { this.createPivotObject(this.state.projectUserPriorityChoice, display1)  }
+            { this.createPivotObject(choice2, display2)  }
+            { this.createPivotObject(choice1, display1)  }
             { /*this.createPivotObject(setPivot, "block") */ }
             
             { this.createProjectTypeToggle(this.state) }
@@ -351,10 +363,18 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       projects.newFiltered = this.getTheseProjects(filterThese, thisFilter);
       //projects.lastFiltered = (searchType === 'all' ? this.state.projects.all : this.state.lastFilteredProjects );
 
+      let newProjectMasterPriorityChoice = !this.state.projectType ? thisFilter[0] : this.state.projectMasterPriorityChoice;
+      let newProjectUserPriorityChoice = this.state.projectType ? thisFilter[0] : this.state.projectUserPriorityChoice;
+      
+      if ( this.state.syncProjectPivotsOnToggle ) {
+        newProjectMasterPriorityChoice = thisFilter[0];
+        newProjectUserPriorityChoice = thisFilter[0];        
+      }
+
       this.setState({
         filteredCategory: item.props.headerText,
-        projectMasterPriorityChoice: !this.state.projectType ? thisFilter[0] : this.state.projectMasterPriorityChoice,
-        projectUserPriorityChoice: this.state.projectType ? thisFilter[0] : this.state.projectUserPriorityChoice,
+        projectMasterPriorityChoice: newProjectMasterPriorityChoice,
+        projectUserPriorityChoice: newProjectUserPriorityChoice,
         projects: projects,
         //searchCount: newFilteredProjects.length,
         searchType: '',
