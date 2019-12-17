@@ -5,6 +5,7 @@ import { escape } from '@microsoft/sp-lodash-subset';
 import { sp, Web } from '@pnp/sp';
 
 import { Pivot, PivotItem, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabric-react/lib/Pivot';
+
 import { DefaultButton, autobind } from 'office-ui-fabric-react';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 import { Link } from 'office-ui-fabric-react/lib/Link';
@@ -16,6 +17,9 @@ import Utils from './utils';
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
 import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
 import { pivotOptionsGroup, } from '../../../services/propPane';
+
+import ButtonCompound from './createButtons/ICreateButtons';
+import { IButtonProps,ISingleButtonProps,IButtonState } from "./createButtons/ICreateButtons";
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
   
@@ -116,6 +120,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     this.showAll = this.showAll.bind(this);
     this.toggleLayout = this.toggleLayout.bind(this);
     this.onChangePivotClick = this.onChangePivotClick.bind(this);
+
+
+    this.trackMyTime = this.trackMyTime.bind(this);
+    this.clearMyInput = this.clearMyInput.bind(this);
     
   }
 
@@ -208,6 +216,25 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       choice2 = this.state.projectMasterPriorityChoice;
     }
 
+    const buttons: ISingleButtonProps[] =
+      [{
+        disabled: false,  checked: true, primary: false,
+        label: "Clear item",
+        secondary: "Press to clear form",
+        buttonOnClick: this.clearMyInput.bind(this),
+      },{
+        disabled: false,  checked: true, primary: true,
+        label: "Save item",
+        secondary: "Press to Create entry",
+        buttonOnClick: this.trackMyTime.bind(this),
+      }
+
+      ];
+
+    let saveButtons = <ButtonCompound
+      buttons={buttons} horizontal={true}
+    />
+
     return (
       <div className={ styles.trackMyTime }>
         <div className={ styles.container }>
@@ -222,7 +249,21 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         </div>
 
           <div><h2> { this.state.projectType === false ? 'Pick from the Project List' : 'Or... Your recent history'}</h2></div>
-          { this.createProjectChoices(this.state) }
+          <div>
+            <div style={{ display: 'inline-block' }}>
+              { this.createProjectChoices(this.state) }
+            </div>
+            <div className={styles.floatRight} style={{ paddingTop: 20 }}>
+              <div style={{ display: 'table-row' }}>
+                { saveButtons }
+              </div>  
+              <div style={{ display: 'table-row' }}>
+                { 'More stuff below buttons' }
+              </div>               
+            </div>
+          </div>
+                 
+          
           <div></div><div><br/><br/></div>
           <div><h2>Recent TrackYourTime History</h2></div>
           { this.createHistoryItems(this.state) }
@@ -565,6 +606,21 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     */
 
   } //End toggleTips  
+
+  /**
+   * This should save an item
+   */
+  public trackMyTime = () : void => {
+    //alert('trackMyTime');
+    this.saveMyTime (this.state.allEntries[0] , 'master');
+
+  }
+
+  public clearMyInput = () : void => {
+
+    //this.saveMyTime (this.state.allEntries[0] , 'master');
+    alert('clearMyInput');
+  }
 
   public toggleTips = (item: any): void => {
     //This sends back the correct pivot category which matches the category on the tile.
@@ -1311,8 +1367,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         LeaderId: trackTimeItem.leaderId,  //Likely single person column
         TeamId: teamId,  //Likely multi person column
 
-        ProjectID1: trackTimeItem.projectID1 ? trackTimeItem.projectID1 : null,  //Example Project # - look for strings starting with * and ?
-        ProjectID2: trackTimeItem.projectID2 ? trackTimeItem.projectID2 : null,  //Example Cost Center # - look for strings starting with * and ?
+        ProjectID1: trackTimeItem.projectID1 ? trackTimeItem.projectID1.value : null,  //Example Project # - look for strings starting with * and ?
+        ProjectID2: trackTimeItem.projectID2 ? trackTimeItem.projectID2.value : null,  //Example Cost Center # - look for strings starting with * and ?
 
         //Values that relate to project list item
         //SourceProject: trackTimeItem.sourceProject, //Link back to the source project list item.
