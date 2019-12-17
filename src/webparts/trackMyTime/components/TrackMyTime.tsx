@@ -180,7 +180,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       onChange={this.toggleType.bind(this)} 
       checked={this.state.projectType}
       styles={{ root: { width: 120 } }}
-      className={'is-selected'}
       />
     return togglePart;
 
