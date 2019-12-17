@@ -159,16 +159,17 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   }
 
   public createPivotObject(setPivot, display){
-    let pivotPart = <Pivot 
-    style={{ flexGrow: 1, paddingLeft: '10px', display: display }}
-    linkSize= { pivotOptionsGroup.getPivSize(this.props.pivotSize) }
-    linkFormat= { pivotOptionsGroup.getPivFormat(this.props.pivotFormat) }
-    onLinkClick= { this.onLinkClick.bind(this) }  //{this.specialClick.bind(this)}
-    selectedKey={ setPivot }
-    headersOnly={true}>
-      {this.createPivots(this.state,this.props)}
-  </Pivot>
-  return pivotPart;
+    let pivotPart = 
+    <Pivot 
+      style={{ flexGrow: 1, paddingLeft: '10px', display: display }}
+      linkSize= { pivotOptionsGroup.getPivSize(this.props.pivotSize) }
+      linkFormat= { pivotOptionsGroup.getPivFormat(this.props.pivotFormat) }
+      onLinkClick= { this.onLinkClick.bind(this) }  //{this.specialClick.bind(this)}
+      selectedKey={ setPivot }
+      headersOnly={true}>
+        {this.createPivots(this.state,this.props)}
+    </Pivot>
+    return pivotPart;
   }
 
   public createProjectTypeToggle(thisState){
