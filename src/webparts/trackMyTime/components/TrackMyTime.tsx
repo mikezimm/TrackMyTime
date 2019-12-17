@@ -1424,6 +1424,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items.add( saveThisItem ).then((response) => {
         //Reload the page
         //location.reload();
+          this.addThisItemToState(trackTimeItem,masterOrRemote);
           alert('save successful');
         }).catch((e) => {
         //Throw Error
@@ -1442,6 +1443,39 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     }
 
   }
+
+  private addThisItemToState (trackTimeItem: ITimeEntry , masterOrRemote : string) {
+
+    if (masterOrRemote === 'master') {
+
+      console.log('this.state.filteredEntries',this.state.filteredEntries );
+      console.log('this.state.allEntries',this.state.allEntries );
+
+      let allEntries: ITimeEntry[] = [];
+      console.log('allEntries',allEntries );
+      allEntries.push(trackTimeItem);
+      console.log('allEntries',allEntries );
+      allEntries = allEntries.concat(this.state.allEntries);
+      console.log('allEntries',allEntries );
+
+      let filteredEntries:  ITimeEntry[] = [];
+      console.log('filteredEntries',filteredEntries );
+      filteredEntries.push(trackTimeItem);
+      console.log('filteredEntries',filteredEntries );
+      filteredEntries = filteredEntries.concat(this.state.filteredEntries);
+      console.log('filteredEntries',filteredEntries );
+
+      this.setState({
+        allEntries:allEntries,
+        filteredEntries:filteredEntries,
+      });
+    } else {
+      //Currently do nothing
+    }
+
+
+  }
+
 
   /**
    * Copied from Pivot-Tiles
