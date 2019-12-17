@@ -46,6 +46,7 @@ export interface ITrackMyTimeWebPartProps {
   projectUserPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
   onlyActiveProjects: boolean, //Only read in active projects.
   projectKey: string[], // project props used to determine a unique user project in the choice list
+  syncProjectPivotsOnToggle: boolean;  //always keep pivots in sync when toggling projects/history
 
   projectType?:boolean; //Projects = 0 History = 1
 
@@ -142,6 +143,7 @@ export default class TrackMyTimeWebPart extends BaseClientSideWebPart<ITrackMyTi
         projectUserPriority: this.properties.projectUserPriority, //Use to determine what projects float to top.... your most recent?  last day?
         onlyActiveProjects: this.properties.onlyActiveProjects, //Only read in active projects.
         projectKey: ['titleProject','projectID2'], // project props used to determine a unique user project in the choice list
+        syncProjectPivotsOnToggle: this.properties.syncProjectPivotsOnToggle, //always keep pivots in sync when toggling projects/history
 
         projectType: this.properties.projectType, //Projects = 0 History = 1
 

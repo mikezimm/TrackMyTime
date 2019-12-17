@@ -35,7 +35,8 @@ declare interface ITrackMyTimeWebPartStrings {
   FieldLabel_AllowUserProjects: string; // Use to allow getting list of user write-in projects
   FieldLabel_ProjectMasterPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
   FieldLabel_ProjectUserPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
-  FieldLabel_DefaultProjectsOrHistory: string //Label to ask for default setting: Projects or User History?
+  FieldLabel_DefaultProjectsOrHistory: string; //Label to ask for default setting: Projects or User History?
+  FieldLabel_SyncProjectPivotsOnToggle: string; //always keep pivots in sync when toggling projects/history
 
   FieldLabel_Yours: string; //Heading and label for "Your" projects or history
   FieldLabel_YourTeam: string; //Heading and label for "Your Team's" projects or history

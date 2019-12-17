@@ -41,6 +41,7 @@ define([], function() {
 
 
     "FieldLabel_DefaultProjectsOrHistory": "Default projects:  Projects or History?", //Label to ask for default setting: Projects or User History?
+    "FieldLabel_SyncProjectPivotsOnToggle": "Keep Projects and History pivots in sync", //always keep pivots in sync when toggling projects/history
 
     "FieldLabel_Yours": "Yours", //Heading and label for "Your" projects or history
     "FieldLabel_YourTeam": "Your Team", //Heading and label for "Your Team's" projects or history

@@ -33,6 +33,7 @@ export interface ITrackMyTimeProps {
   projectUserPriority: string; //Yours, Team, Others?
   onlyActiveProjects: boolean, //Only read in active projects.
   projectKey: string[];
+  syncProjectPivotsOnToggle, //always keep pivots in sync when toggling projects/history
 
   projectType:boolean; //Projects = 0 History = 1
 

@@ -135,6 +135,12 @@ import {
                 onText: strings.ToggleLabel_History
               }),
 
+              PropertyPaneToggle('syncProjectPivotsOnToggle', {
+                label: strings.FieldLabel_SyncProjectPivotsOnToggle,
+                offText: strings.FieldLabel_ToggleTextOff,
+                onText: strings.FieldLabel_ToggleTextOn
+              }),
+
               PropertyPaneDropdown('projectMasterPriority', <IPropertyPaneDropdownProps>{
                 label: strings.FieldLabel_ProjectMasterPriority,
                 options: trackTimeOptionsGroup.projectMasterPriorityChoices,
@@ -143,7 +149,9 @@ import {
               PropertyPaneDropdown('projectUserPriority', <IPropertyPaneDropdownProps>{
                 label: strings.FieldLabel_ProjectUserPriority,
                 options: trackTimeOptionsGroup.projectUserPriorityChoices,
-              }),              
+              }),   
+              
+              
 
             ]}, // this group
 
