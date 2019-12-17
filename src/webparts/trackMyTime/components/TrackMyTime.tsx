@@ -158,6 +158,20 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     return ( elemnts );
   }
 
+  public createPivotObject(setPivot, display){
+    let pivotPart = 
+    <Pivot 
+      style={{ flexGrow: 1, paddingLeft: '10px', display: display }}
+      linkSize= { pivotOptionsGroup.getPivSize(this.props.pivotSize) }
+      linkFormat= { pivotOptionsGroup.getPivFormat(this.props.pivotFormat) }
+      onLinkClick= { this.onLinkClick.bind(this) }  //{this.specialClick.bind(this)}
+      selectedKey={ setPivot }
+      headersOnly={true}>
+        {this.createPivots(this.state,this.props)}
+    </Pivot>
+    return pivotPart;
+  }
+
   public createProjectTypeToggle(thisState){
 
     let togglePart = <Toggle label="" 
@@ -175,31 +189,30 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
 
     let setPivot = !this.state.projectType ? this.state.projectMasterPriorityChoice :this.state.projectUserPriorityChoice ;
-    console.log('render defIndex:', setPivot);
+    console.log('render setPivot:', setPivot);
     console.log('render props:', this.props);
-    console.log('render state:', this.state);    
+    console.log('render state:', this.state);
+
+    let display1 = this.state.projectType === true ? "block" :"none";
+    let display2 = this.state.projectType === true ? "none" :"block";      
 
     return (
       <div className={ styles.trackMyTime }>
         <div className={ styles.container }>
         <div className={styles.floatLeft}>
 
-            <Pivot 
-              style={{ flexGrow: 1, paddingLeft: '10px' }}
-              linkSize= { pivotOptionsGroup.getPivSize(this.props.pivotSize) }
-              linkFormat= { pivotOptionsGroup.getPivFormat(this.props.pivotFormat) }
-              onLinkClick= { this.onLinkClick.bind(this) }  //{this.specialClick.bind(this)}
-              selectedKey={ setPivot }
-              headersOnly={true}>
-                {this.createPivots(this.state,this.props)}
-            </Pivot>
-
+            { this.createPivotObject(this.state.projectMasterPriorityChoice, display2)  }
+            { this.createPivotObject(this.state.projectUserPriorityChoice, display1)  }
+            { /*this.createPivotObject(setPivot, "block") */ }
+            
             { this.createProjectTypeToggle(this.state) }
               
         </div>
 
+          <div><h2> { this.state.projectType === false ? 'Pick from the Project List' : 'Or... Your recent history'}</h2></div>
           { this.createProjectChoices(this.state) }
           <div></div><div><br/><br/></div>
+          <div><h2>Recent TrackYourTime History</h2></div>
           { this.createHistoryItems(this.state) }
 
         </div>
@@ -548,6 +561,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   public createPivot(pivT) {
     //console.log('createPivot: ', pivT);
     const thisItemKey :string = Utils.convertCategoryToIndex(pivT);
+    // const thisItemKey :string = pivT; //This does not change the effect (not calling convertCategory....)
       return (
         <PivotItem 
         headerText={pivT} 
@@ -569,9 +583,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   public createPivots(thisState,thisProps){
 
-    if (thisState.showOtherTab && thisState.pivtTitles.indexOf(thisProps.otherTab) === -1) {
-       thisState.pivtTitles.push(thisProps.otherTab);
-    }
     let piv = thisState.pivtTitles.map(this.createPivot);
     //console.log('createPivots: ', piv);
     return (
