@@ -126,7 +126,6 @@ function createIDateCategoryArrays(col) {
 
 export default class Utils {
 
-    
   public static convertCategoryToIndex(cat: string) {
     //https://stackoverflow.com/questions/6555182/remove-all-special-characters-except-space-from-a-string-using-javascript
     //string = string.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
