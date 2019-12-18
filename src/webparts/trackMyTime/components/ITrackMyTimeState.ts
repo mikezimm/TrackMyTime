@@ -144,7 +144,7 @@ export interface IProjectInfo {
   master: IProject[]; //Projects coming from the Projects list
   masterKeys: string[];
   user: IProject[]; //Projects coming from TrackMyTime list
-  userKeys: string[],
+  userKeys: string[];
   masterPriority: IProject[]; //Projects visible based on settings
   userPriority: IProject[]; //Projects visible based on settings
   current: IProject[]; //Makes up the choices
@@ -175,14 +175,14 @@ export interface ITrackMyTimeState {
   pivtTitles?:string[];
   filteredCategory?: string;
   pivotDefSelKey?: string;
-  onlyActiveProjects?: boolean, //Only read in active projects.
+  onlyActiveProjects?: boolean; //Only read in active projects.
 
   userCounts?: any;  // user based (from trackTimeList) projects that are assigned to current user.
   projectCounts?: any;  // project based (from trackTimeList) projects that are assigned to current user.
   allCounts?: any;
 
   projectType?:boolean; //Projects = 0 History = 1
-  syncProjectPivotsOnToggle, //always keep pivots in sync when toggling projects/history
+  syncProjectPivotsOnToggle; //always keep pivots in sync when toggling projects/history
 
   // 5 - UI Defaults
   currentProjectPicker: string; //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...

@@ -44,8 +44,8 @@ export interface ITrackMyTimeWebPartProps {
   allowUserProjects: boolean; //Will build list of ProjectsUser based on existing data from TrackMyTime list
   projectMasterPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
   projectUserPriority: string; //Use to determine what projects float to top.... your most recent?  last day?
-  onlyActiveProjects: boolean, //Only read in active projects.
-  projectKey: string[], // project props used to determine a unique user project in the choice list
+  onlyActiveProjects: boolean; //Only read in active projects.
+  projectKey: string[]; // project props used to determine a unique user project in the choice list
   syncProjectPivotsOnToggle: boolean;  //always keep pivots in sync when toggling projects/history
 
   projectType?:boolean; //Projects = 0 History = 1
@@ -104,7 +104,7 @@ export default class TrackMyTimeWebPart extends BaseClientSideWebPart<ITrackMyTi
       .map(p => p.split('='))
       .reduce((obj, pair) => {
         const [key, value] = pair.map(decodeURIComponent);
-        return ({ ...obj, [key]: value })
+        return ({ ...obj, [key]: value }) ;
       }, {});
       return vars;
     }

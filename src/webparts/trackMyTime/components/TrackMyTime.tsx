@@ -5,6 +5,7 @@ import { escape } from '@microsoft/sp-lodash-subset';
 import { sp, Web } from '@pnp/sp';
 
 import { Pivot, PivotItem, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabric-react/lib/Pivot';
+
 import { DefaultButton, autobind } from 'office-ui-fabric-react';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 import { Link } from 'office-ui-fabric-react/lib/Link';
@@ -14,8 +15,11 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
-import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState'
+import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState';
 import { pivotOptionsGroup, } from '../../../services/propPane';
+
+import ButtonCompound from './createButtons/ICreateButtons';
+import { IButtonProps,ISingleButtonProps,IButtonState } from "./createButtons/ICreateButtons";
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
   
@@ -37,6 +41,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     return projectInfo;
 
   }
+
+  
 
   
   public constructor(props:ITrackMyTimeProps){
@@ -116,6 +122,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     this.showAll = this.showAll.bind(this);
     this.toggleLayout = this.toggleLayout.bind(this);
     this.onChangePivotClick = this.onChangePivotClick.bind(this);
+
+
+    this.trackMyTime = this.trackMyTime.bind(this);
+    this.clearMyInput = this.clearMyInput.bind(this);
     
   }
 
@@ -168,7 +178,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       selectedKey={ setPivot }
       headersOnly={true}>
         {this.createPivots(this.state,this.props)}
-    </Pivot>
+    </Pivot>;
     return pivotPart;
   }
 
@@ -180,7 +190,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       onChange={this.toggleType.bind(this)} 
       checked={this.state.projectType}
       styles={{ root: { width: 120 } }}
-      />
+      />;
     return togglePart;
 
   }
@@ -208,6 +218,25 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       choice2 = this.state.projectMasterPriorityChoice;
     }
 
+    const buttons: ISingleButtonProps[] =
+      [{
+        disabled: false,  checked: true, primary: false,
+        label: "Clear item",
+        secondary: "Press to clear form",
+        buttonOnClick: this.clearMyInput.bind(this),
+      },{
+        disabled: false,  checked: true, primary: true,
+        label: "Save item",
+        secondary: "Press to Create entry",
+        buttonOnClick: this.trackMyTime.bind(this),
+      }
+
+      ];
+
+    let saveButtons = <ButtonCompound
+      buttons={buttons} horizontal={true}
+    />;
+
     return (
       <div className={ styles.trackMyTime }>
         <div className={ styles.container }>
@@ -222,7 +251,21 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         </div>
 
           <div><h2> { this.state.projectType === false ? 'Pick from the Project List' : 'Or... Your recent history'}</h2></div>
-          { this.createProjectChoices(this.state) }
+          <div>
+            <div style={{ display: 'inline-block' }}>
+              { this.createProjectChoices(this.state) }
+            </div>
+            <div className={styles.floatRight} style={{ paddingTop: 20 }}>
+              <div style={{ display: 'table-row' }}>
+                { saveButtons }
+              </div>  
+              <div style={{ display: 'table-row' }}>
+                { 'More stuff below buttons' }
+              </div>               
+            </div>
+          </div>
+                 
+          
           <div></div><div><br/><br/></div>
           <div><h2>Recent TrackYourTime History</h2></div>
           { this.createHistoryItems(this.state) }
@@ -254,13 +297,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       searchType = "all";
       newSearchShow = true;
       //searchCount = this.state.projects.all.length;
-      searchWhere = ' in all categories'
+      searchWhere = ' in all categories';
     }
     
     let projects = this.state.projects;
     //projects.lastFiltered = (searchType === 'all' ? this.state.projects.all : this.state.lastFilteredProjects );
 
-    console.log('newSearchShow: ', newSearchShow, searchType)
+    console.log('newSearchShow: ', newSearchShow, searchType);
     this.setState({
       searchType: searchType,
       searchShow: ( e.altKey === true ? true : !this.state.searchShow ),
@@ -352,10 +395,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 //      console.log('onLinkClick: defaultSelectedKey', defaultSelectedKey);
       
       let thisFilter = [];
-      if (item.props.headerText.toLowerCase().indexOf('team') > -1) { thisFilter.push('team')}
-      else if (item.props.headerText.toLowerCase().indexOf('your') > -1) { thisFilter.push('your')}
-      else if (item.props.headerText.toLowerCase().indexOf('everyone') > -1) { thisFilter.push('everyone')}
-      else { thisFilter.push('otherPeople')}
+      if (item.props.headerText.toLowerCase().indexOf('team') > -1) { thisFilter.push('team'); }
+      else if (item.props.headerText.toLowerCase().indexOf('your') > -1) { thisFilter.push('your'); }
+      else if (item.props.headerText.toLowerCase().indexOf('everyone') > -1) { thisFilter.push('everyone'); }
+      else { thisFilter.push('otherPeople'); }
 
       let projects = this.state.projects;
       projects.lastFiltered = projects.newFiltered;
@@ -566,6 +609,21 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   } //End toggleTips  
 
+  /**
+   * This should save an item
+   */
+  public trackMyTime = () : void => {
+    //alert('trackMyTime');
+    this.saveMyTime (this.state.allEntries[0] , 'master');
+
+  }
+
+  public clearMyInput = () : void => {
+
+    //this.saveMyTime (this.state.allEntries[0] , 'master');
+    alert('clearMyInput');
+  }
+
   public toggleTips = (item: any): void => {
     //This sends back the correct pivot category which matches the category on the tile.
 
@@ -688,7 +746,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     for (let peep of peopleColumns){
       for (let pro of peopleProps){
-        allColumns.push(peep + "/" +  pro)
+        allColumns.push(peep + "/" +  pro);
       }     
     }
 
@@ -776,7 +834,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           dailyStatus: daily ? true : false,
           weeklyStatus: weekly ? true : false,
           totalStatus: total ? true : false,
-        }
+        };
 
 
         let leader : IUser = {
@@ -784,14 +842,14 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           initials: 'p.' , //Single person column
           email: 'p.' , //Single person column
           id: p.LeaderId , //
-        }
+        };
 
         let team : IUser = {
           title: 'p.' , //
           initials: 'p.' , //Single person column
           email: 'p.' , //Single person column
           id: p.TeamId , //
-        }
+        };
 
         let project : IProject = {
           projectType: 'Master',
@@ -823,7 +881,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         
           //Values that relate to project list item
           // sourceProject: , //Add URL back to item
-        }
+        };
 
         return project;
 
@@ -892,7 +950,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           ccEmail: item.CCEmail,
           ccList: item.CCList,
 
-        }
+        };
         //this.saveMyTime(timeEntry,'master');
         return timeEntry;
 
@@ -953,12 +1011,12 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       let yours, team :boolean = false;
 
       //Check if project is tagged to you
-      if (fromProject.teamIds && fromProject.teamIds.indexOf(userId) > -1 ) { team = true } ;
-      if (fromProject.leaderId === userId ) { yours = true } ;
-      if (fromProject.everyone) { fromProject.filterFlags.push('everyone') ; countThese = 'everyone' }
-      else if (yours) { fromProject.filterFlags.push('your') ; countThese = 'your' }
-      else if (team) { fromProject.filterFlags.push('team') ; countThese = 'team' }
-      else { fromProject.filterFlags.push('otherPeople') ; countThese = 'otherPeople' }
+      if (fromProject.teamIds && fromProject.teamIds.indexOf(userId) > -1 ) { team = true; }
+      if (fromProject.leaderId === userId ) { yours = true; }
+      if (fromProject.everyone) { fromProject.filterFlags.push('everyone') ; countThese = 'everyone'; }
+      else if (yours) { fromProject.filterFlags.push('your') ; countThese = 'your'; }
+      else if (team) { fromProject.filterFlags.push('team') ; countThese = 'team'; }
+      else { fromProject.filterFlags.push('otherPeople') ; countThese = 'otherPeople'; }
       fromProject.key = this.getProjectKey(fromProject);
       if (masterKeys.indexOf(fromProject.key) < 0) { 
         //This is a new project, add
@@ -988,7 +1046,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         /*NEED TO MERGE PROJECTS */ 
         console.log(this.state);
         console.log(stateProjects);
-      } else { console.log('processProjects complete 2') }
+      } else { console.log('processProjects complete 2') ; }
 
     this.setState({  
       projects: stateProjects,
@@ -1009,7 +1067,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         month: 0,
         quarter: 0,
         recent: 0,
-      }
+      };
       return yourCounts;
     }
     let counts = {
@@ -1017,7 +1075,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       team: createMe(),
       your: createMe(),
       otherPeople: createMe(),
-    }
+    };
 
     return counts;
 
@@ -1049,26 +1107,26 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       let yours, team, today, week, month, quarter, recent :boolean = false;
 
       //Check if timeTrackData is tagged to you 
-      if (timeTrackData[i].userId === userId ) { yours = true } ;
-      if (yours) { fromProject.filterFlags.push('your') ; countThese = 'your' }
+      if (timeTrackData[i].userId === userId ) { yours = true; } 
+      if (yours) { fromProject.filterFlags.push('your') ; countThese = 'your'; }
 
       //Check if project is tagged to you
-      if (fromProject.teamIds.indexOf(userId) > -1 ) { team = true } ;
-      if (fromProject.leaderId === userId ) { team = true } ;
+      if (fromProject.teamIds.indexOf(userId) > -1 ) { team = true; } 
+      if (fromProject.leaderId === userId ) { team = true; } 
       
-      if (!yours  && team) { fromProject.filterFlags.push('team') ; countThese = 'team' }
-      if (!yours && !team) { fromProject.filterFlags.push('otherPeople') ; countThese = 'otherPeople' }
+      if (!yours  && team) { fromProject.filterFlags.push('team') ; countThese = 'team'; }
+      if (!yours && !team) { fromProject.filterFlags.push('otherPeople') ; countThese = 'otherPeople'; }
 
       let now = new Date();
       let then = new Date(timeTrackData[i].endTime);
       let daysSince = (now.getTime() - then.getTime()) / (1000 * 60 * 60 * 24);
       counts[countThese].total ++;
 
-      if ( daysSince <= 1 ) { today = true;  fromProject.filterFlags.push('today') ; counts[countThese].today ++ }
-      else if ( daysSince <= 7 ) { week = true;  fromProject.filterFlags.push('week') ; counts[countThese].week ++ }
-      else if ( daysSince <= 31 ) { month = true;  fromProject.filterFlags.push('month') ; counts[countThese].month ++ }
-      else if ( daysSince <= 91 ) { month = true;  fromProject.filterFlags.push('quarter') ; counts[countThese].quarter ++ }
-      else if ( daysSince <= recentDays ) { recent = true; fromProject.filterFlags.push('recent') ; counts[countThese].recent ++ }
+      if ( daysSince <= 1 ) { today = true;  fromProject.filterFlags.push('today') ; counts[countThese].today ++ ; }
+      else if ( daysSince <= 7 ) { week = true;  fromProject.filterFlags.push('week') ; counts[countThese].week ++ ; }
+      else if ( daysSince <= 31 ) { month = true;  fromProject.filterFlags.push('month') ; counts[countThese].month ++ ; }
+      else if ( daysSince <= 91 ) { month = true;  fromProject.filterFlags.push('quarter') ; counts[countThese].quarter ++ ; }
+      else if ( daysSince <= recentDays ) { recent = true; fromProject.filterFlags.push('recent') ; counts[countThese].recent ++ ; }
       
       if (userKeys.indexOf(fromProject.key) < 0) { 
         //This is a new project, add
@@ -1105,7 +1163,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
      /*NEED TO MERGE PROJECTS */ 
      console.log(this.state);
      console.log(stateProjects);
-   } else { console.log('processTimeEntries complete 4') }
+   } else { console.log('processTimeEntries complete 4') ; }
 
    this.setState({
     projects: stateProjects,
@@ -1230,7 +1288,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       let partialKey = project[k];
       if ( k === 'comments' || k === 'projectID1' || k === 'projectID2' || k === 'timeTarget') {
         //These properties have custom object model to them so we need to check the .value
-        if ( project[k] ) { partialKey = project[k].value } else { partialKey = '' }
+        if ( project[k] ) { partialKey = project[k].value ; } else { partialKey = '' ; }
       }
       if ( typeof partialKey === 'object') {
         if (partialKey) { key += partialKey.join(' '); }
@@ -1293,13 +1351,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   private saveMyTime (trackTimeItem: ITimeEntry , masterOrRemote : string) {
 
     let teamId = { results: [] };
-    if (trackTimeItem.teamIds) { teamId = { results: trackTimeItem.teamIds } }
+    if (trackTimeItem.teamIds) { teamId = { results: trackTimeItem.teamIds } ; }
 
     let category1 = { results: [] };
-    if (trackTimeItem.category1) { category1 = { results: trackTimeItem.category1 } }
+    if (trackTimeItem.category1) { category1 = { results: trackTimeItem.category1 } ; }
 
     let category2 = { results: [] };
-    if (trackTimeItem.category2) { category2 = { results: trackTimeItem.category2 } }
+    if (trackTimeItem.category2) { category2 = { results: trackTimeItem.category2 } ; }
 
     let saveThisItem = {
         //Values that would come from Project item
@@ -1311,8 +1369,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         LeaderId: trackTimeItem.leaderId,  //Likely single person column
         TeamId: teamId,  //Likely multi person column
 
-        ProjectID1: trackTimeItem.projectID1 ? trackTimeItem.projectID1 : null,  //Example Project # - look for strings starting with * and ?
-        ProjectID2: trackTimeItem.projectID2 ? trackTimeItem.projectID2 : null,  //Example Cost Center # - look for strings starting with * and ?
+        ProjectID1: trackTimeItem.projectID1 ? trackTimeItem.projectID1.value : null,  //Example Project # - look for strings starting with * and ?
+        ProjectID2: trackTimeItem.projectID2 ? trackTimeItem.projectID2.value : null,  //Example Cost Center # - look for strings starting with * and ?
 
         //Values that relate to project list item
         //SourceProject: trackTimeItem.sourceProject, //Link back to the source project list item.
@@ -1337,7 +1395,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         Location: trackTimeItem.location, // Location
         Settings: trackTimeItem.settings,
 
-    }
+    };
 /*
     const allKeys = Object.keys(saveThisItem);
     let saveThisItemNew = {}; 
@@ -1368,6 +1426,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items.add( saveThisItem ).then((response) => {
         //Reload the page
         //location.reload();
+          this.addThisItemToState(trackTimeItem,masterOrRemote);
           alert('save successful');
         }).catch((e) => {
         //Throw Error
@@ -1386,6 +1445,28 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     }
 
   }
+
+  private addThisItemToState (trackTimeItem: ITimeEntry , masterOrRemote : string) {
+
+    if (masterOrRemote === 'master') {
+
+      let allEntries: ITimeEntry[] = [];
+      allEntries.push(trackTimeItem);
+      allEntries = allEntries.concat(this.state.allEntries);
+
+      let filteredEntries:  ITimeEntry[] = [];
+      filteredEntries.push(trackTimeItem);
+      filteredEntries = filteredEntries.concat(this.state.filteredEntries);
+
+      this.setState({
+        allEntries:allEntries,
+        filteredEntries:filteredEntries,
+      });
+    } else {
+      //Currently do nothing
+    }
+  }
+
 
   /**
    * Copied from Pivot-Tiles

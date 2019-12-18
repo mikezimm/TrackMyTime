@@ -9,7 +9,7 @@ export function getLocalMonths(local,format){
         var locale = local,
             month = objDate.toLocaleString(locale, { month: format });
           return month;
-      }
+      };
     
       var i;
       for (i = 1; i < 12; i++) {

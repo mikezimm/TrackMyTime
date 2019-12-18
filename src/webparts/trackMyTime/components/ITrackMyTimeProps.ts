@@ -31,9 +31,9 @@ export interface ITrackMyTimeProps {
   allowUserProjects: boolean; //Will build list of ProjectsUser based on existing data from TrackMyTime list
   projectMasterPriority: string; //Yours, Team, Others?
   projectUserPriority: string; //Yours, Team, Others?
-  onlyActiveProjects: boolean, //Only read in active projects.
+  onlyActiveProjects: boolean; //Only read in active projects.
   projectKey: string[];
-  syncProjectPivotsOnToggle, //always keep pivots in sync when toggling projects/history
+  syncProjectPivotsOnToggle; //always keep pivots in sync when toggling projects/history
 
   projectType:boolean; //Projects = 0 History = 1
 
