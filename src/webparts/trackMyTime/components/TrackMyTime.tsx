@@ -20,6 +20,7 @@ import { pivotOptionsGroup, } from '../../../services/propPane';
 
 import ButtonCompound from './createButtons/ICreateButtons';
 import { IButtonProps,ISingleButtonProps,IButtonState } from "./createButtons/ICreateButtons";
+import { CompoundButton, Stack, IStackTokens, elementContains } from 'office-ui-fabric-react';
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
   
@@ -237,6 +238,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       choice2 = this.state.projectMasterPriorityChoice;
     }
 
+    const stackButtonTokens: IStackTokens = { childrenGap: 40 };
+
     const buttons: ISingleButtonProps[] =
       [{
         disabled: false,  checked: true, primary: false,
@@ -275,12 +278,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
               { this.createProjectChoices(this.state) }
             </div>
             <div className={styles.floatRight} style={{ paddingTop: 20 }}>
-              <div style={{ display: 'table-row' }}>
+              <Stack horizontal={false} tokens={stackButtonTokens}>
                 { saveButtons }
-              </div>  
-              <div style={{ display: 'table-row' }}>
-                { 'More stuff below buttons' }
-              </div>               
+                <div>More stuff below buttons</div>
+              </Stack>
             </div>
           </div>
                  
@@ -1146,7 +1147,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let userId = 20;
     let recentDays = 4;
 
-    console.log('age',timeTrackData);
     for (let i = 0; i < timeTrackData.length; i++ ) {
       let thisEntry : ITimeEntry = timeTrackData[i];
       let countThese = "all";
