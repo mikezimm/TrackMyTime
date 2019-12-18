@@ -35,7 +35,7 @@ export default class ButtonCompound extends React.Component<IButtonProps, IButto
       width: null
     };
 
-  };
+  }
 
   public createButtons(buttons: ISingleButtonProps[] ){
 
@@ -62,6 +62,6 @@ export default class ButtonCompound extends React.Component<IButtonProps, IButto
             {buttons}
           </Stack>
         </div>
-      )
+      );
   }
-};
+}

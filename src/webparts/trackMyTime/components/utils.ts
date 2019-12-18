@@ -78,7 +78,7 @@ function createIPersonCategoryArrays(col) {
     lastCategory: null,
     name: col,
 
-  }
+  };
   
   return result;
 
@@ -117,7 +117,7 @@ function createIDateCategoryArrays(col) {
     lastCategory: null,
     name: col,
 
-  }
+  };
   
   return result;
 
