@@ -27,6 +27,32 @@ export interface IUser {
   id: any;
 }
 
+export interface IEntries {
+  entries: ITimeEntry[];
+}
+
+export interface IEntryInfo {
+
+  all: ITimeEntry[]; //All Entries
+  user: ITimeEntry[]; //Current user's entries
+  your: ITimeEntry[]; //Current user's entries
+  team: ITimeEntry[]; //Current user's entries
+  everyone: ITimeEntry[]; //Current user's entries
+  other: ITimeEntry[]; //Current user's entries
+
+  session? :ITimeEntry[]; //Session (page in browser) user's entries
+  today? : ITimeEntry[]; //Today's user's entries
+  week? : ITimeEntry[]; //This week's user's entries
+
+  userKeys: string[]; //Current user's entry keys
+  userPriority: ITimeEntry[]; //Current user's priority entries
+  current: ITimeEntry[]; //All 'Current' entries
+  lastFiltered: ITimeEntry[]; //Last filtered for search
+  lastEntry: ITimeEntry[];
+  newFiltered: ITimeEntry[]; //new filtered for search
+  
+}
+
 export interface ITimeEntry {
   //Values that would come from Project item
   id?: any; //Item ID on list
@@ -57,6 +83,7 @@ export interface ITimeEntry {
   startTime: any; //Time stamp
   endTime: any; // Time stamp
   duration?: any; //Number  -- May not be needed based on current testing with start and end dates.
+  age?: number; //Days since End Time
 
   //Saves what entry option was used... Since Last, Slider, Manual
   entryType?: string;
@@ -158,7 +185,7 @@ export interface IProjectInfo {
 export interface ITrackMyTimeState {
 
   projects?: IProjectInfo;
-
+  entries?: IEntryInfo;
   // 1 - Analytics options
   endTime?: theTime;
 
@@ -192,6 +219,8 @@ export interface ITrackMyTimeState {
   // 6 - User Feedback:
   showElapsedTimeSinceLast?: boolean;  // Idea is that it can be like a clock showing how long it's been since your last entry.
   lastEntry?: ITimeEntry;  //Should be a time entry
+  lastEndTime?: theTime; //Should be latest timestamp of the current user... used to create start time for next entry.
+
   elapsedTime?: any;  //Elapsed Time since last entry
 
   allEntries?: ITimeEntry[]; //List of all entries
@@ -232,5 +261,3 @@ export interface ITrackMyTimeState {
 
 
 }
-
-

@@ -6,7 +6,7 @@ import { sp, Web } from '@pnp/sp';
 
 import { Pivot, PivotItem, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabric-react/lib/Pivot';
 
-import { DefaultButton, autobind } from 'office-ui-fabric-react';
+import { DefaultButton, autobind, getLanguage } from 'office-ui-fabric-react';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
@@ -15,15 +15,33 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
-import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, ITrackMyTimeState} from './ITrackMyTimeState';
+import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, ITrackMyTimeState} from './ITrackMyTimeState';
 import { pivotOptionsGroup, } from '../../../services/propPane';
 
 import ButtonCompound from './createButtons/ICreateButtons';
 import { IButtonProps,ISingleButtonProps,IButtonState } from "./createButtons/ICreateButtons";
+import { CompoundButton, Stack, IStackTokens, elementContains } from 'office-ui-fabric-react';
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
   
+  private createEntryInfo() {
 
+    let entryInfo = {} as IEntryInfo;
+    entryInfo.all = []; //All Entries
+    entryInfo.user = []; //Current user's entries
+    entryInfo.session = []; //Current user's entries
+    entryInfo.today = []; //Current user's entries
+    entryInfo.week = []; //Current user's entries
+    entryInfo.userKeys = []; //Current user's entry keys
+    entryInfo.userPriority = []; //Current user's priority entries
+    entryInfo.current = []; //All 'Current' entries
+    entryInfo.lastFiltered = []; //Last filtered for search
+    entryInfo.lastEntry = []; 
+    entryInfo.newFiltered = []; //New filtered for search
+    
+    return entryInfo;
+
+  }
 
   private createprojectInfo() {
 
@@ -37,7 +55,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     projectInfo.lastFiltered = [];
     projectInfo.lastProject = [];
     projectInfo.all = [];
-    
+    projectInfo.newFiltered = []; //New filtered for search
+
     return projectInfo;
 
   }
@@ -62,6 +81,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       // 4 -Project options
       projects: this.createprojectInfo(),
+      entries: this.createEntryInfo(),
       
       pivtTitles:['Yours', 'Your Team','Everyone','Others'],
       filteredCategory: this.props.defaultProjectPicker,
@@ -218,6 +238,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       choice2 = this.state.projectMasterPriorityChoice;
     }
 
+    const stackButtonTokens: IStackTokens = { childrenGap: 40 };
+
     const buttons: ISingleButtonProps[] =
       [{
         disabled: false,  checked: true, primary: false,
@@ -256,12 +278,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
               { this.createProjectChoices(this.state) }
             </div>
             <div className={styles.floatRight} style={{ paddingTop: 20 }}>
-              <div style={{ display: 'table-row' }}>
+              <Stack horizontal={false} tokens={stackButtonTokens}>
                 { saveButtons }
-              </div>  
-              <div style={{ display: 'table-row' }}>
-                { 'More stuff below buttons' }
-              </div>               
+                <div>More stuff below buttons</div>
+              </Stack>
             </div>
           </div>
                  
@@ -614,13 +634,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
    */
   public trackMyTime = () : void => {
     //alert('trackMyTime');
-    this.saveMyTime (this.state.allEntries[0] , 'master');
+    this.saveMyTime (this.state.entries.all[0] , 'master');
 
   }
 
   public clearMyInput = () : void => {
 
-    //this.saveMyTime (this.state.allEntries[0] , 'master');
+    //this.saveMyTime (this.state.entries.all[0] , 'master');
     alert('clearMyInput');
   }
 
@@ -935,7 +955,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           startTime : item.StartTime , //Time stamp
           endTime : item.EndTime , // Time stamp
           duration : item.Hours , //Number  -- May not be needed based on current testing with start and end dates.
-
+          age: this.getAge(item.EndTime,"days"),
           //Saves what entry option was used... Since Last, Slider, Manual
           entryType : item.EntryType ,
           deltaT : item.DeltaT , //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
@@ -969,6 +989,23 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     });
 
   }  
+
+  /**
+   * Returns number of days
+   * @param time 
+   */
+  private getAge(time, inWhat){
+    let date = new Date(time).getTime();
+    let now = new Date().getTime();
+    let age : number = (now - date);
+    if (inWhat === 'days') { age =  age/(1000 * 60 * 60 * 24)}
+    else if (inWhat === 'hours') { age =  age/(1000 * 60 * 60)}
+    else if (inWhat === 'minutes') { age =  age/(1000 * 60)}
+    else if (inWhat === 'seconds') { age =  age/(1000)}
+
+    return age;
+
+  }
 
   private processCatch(e) {
     console.log("Can't load data");
@@ -1081,7 +1118,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   }
 
-  private processTimeEntries(timeTrackData){
+  private processTimeEntries(timeTrackData : ITimeEntry[]){
     //trackMyProjectsInfo
     //console.log('timeTrackData:  ', timeTrackData);
     
@@ -1094,47 +1131,108 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     */
     let counts = this.createNewProjectCounts();
     let userKeys : string[] = [];
+    let allEntries: ITimeEntry[] = timeTrackData;
+    let yourEntries: ITimeEntry[] = [];
+    let teamEntries: ITimeEntry[] = [];
+    let everyoneEntries: ITimeEntry[] = [];
+    let otherEntries: ITimeEntry[] = [];
 
+    let sessionEntries: ITimeEntry[] = [];
+    let todayEntries: ITimeEntry[] = [];
     let user: IProject[] = [];
     let userPriority: IProject[] = [];
 
     let stateProjects = this.state.projects;
+    let stateEntries: IEntryInfo = this.state.entries;
     let userId = 20;
     let recentDays = 4;
+
     for (let i = 0; i < timeTrackData.length; i++ ) {
+      let thisEntry : ITimeEntry = timeTrackData[i];
       let countThese = "all";
-      let fromProject = this.convertToProject(timeTrackData[i]);
+      let fromProject = this.convertToProject(thisEntry);
       let yours, team, today, week, month, quarter, recent :boolean = false;
 
       //Check if timeTrackData is tagged to you 
-      if (timeTrackData[i].userId === userId ) { yours = true; } 
-      if (yours) { fromProject.filterFlags.push('your') ; countThese = 'your'; }
+      if (thisEntry.userId === userId ) { yours = true; } 
+      if (yours) { 
+        fromProject.filterFlags.push('your');
+        thisEntry.filterFlags.push('your');
+        countThese = 'your'; 
+      }
 
       //Check if project is tagged to you
       if (fromProject.teamIds.indexOf(userId) > -1 ) { team = true; } 
       if (fromProject.leaderId === userId ) { team = true; } 
       
-      if (!yours  && team) { fromProject.filterFlags.push('team') ; countThese = 'team'; }
-      if (!yours && !team) { fromProject.filterFlags.push('otherPeople') ; countThese = 'otherPeople'; }
 
-      let now = new Date();
-      let then = new Date(timeTrackData[i].endTime);
-      let daysSince = (now.getTime() - then.getTime()) / (1000 * 60 * 60 * 24);
+      if (!yours  && team) { 
+        fromProject.filterFlags.push('team');
+        thisEntry.filterFlags.push('team');
+        countThese = 'team'; 
+      }
+
+      if (!yours && !team) { 
+        fromProject.filterFlags.push('otherPeople');
+        thisEntry.filterFlags.push('otherPeople');
+        countThese = 'otherPeople';
+      }
+
+      let daysSince = thisEntry.age;
       counts[countThese].total ++;
 
-      if ( daysSince <= 1 ) { today = true;  fromProject.filterFlags.push('today') ; counts[countThese].today ++ ; }
-      else if ( daysSince <= 7 ) { week = true;  fromProject.filterFlags.push('week') ; counts[countThese].week ++ ; }
-      else if ( daysSince <= 31 ) { month = true;  fromProject.filterFlags.push('month') ; counts[countThese].month ++ ; }
-      else if ( daysSince <= 91 ) { month = true;  fromProject.filterFlags.push('quarter') ; counts[countThese].quarter ++ ; }
-      else if ( daysSince <= recentDays ) { recent = true; fromProject.filterFlags.push('recent') ; counts[countThese].recent ++ ; }
-      
+      if ( daysSince <= 1 ) { today = true;
+        fromProject.filterFlags.push('today') ;
+        thisEntry.filterFlags.push('today') ;
+        counts[countThese].today ++ ; }
+      else if ( daysSince <= 7 ) { week = true;
+        fromProject.filterFlags.push('week') ;
+        thisEntry.filterFlags.push('week') ;
+        counts[countThese].week ++ ; }
+      else if ( daysSince <= 31 ) { month = true;
+        fromProject.filterFlags.push('month') ;
+        thisEntry.filterFlags.push('month') ;
+        counts[countThese].month ++ ; }
+      else if ( daysSince <= 91 ) { month = true;
+        fromProject.filterFlags.push('quarter') ;
+        thisEntry.filterFlags.push('quarter') ;
+        counts[countThese].quarter ++ ; }
+      else if ( daysSince <= recentDays ) { recent = true;
+        fromProject.filterFlags.push('recent') ;
+        thisEntry.filterFlags.push('recent') ;
+        counts[countThese].recent ++ ;
+       };
+                  
       if (userKeys.indexOf(fromProject.key) < 0) { 
         //This is a new project, add
         user.push(fromProject);
         userKeys.push(fromProject.key);
-      }
+      };
+/*
+
+      allEntries.push(thisEntry);
+*/
+      if (thisEntry.filterFlags.indexOf('today') > -1) { 
+        todayEntries.push(thisEntry);
+      };
+      if (thisEntry.filterFlags.indexOf('your') > -1) { 
+        yourEntries.push(thisEntry);
+      };
+      if (thisEntry.filterFlags.indexOf('team') > -1) { 
+        teamEntries.push(thisEntry);
+      };
+      if (thisEntry.filterFlags.indexOf('everyone') > -1) { 
+        everyoneEntries.push(thisEntry);
+      };
+      if (thisEntry.filterFlags.indexOf('otherPeople') > -1) { 
+        everyoneEntries.push(thisEntry);
+      };    
+
+
 
     }
+
+
     //console.log('counts:', counts);
     //console.log('userKeys:', userKeys);
 
@@ -1146,6 +1244,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
      {   index: 4,   key: 'allToday', text: "All from today"  },
      {   index: 5,   key: 'allWeek', text: "All from last week"  },
     */
+
 
    let all: IProject[] = this.state.projects.all.concat(user);
    stateProjects.all = all;
@@ -1165,9 +1264,22 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
      console.log(stateProjects);
    } else { console.log('processTimeEntries complete 4') ; }
 
+       /* 2019-12-17: Testing here     2019-12-17: Testing here   */
+  stateEntries.all = allEntries;
+  stateEntries.user = yourEntries;
+  stateEntries.your = yourEntries;
+  stateEntries.team = teamEntries;
+  stateEntries.everyone = everyoneEntries;
+  stateEntries.other = otherEntries;  
+  stateEntries.today = todayEntries;
+  stateEntries.newFiltered = allEntries;
+  stateEntries.lastFiltered = allEntries;  
+
    this.setState({
     projects: stateProjects,
     userCounts: counts,
+    entries: stateEntries,
+
     allEntries: timeTrackData,
     filteredEntries: timeTrackData,
     timeTrackerLoadStatus:"Complete",
@@ -1175,6 +1287,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     timeTrackerListError: false,
     timeTrackerItemsError: false,
    });
+
 
   }
 
