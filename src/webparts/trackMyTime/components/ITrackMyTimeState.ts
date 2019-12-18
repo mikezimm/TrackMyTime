@@ -219,6 +219,8 @@ export interface ITrackMyTimeState {
   // 6 - User Feedback:
   showElapsedTimeSinceLast?: boolean;  // Idea is that it can be like a clock showing how long it's been since your last entry.
   lastEntry?: ITimeEntry;  //Should be a time entry
+  lastEndTime?: theTime; //Should be latest timestamp of the current user... used to create start time for next entry.
+
   elapsedTime?: any;  //Elapsed Time since last entry
 
   allEntries?: ITimeEntry[]; //List of all entries
