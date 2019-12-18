@@ -166,14 +166,21 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   public createProjectChoices(thisState){
     let elemnts = [];
+
     if (thisState.projects.all[0]){
-      elemnts = thisState.projects.newFiltered.map(project => (
+      elemnts = 
+        thisState.projects.newFiltered.map(project => (
         <div>
           { project.projectType } <span>: </span>{ project.titleProject } <span> - </span>{ project.category1 } <span> - </span>{ project.category2 }
         </div>
         ));
-    }
-    return ( elemnts );
+    } 
+
+    return ( 
+      <Stack horizontal={false} wrap={false}>{/* Stack for Projects */}
+        {elemnts} 
+      </Stack>
+      );
   }
 
   public createHistoryItems(thisState){
@@ -238,7 +245,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       choice2 = this.state.projectMasterPriorityChoice;
     }
 
+    const stackButtonTokensProBod: IStackTokens = { childrenGap: 40 };
     const stackButtonTokens: IStackTokens = { childrenGap: 40 };
+
+    
+
 
     const buttons: ISingleButtonProps[] =
       [{
@@ -274,15 +285,16 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
           <div><h2> { this.state.projectType === false ? 'Pick from the Project List' : 'Or... Your recent history'}</h2></div>
           <div>
-            <div style={{ display: 'inline-block' }}>
+
+            <Stack horizontal={true} horizontalAlign={"space-between"} tokens={stackButtonTokensProBod}> {/* Stack for Projects and body */}
               { this.createProjectChoices(this.state) }
-            </div>
-            <div className={styles.floatRight} style={{ paddingTop: 20 }}>
-              <Stack horizontal={false} tokens={stackButtonTokens}>
+
+              <Stack horizontal={false} horizontalAlign={"end"} tokens={stackButtonTokens}>{/* Stack for Buttons and Fields */}
                 { saveButtons }
                 <div>More stuff below buttons</div>
-              </Stack>
-            </div>
+              </Stack>  {/* Stack for Buttons and Fields */}
+
+            </Stack> {/* Stack for Projects and body */}
           </div>
                  
           
