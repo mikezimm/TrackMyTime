@@ -29,7 +29,7 @@
     ]
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts", "src/webparts/trackMyTime/components/createButtons/ICreateButtons.tsx"
   ],
   "exclude": [
     "node_modules",
