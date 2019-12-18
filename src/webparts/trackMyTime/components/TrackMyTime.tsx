@@ -15,12 +15,16 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
+import { getAge, getBestTimeDelta, getLocalMonths, getTimeSpan} from '../../../services/dateServices';
+
 import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, ITrackMyTimeState} from './ITrackMyTimeState';
 import { pivotOptionsGroup, } from '../../../services/propPane';
 
 import ButtonCompound from './createButtons/ICreateButtons';
 import { IButtonProps,ISingleButtonProps,IButtonState } from "./createButtons/ICreateButtons";
 import { CompoundButton, Stack, IStackTokens, elementContains } from 'office-ui-fabric-react';
+
+import * as listBuilders from './ListView/ListView';
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
   
@@ -165,6 +169,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   }
 
   public createProjectChoices(thisState){
+    let projectHeading: JSX.Element = <div>
+        <h2> { this.state.projectType === false ? 'Pick from the Project List' : 'Or... Your recent history'}</h2>
+      </div>;
+
+
     let elemnts = [];
 
     if (thisState.projects.all[0]){
@@ -178,6 +187,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     return ( 
       <Stack horizontal={false} wrap={false}>{/* Stack for Projects */}
+        {projectHeading}
         {elemnts} 
       </Stack>
       );
@@ -245,7 +255,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       choice2 = this.state.projectMasterPriorityChoice;
     }
 
-    const stackButtonTokensProBod: IStackTokens = { childrenGap: 40 };
+    const stackButtonTokensBody: IStackTokens = { childrenGap: 40 };
     const stackButtonTokens: IStackTokens = { childrenGap: 40 };
 
     
@@ -266,9 +276,14 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       ];
 
-    let saveButtons = <ButtonCompound
-      buttons={buttons} horizontal={true}
-    />;
+    let saveButtons = 
+    <div style={{ paddingTop: '20px' }}>
+      <ButtonCompound
+        buttons={buttons} horizontal={true}
+      />
+    </div>;
+
+    let listBuild = listBuilders.listViewBuilder(this.props,this.state,this.state.entries.newFiltered);
 
     return (
       <div className={ styles.trackMyTime }>
@@ -283,13 +298,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
               
         </div>
 
-          <div><h2> { this.state.projectType === false ? 'Pick from the Project List' : 'Or... Your recent history'}</h2></div>
           <div>
 
-            <Stack horizontal={true} horizontalAlign={"space-between"} tokens={stackButtonTokensProBod}> {/* Stack for Projects and body */}
+            <Stack horizontal={true} horizontalAlign={"space-between"} tokens={stackButtonTokensBody}> {/* Stack for Projects and body */}
               { this.createProjectChoices(this.state) }
 
               <Stack horizontal={false} horizontalAlign={"end"} tokens={stackButtonTokens}>{/* Stack for Buttons and Fields */}
+
                 { saveButtons }
                 <div>More stuff below buttons</div>
               </Stack>  {/* Stack for Buttons and Fields */}
@@ -300,7 +315,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           
           <div></div><div><br/><br/></div>
           <div><h2>Recent TrackYourTime History</h2></div>
-          { this.createHistoryItems(this.state) }
+          {(listBuild)}
+          { /* this.createHistoryItems(this.state) */ }
 
         </div>
       </div>
@@ -931,9 +947,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items
     .select(selectColsTrack).expand(expandTheseTrack).filter(trackTimeRestFilter).orderBy(trackTimeSort,false).top(200).inBatch(batch).get()
     .then((response) => {
-      //console.log('response: timeTrackData', response);
+      console.log('response: timeTrackData', response);
       trackMyProjectsInfo.timeTrackData = response.map((item) => {
         //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
+        
 
 
         let timeEntry : ITimeEntry = {
@@ -967,13 +984,21 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           startTime : item.StartTime , //Time stamp
           endTime : item.EndTime , // Time stamp
           duration : item.Hours , //Number  -- May not be needed based on current testing with start and end dates.
-          age: this.getAge(item.EndTime,"days"),
+          age: getAge(item.EndTime,"days"),
           //Saves what entry option was used... Since Last, Slider, Manual
           entryType : item.EntryType ,
           deltaT : item.DeltaT , //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
           timeEntryTBD1 : '' ,
           timeEntryTBD2 : '' ,
-          timeEntryTBD3 : '' ,          
+          timeEntryTBD3 : '' ,
+
+          //This block for use in the history list component
+          //Getting initials using:  https://stackoverflow.com/a/45867959/4210807
+          userInitials: item.User.Title.split(" ").map((n)=>n[0]).join(""),
+          listCategory: (item.Category1 ? item.Category1.join(', ') + ' ' + item.Category2.join(', ') : ''),
+          listTimeSpan: getTimeSpan(item.StartTime, item.EndTime),
+          listProjects: item.ProjectID1 + (item.ProjectID2 ? ' ' + item.ProjectID1 : ''),
+          listTracking: '',
 
           //Other settings and information
           location : item.Location,
@@ -1006,18 +1031,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
    * Returns number of days
    * @param time 
    */
-  private getAge(time, inWhat){
-    let date = new Date(time).getTime();
-    let now = new Date().getTime();
-    let age : number = (now - date);
-    if (inWhat === 'days') { age =  age/(1000 * 60 * 60 * 24)}
-    else if (inWhat === 'hours') { age =  age/(1000 * 60 * 60)}
-    else if (inWhat === 'minutes') { age =  age/(1000 * 60)}
-    else if (inWhat === 'seconds') { age =  age/(1000)}
 
-    return age;
-
-  }
 
   private processCatch(e) {
     console.log("Can't load data");
@@ -1193,54 +1207,62 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       let daysSince = thisEntry.age;
       counts[countThese].total ++;
 
-      if ( daysSince <= 1 ) { today = true;
+      if ( daysSince <= 0 ) { today = true;
         fromProject.filterFlags.push('today') ;
         thisEntry.filterFlags.push('today') ;
+        thisEntry.timeGroup = '0. Ended Sometime in the Future?';
+        counts[countThese].today ++ ; }
+      else if ( daysSince <= 1 ) { today = true;
+        fromProject.filterFlags.push('today') ;
+        thisEntry.filterFlags.push('today') ;
+        thisEntry.timeGroup = '1. Ended Today';
         counts[countThese].today ++ ; }
       else if ( daysSince <= 7 ) { week = true;
         fromProject.filterFlags.push('week') ;
         thisEntry.filterFlags.push('week') ;
+        thisEntry.timeGroup = '2. Ended Past Week';
         counts[countThese].week ++ ; }
       else if ( daysSince <= 31 ) { month = true;
         fromProject.filterFlags.push('month') ;
         thisEntry.filterFlags.push('month') ;
+        thisEntry.timeGroup = '3. Ended Past Month';
         counts[countThese].month ++ ; }
       else if ( daysSince <= 91 ) { month = true;
         fromProject.filterFlags.push('quarter') ;
         thisEntry.filterFlags.push('quarter') ;
+        thisEntry.timeGroup = '4. Ended Past Quarter';
         counts[countThese].quarter ++ ; }
       else if ( daysSince <= recentDays ) { recent = true;
         fromProject.filterFlags.push('recent') ;
         thisEntry.filterFlags.push('recent') ;
+        thisEntry.timeGroup = '5. Ended Who knows when :)';
         counts[countThese].recent ++ ;
-       };
+       }
                   
       if (userKeys.indexOf(fromProject.key) < 0) { 
         //This is a new project, add
         user.push(fromProject);
         userKeys.push(fromProject.key);
-      };
+      }
 /*
 
       allEntries.push(thisEntry);
 */
       if (thisEntry.filterFlags.indexOf('today') > -1) { 
         todayEntries.push(thisEntry);
-      };
+      }
       if (thisEntry.filterFlags.indexOf('your') > -1) { 
         yourEntries.push(thisEntry);
-      };
+      }
       if (thisEntry.filterFlags.indexOf('team') > -1) { 
         teamEntries.push(thisEntry);
-      };
+      }
       if (thisEntry.filterFlags.indexOf('everyone') > -1) { 
         everyoneEntries.push(thisEntry);
-      };
+      }
       if (thisEntry.filterFlags.indexOf('otherPeople') > -1) { 
         everyoneEntries.push(thisEntry);
-      };    
-
-
+      } 
 
     }
 

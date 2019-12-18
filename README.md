@@ -9,6 +9,7 @@ npm install @pnp/logging @pnp/common @pnp/odata @pnp/sp --save ( Done Dec 11 )
 npm install @microsoft/sp-page-context ( Done Dec 11 )
 npm install @pnp/spfx-property-controls ( Dec 13 )
 npm install @pnp/sp  ( Required to get list items from web )
+npm install @pnp/spfx-controls-react --save --save-exact (Dec 18 - for react ListView of history items)
 npm install --save @pnp/polyfill-ie11 ( Required for Internet Explorer Expand/Select calls )
 npm install @pnp/spfx-controls-react --save --save-exact
 npm install @microsoft/sp-webpart-base (Required for all Prop Pane Panel files)

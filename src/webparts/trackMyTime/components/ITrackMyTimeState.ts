@@ -66,8 +66,16 @@ export interface ITimeEntry {
   leaderId?: number;
   teamIds?: number[];
 
-  filterFlags?: string[]; // what flags does this match?  yourRecent, allRecent etc...
+  //This block for use in the history list component
+  userInitials?: string;
+  listCategory?: string; 
+  listTimeSpan?: string;
+  listProjects?: string;
+  listTracking?: string; 
 
+  filterFlags?: string[]; // what flags does this match?  yourRecent, allRecent etc...
+  timeGroup?: string; //Used for grouping the list of entries
+  
   projectID1?: ISmartText;  //Example Project # - look for strings starting with * and ?
   projectID2?: ISmartText;  //Example Cost Center # - look for strings starting with * and ?
 
