@@ -49,8 +49,11 @@ export function getTimeSpan(startTime: string,endTime: string){
   let date = new Date(startTime).getTime();
   let startDate = new Date(startTime).getDate();
   let endDate = new Date(endTime).getDate();
-  let dateString : string = (new Date(startTime)).toLocaleDateString('short');
-  let timeString : string = (new Date(startTime)).toLocaleTimeString('short');
+  let thisYear = new Date().getUTCFullYear();
+  let startYear = new Date(startTime).getUTCFullYear();
+  let replaceYear = (thisYear === startYear) ? "/" + thisYear : "";
+  let dateString : string = (new Date(startTime)).toLocaleDateString('short').replace(replaceYear,'');
+  let timeString : string = (new Date(startTime)).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   let forString = '- for';
   let deltaString : string = getBestTimeDelta(startTime,endTime);
 
