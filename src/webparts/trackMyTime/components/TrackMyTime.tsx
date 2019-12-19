@@ -300,7 +300,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
           <div>
 
-            <Stack horizontal={true} horizontalAlign={"space-between"} tokens={stackButtonTokensBody}> {/* Stack for Projects and body */}
+            <Stack padding={20} horizontal={true} horizontalAlign={"space-between"} tokens={stackButtonTokensBody}> {/* Stack for Projects and body */}
               { this.createProjectChoices(this.state) }
 
               <Stack horizontal={false} horizontalAlign={"end"} tokens={stackButtonTokens}>{/* Stack for Buttons and Fields */}
@@ -314,9 +314,12 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
                  
           
           <div></div><div><br/><br/></div>
-          <div><h2>Recent TrackYourTime History</h2></div>
-          {(listBuild)}
-          { /* this.createHistoryItems(this.state) */ }
+          <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
+            <div><h2>Recent TrackYourTime History</h2></div>
+            {(listBuild)}
+            { /* this.createHistoryItems(this.state) */ }
+          </div>
+
 
         </div>
       </div>
