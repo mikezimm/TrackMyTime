@@ -54,8 +54,22 @@ export const  category : IViewField = {
   //linkPropertyName: "c",
   isResizable: true,
   sorting: true,
-  minWidth: 20,
+  minWidth: 30,
   maxWidth: 100
+}
+
+//This does not yet work because the component ends up showing the field anyway
+export function testField(visible: boolean) {
+    let test  : IViewField = {
+        name: "listCategory",
+        displayName: visible ? "Category" : "",
+        //linkPropertyName: "c",
+        isResizable: visible ? true : false,
+        sorting: visible ? true : false,
+        minWidth: visible ? 30 : 0,
+        maxWidth: visible ? 100 : 0,
+    }
+    return test;
 }
 
 export function viewFieldsFull() {
@@ -66,8 +80,9 @@ export function viewFieldsFull() {
     viewFields.push(timeSpan);
     viewFields.push(project);
     viewFields.push(description);
-    viewFields.push(comments);
     viewFields.push(category);
+    viewFields.push(comments);
+
 
     return viewFields;
     
