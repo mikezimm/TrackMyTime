@@ -1210,7 +1210,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       if ( daysSince <= 0 ) { today = true;
         fromProject.filterFlags.push('today') ;
         thisEntry.filterFlags.push('today') ;
-        thisEntry.timeGroup = '0. Ended Sometime in the Future?';
+        thisEntry.timeGroup = '0. These went Back to the Future :)';
         counts[countThese].today ++ ; }
       else if ( daysSince <= 1 ) { today = true;
         fromProject.filterFlags.push('today') ;
@@ -1231,6 +1231,16 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         fromProject.filterFlags.push('quarter') ;
         thisEntry.filterFlags.push('quarter') ;
         thisEntry.timeGroup = '4. Ended Past Quarter';
+        counts[countThese].quarter ++ ; }
+      else if ( daysSince <= 365 ) { month = true;
+        fromProject.filterFlags.push('quarter') ;
+        thisEntry.filterFlags.push('quarter') ;
+        thisEntry.timeGroup = '5. Ended Past Year';
+        counts[countThese].quarter ++ ; }
+      else if ( daysSince <= 730*4 ) { month = true;
+        fromProject.filterFlags.push('quarter') ;
+        thisEntry.filterFlags.push('quarter') ;
+        thisEntry.timeGroup = '6. Ended a LONG time ago';
         counts[countThese].quarter ++ ; }
       else if ( daysSince <= recentDays ) { recent = true;
         fromProject.filterFlags.push('recent') ;

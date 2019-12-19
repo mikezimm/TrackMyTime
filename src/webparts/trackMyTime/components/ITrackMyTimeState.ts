@@ -90,7 +90,7 @@ export interface ITimeEntry {
   userId: number;
   startTime: any; //Time stamp
   endTime: any; // Time stamp
-  duration?: any; //Number  -- May not be needed based on current testing with start and end dates.
+  duration?: string; //Number  -- May not be needed based on current testing with start and end dates.
   age?: number; //Days since End Time
 
   //Saves what entry option was used... Since Last, Slider, Manual
