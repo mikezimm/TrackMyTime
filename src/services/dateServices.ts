@@ -44,7 +44,7 @@ export function msPerYr(){
 
 export function getTimeSpan(startTime: string,endTime: string){
   
-  console.log('getBestTimeDelta', startTime, endTime);
+  //console.log('getBestTimeDelta', startTime, endTime);
 
   let date = new Date(startTime).getTime();
   let startDate = new Date(startTime).getDate();
@@ -66,7 +66,7 @@ export function getBestTimeDelta(startTime: string,endTime: string){
   let end = new Date(endTime).getTime();
   let delta : number = end - start;
 
-  console.log('getBestTimeDelta', startTime, endTime);
+  //console.log('getBestTimeDelta', startTime, endTime);
 
   if (delta/(1000) < 60 ) {
     return delta/(1000) + ' seconds';

@@ -3,6 +3,7 @@ import styles from './TrackMyTime.module.scss';
 import { ITrackMyTimeProps } from './ITrackMyTimeProps';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { sp, Web } from '@pnp/sp';
+import { CurrentUser } from '@pnp/sp/src/siteusers';
 
 import { Pivot, PivotItem, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabric-react/lib/Pivot';
 
@@ -112,6 +113,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       // 9 - Other web part options
 
+      loadOrder: "",
       projectsLoadStatus:"Loading",
       projectsLoadError: "",
       projectsListError: false,
@@ -121,6 +123,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       timeTrackerLoadError: "",
       timeTrackerListError: false,
       timeTrackerItemsError: false,
+
+      userLoadStatus:"Loading",
 
       showTips: "none",
       loadError: "",
@@ -854,6 +858,29 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
  * projectWeb.getList().items
  */
 
+    //From https://www.ktskumar.com/2018/11/get-current-user-using-pnp-library-spfx/
+    sp.web.currentUser.inBatch(batch).get().then((r: CurrentUser) => {
+
+      let currentUser : IUser = {
+        title: r['Title'] , //
+        initials: r['Title'].split(" ").map((n)=>n[0]).join(""), //Single person column
+        email: r['Email'] , //Single person column
+        id: r['Id'] , //
+        isSiteAdmin: r['IsSiteAdmin'],
+        LoginName: r['LoginName'],
+      };
+
+      this.setState({  
+        loadOrder: (this.state.loadOrder === "") ? 'User' : this.state.loadOrder + ' > User',
+        currentUser: currentUser,
+      });
+
+    }).catch((e) => {
+      this.processCatch(e);
+    });
+
+
+
     projectWeb.lists.getByTitle(useProjectList).items
     .select(selectCols).expand(expandThese).filter(projectRestFilter).orderBy(projectSort,true).inBatch(batch).getAll()
     .then((response) => {
@@ -1115,6 +1142,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       } else { console.log('processProjects complete 2') ; }
 
     this.setState({  
+      loadOrder: (this.state.loadOrder === "") ? 'Projects' : this.state.loadOrder + ' > Projects',
       projects: stateProjects,
       projectsLoadStatus:"Complete",
       projectsLoadError: "",
@@ -1174,6 +1202,17 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let stateProjects = this.state.projects;
     let stateEntries: IEntryInfo = this.state.entries;
     let userId = 20;
+
+    let thisUserParam = this.props.urlVars['User'];
+    let thisUser = this.state.currentUser.title;
+    if (thisUser) {
+      //alert("User found thisUser: " + JSON.stringify(thisUser) )
+     }
+    else if (thisUserParam) {
+      //alert("User found thisUserParam: " + JSON.stringify(thisUserParam) );
+    } else { //alert("NOT found: " );
+    }
+
     let recentDays = 4;
 
     for (let i = 0; i < timeTrackData.length; i++ ) {
@@ -1279,20 +1318,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     }
 
-
-    //console.log('counts:', counts);
-    //console.log('userKeys:', userKeys);
-
-    /*
-     {   index: 0,   key: 'yourRecent', text: "Your most recently used"  },
-     {   index: 1,   key: 'yourToday', text: "Yours from today"  },
-     {   index: 2,   key: 'yourWeek', text: "Yours from last week"  },
-     {   index: 3,   key: 'allRecent', text: "All most recently used"  },
-     {   index: 4,   key: 'allToday', text: "All from today"  },
-     {   index: 5,   key: 'allWeek', text: "All from last week"  },
-    */
-
-
    let all: IProject[] = this.state.projects.all.concat(user);
    stateProjects.all = all;
    stateProjects.user = user;
@@ -1312,17 +1337,18 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
    } else { console.log('processTimeEntries complete 4') ; }
 
        /* 2019-12-17: Testing here     2019-12-17: Testing here   */
-  stateEntries.all = allEntries;
-  stateEntries.user = yourEntries;
-  stateEntries.your = yourEntries;
-  stateEntries.team = teamEntries;
-  stateEntries.everyone = everyoneEntries;
-  stateEntries.other = otherEntries;  
-  stateEntries.today = todayEntries;
-  stateEntries.newFiltered = allEntries;
-  stateEntries.lastFiltered = allEntries;  
+    stateEntries.all = allEntries;
+    stateEntries.user = yourEntries;
+    stateEntries.your = yourEntries;
+    stateEntries.team = teamEntries;
+    stateEntries.everyone = everyoneEntries;
+    stateEntries.other = otherEntries;  
+    stateEntries.today = todayEntries;
+    stateEntries.newFiltered = allEntries;
+    stateEntries.lastFiltered = allEntries;  
 
    this.setState({
+    loadOrder: (this.state.loadOrder === "") ? 'Entries' : this.state.loadOrder + ' > Entries',
     projects: stateProjects,
     userCounts: counts,
     entries: stateEntries,
