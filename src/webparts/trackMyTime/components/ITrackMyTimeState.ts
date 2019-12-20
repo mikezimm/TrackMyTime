@@ -79,12 +79,17 @@ export interface ISaveEntry {
   
     //Values specific to Time Entry
   
-    userId: number;
-    startTime: any; //Time stamp
-    endTime: any; // Time stamp
+    userId?: number;
+    startTime?: any; //Time stamp
+    endTime?: any; // Time stamp
 
     //Saves what entry option was used... Since Last, Slider, Manual
     entryType?: string;
+
+    timeEntryTBD1?: string;
+    timeEntryTBD2?: string;
+    timeEntryTBD3?: string;  
+
 
     //Other settings and information
     location?: string; // Location
@@ -115,7 +120,7 @@ export interface ITimeEntry extends ISaveEntry {
     //Values that relate to project list item
 
     //Values specific to Time Entry
-
+    user: IUser;  //Single person column
     duration?: string; //Number  -- May not be needed based on current testing with start and end dates.
     age?: number; //Days since End Time
   
@@ -261,6 +266,7 @@ export interface ITrackMyTimeState {
   allEntries?: ITimeEntry[]; //List of all entries
   filteredEntries?: ITimeEntry[]; //List of recent entries
 
+  formEntry: ISaveEntry;
   // 7 - Slider Options
   timeSliderValue: number; //incriment of time slider
 
