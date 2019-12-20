@@ -25,6 +25,12 @@ import ButtonCompound from './createButtons/ICreateButtons';
 import { IButtonProps,ISingleButtonProps,IButtonState } from "./createButtons/ICreateButtons";
 import { CompoundButton, Stack, IStackTokens, elementContains } from 'office-ui-fabric-react';
 
+import {
+  TextField,
+  Button,
+  ButtonType
+} from 'office-ui-fabric-react';
+
 import * as listBuilders from './ListView/ListView';
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
@@ -47,7 +53,62 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     return entryInfo;
 
   }
+  private createFormEntry() {
 
+    let currentForm : ITimeEntry = {
+
+      editLink: null, //Link to view/edit item link
+      titleProject: "",
+      comments: ISmartText,
+      category1: [],
+      category2: [],
+      leader: IUser,  //Likely single person column
+      team: IUser[],  //Likely multi person column
+      leaderId: null,
+      teamIds: [],
+    
+      //This block for use in the history list component
+      userInitials: "",
+      listCategory: "", 
+      listTimeSpan: "",
+      listProjects: "",
+      listTracking: "", 
+    
+      filterFlags: [""], // what flags does this match?  yourRecent, allRecent etc...
+      timeGroup: "", //Used for grouping the list of entries
+      
+      projectID1: null,  //Example Project # - look for strings starting with * and ?
+      projectID2: null,  //Example Cost Center # - look for strings starting with * and ?
+    
+      //Values that relate to project list item
+      sourceProject: null, //Link back to the source project list item.
+      activity: null, //Link to the activity you worked on
+      ccList: null, //Link to CC List to copy item
+      ccEmail: "", //Email to CC List to copy item 
+      
+      //Values specific to Time Entry
+      user: IUser,  //Single person column
+      userId: null,
+      startTime: null, //Time stamp
+      endTime: null, // Time stamp
+      duration: null, //Number  -- May not be needed based on current testing with start and end dates.
+      age: null, //Days since End Time
+    
+      //Saves what entry option was used... Since Last, Slider, Manual
+      entryType: null,
+      deltaT: null, //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
+      timeEntryTBD1: null,
+      timeEntryTBD2: null,
+      timeEntryTBD3: null,  
+    
+      //Other settings and information
+      location: null, // Location
+      settings: null,
+
+
+    }
+
+  }
   private createprojectInfo() {
 
     let projectInfo = {} as IProjectInfo;
@@ -66,9 +127,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   }
 
-  
-
-  
   public constructor(props:ITrackMyTimeProps){
     super(props);
     this.state = { 
@@ -111,6 +169,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       allEntries: [], // List of all entries
       filteredEntries: [],  //List of recent entries
+
+      formEntry: this.createFormEntry(),
 
       // 7 - Slider Options
       timeSliderValue: 0,  //incriment of time slider
@@ -289,6 +349,15 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         buttons={buttons} horizontal={true}
       />
     </div>;
+
+
+    let comments =         <TextField
+    className={ styles.textField }
+    value={ this.state.inputValue }
+    placeholder={ this._placeHolderText }
+    autoComplete='off'          
+    onChanged={this._handleInputChange}/>;
+
 
     let listBuild = listBuilders.listViewBuilder(this.props,this.state,this.state.entries.newFiltered);
     let userName = this.state.currentUser
