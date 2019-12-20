@@ -87,6 +87,14 @@ import {
           { groupName: strings.PropPaneGroupLabel_Accuracy,
           groupFields: [
             
+            PropertyPaneSlider('stressMultiplier', {
+              label: 'TESTING ONLY - Compound Entry count',
+              min: 1,
+              max: 10,
+              value: 1,
+              step: 1,
+            }),
+
             PropertyPaneDropdown('roundTime', <IPropertyPaneDropdownProps>{
               label: strings.FieldLabel_RoundTime,
               options: trackTimeOptionsGroup.roundTimeChoices,

@@ -14,6 +14,7 @@ export interface ITrackMyTimeProps {
   useListAnalytics: boolean;
   analyticsWeb?: string;
   analyticsList?: string;
+  stressMultiplier?: number;
 
   // 2 - Source and destination list information
   projectListTitle: string;

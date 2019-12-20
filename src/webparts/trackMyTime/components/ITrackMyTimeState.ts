@@ -1,18 +1,12 @@
 
 import { ITrackMyTimeProps } from './ITrackMyTimeProps';
 import { string } from 'prop-types';
+import { CurrentUser } from '@pnp/sp/src/siteusers';
 
 export interface theTime {
   now: Date;
   theTime : string;
   milliseconds : number;
-}
-
-export interface IUser {
-  title: string;
-  initials?: string;  //Single person column
-  email?: string;  //Single person column
-  id: any;
 }
 
 export interface ILink {
@@ -24,7 +18,11 @@ export interface IUser {
   title: string;
   initials?: string;  //Single person column
   email?: string;  //Single person column
-  id: any;
+  id?: any;
+  Id?: any;
+  ID?: any;
+  isSiteAdmin?:boolean;
+  LoginName?: string;
 }
 
 export interface IEntries {
@@ -197,6 +195,11 @@ export interface ITrackMyTimeState {
   // 1 - Analytics options
   endTime?: theTime;
 
+  loadData?: {
+    user: any;
+    projects: any[];
+    entries: any[];
+  }
   // 2 - Source and destination list information
   projectListURL?: string; //Get from list item
   timeTrackerListURL?: string; //Get from list item
@@ -225,6 +228,7 @@ export interface ITrackMyTimeState {
   locationChoice: string;  //semi-colon separated choices
 
   // 6 - User Feedback:
+  currentUser?: IUser;  //Current user information
   showElapsedTimeSinceLast?: boolean;  // Idea is that it can be like a clock showing how long it's been since your last entry.
   lastEntry?: ITimeEntry;  //Should be a time entry
   lastEndTime?: theTime; //Should be latest timestamp of the current user... used to create start time for next entry.
@@ -246,6 +250,8 @@ export interface ITrackMyTimeState {
 
   loadStatus?: string;
 
+  loadOrder?: string; //This just tells us what order the rest calls came back
+
   projectsLoadStatus?: string;
   projectsLoadError?: string;
   projectsListError: boolean;
@@ -255,6 +261,8 @@ export interface ITrackMyTimeState {
   timeTrackerLoadError?: string;
   timeTrackerListError: boolean;
   timeTrackerItemsError: boolean;
+
+  userLoadStatus?: string;
 
   showTips?: string;
   loadError?: string;

@@ -3,6 +3,7 @@ import styles from './TrackMyTime.module.scss';
 import { ITrackMyTimeProps } from './ITrackMyTimeProps';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { sp, Web } from '@pnp/sp';
+import { CurrentUser } from '@pnp/sp/src/siteusers';
 
 import { Pivot, PivotItem, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabric-react/lib/Pivot';
 
@@ -15,7 +16,7 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
-import { getAge, getBestTimeDelta, getLocalMonths, getTimeSpan} from '../../../services/dateServices';
+import { getAge, getBestTimeDelta, getLocalMonths, getTimeSpan, getGreeting, getNicks} from '../../../services/dateServices';
 
 import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, ITrackMyTimeState} from './ITrackMyTimeState';
 import { pivotOptionsGroup, } from '../../../services/propPane';
@@ -87,6 +88,12 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       projects: this.createprojectInfo(),
       entries: this.createEntryInfo(),
       
+      loadData: {
+        user: null,
+        projects: [],
+        entries: [],
+      },
+
       pivtTitles:['Yours', 'Your Team','Everyone','Others'],
       filteredCategory: this.props.defaultProjectPicker,
       pivotDefSelKey:"",
@@ -112,6 +119,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       // 9 - Other web part options
 
+      loadOrder: "",
       projectsLoadStatus:"Loading",
       projectsLoadError: "",
       projectsListError: false,
@@ -121,6 +129,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       timeTrackerLoadError: "",
       timeTrackerListError: false,
       timeTrackerItemsError: false,
+
+      userLoadStatus:"Loading",
 
       showTips: "none",
       loadError: "",
@@ -226,7 +236,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       offText={strings.ToggleLabel_Projects} 
       onChange={this.toggleType.bind(this)} 
       checked={this.state.projectType}
-      styles={{ root: { width: 120 } }}
+      styles={{ root: { width: 120, paddingTop: 13, } }}
       />;
     return togglePart;
 
@@ -258,9 +268,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     const stackButtonTokensBody: IStackTokens = { childrenGap: 40 };
     const stackButtonTokens: IStackTokens = { childrenGap: 40 };
 
-    
-
-
     const buttons: ISingleButtonProps[] =
       [{
         disabled: false,  checked: true, primary: false,
@@ -284,6 +291,9 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     </div>;
 
     let listBuild = listBuilders.listViewBuilder(this.props,this.state,this.state.entries.newFiltered);
+    let userName = this.state.currentUser
+      ? getNicks(this.state.currentUser) + " ( Id: " + this.state.currentUser.Id + " ) entry count: " + this.state.allEntries.length
+      : "";
 
     return (
       <div className={ styles.trackMyTime }>
@@ -293,7 +303,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
             { this.createPivotObject(choice2, display2)  }
             { this.createPivotObject(choice1, display1)  }
             { /*this.createPivotObject(setPivot, "block") */ }
-            
+            <div><span style={{fontSize: 20, paddingRight: 30,}}>{ getGreeting(this.state.currentUser)}</span></div>
             { this.createProjectTypeToggle(this.state) }
               
         </div>
@@ -315,7 +325,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           
           <div></div><div><br/><br/></div>
           <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-            <div><h2>Recent TrackYourTime History</h2></div>
+            <div><h2>Recent TrackYourTime History { userName }</h2></div>
             {(listBuild)}
             { /* this.createHistoryItems(this.state) */ }
           </div>
@@ -483,7 +493,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   public getTheseProjects(startingProjects: IProject[], filterFlags : string[]){
 
-    console.log('getTheseProjects: filterFlags', filterFlags);
+    //console.log('getTheseProjects: filterFlags', filterFlags);
 
     let filteredProjects: IProject[] = [];
 
@@ -854,6 +864,41 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
  * projectWeb.getList().items
  */
 
+    //From https://www.ktskumar.com/2018/11/get-current-user-using-pnp-library-spfx/
+    sp.web.currentUser.inBatch(batch).get().then((r: CurrentUser) => {
+
+      let currentUser : IUser = {
+        title: r['Title'] , //
+        initials: r['Title'].split(" ").map((n)=>n[0]).join(""), //Single person column
+        email: r['Email'] , //Single person column
+        id: r['Id'] , //
+        Id: r['Id'] , //
+        ID: r['Id'] , //        
+        isSiteAdmin: r['IsSiteAdmin'],
+        LoginName: r['LoginName'],
+      };
+
+      //console.log('user.Id typeof:', typeof r['Id']);
+      this.setState({  
+        loadOrder: (this.state.loadOrder === "") ? 'User' : this.state.loadOrder + ' > User',
+        currentUser: currentUser,
+        userLoadStatus: "Complete"
+      });
+
+      if (this.state.projectsLoadStatus === "Pending") {
+        this.processProjects(this.state.loadData.projects);
+      }
+
+      if (this.state.timeTrackerLoadStatus === "Pending") {
+        this.processTimeEntries(this.state.loadData.entries);
+      }
+
+    }).catch((e) => {
+      this.processCatch(e);
+    });
+
+
+
     projectWeb.lists.getByTitle(useProjectList).items
     .select(selectCols).expand(expandThese).filter(projectRestFilter).orderBy(projectSort,true).inBatch(batch).getAll()
     .then((response) => {
@@ -893,6 +938,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           initials: 'p.' , //Single person column
           email: 'p.' , //Single person column
           id: p.LeaderId , //
+          Id: p.LeaderId , //
+          ID: p.LeaderId , //          
         };
 
         let team : IUser = {
@@ -900,6 +947,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           initials: 'p.' , //Single person column
           email: 'p.' , //Single person column
           id: p.TeamId , //
+          Id: p.TeamId , //
+          ID: p.TeamId , //  
         };
 
         let project : IProject = {
@@ -938,8 +987,23 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       });
       //console.log('trackMyProjectsInfo:', trackMyProjectsInfo);
-      this.processProjects(trackMyProjectsInfo.projectData);
-      //return trackMyProjectsInfo.projectData;
+
+      if (this.state.userLoadStatus === "Complete") {
+        this.processProjects(trackMyProjectsInfo.projectData);
+
+      } else {
+
+        let loadData = this.state.loadData;
+        loadData.projects = trackMyProjectsInfo.projectData;
+
+        this.setState({  
+          loadOrder: (this.state.loadOrder === "") ? 'Project' : this.state.loadOrder + ' > Project',
+          loadData:loadData,
+          projectsLoadStatus: "Pending",
+        });
+
+        loadData = null;
+      }
 
     }).catch((e) => {
       this.processCatch(e);
@@ -950,7 +1014,22 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items
     .select(selectColsTrack).expand(expandTheseTrack).filter(trackTimeRestFilter).orderBy(trackTimeSort,false).top(200).inBatch(batch).get()
     .then((response) => {
-      console.log('response: timeTrackData', response);
+      //console.log('response: timeTrackData', response);
+
+
+      /**
+       * This loop loosely increases performance by compounding number of entries.
+        * End test performance loop
+      */
+
+      if (this.props.stressMultiplier > 1) {
+        for (let i = 0; i < this.props.stressMultiplier; i++ ) {
+          //trackMyProjectsInfo.timeTrackData = trackMyProjectsInfo.timeTrackData.concat(trackMyProjectsInfo.timeTrackData);
+          response = response.concat(response);
+        }
+      }
+
+
       trackMyProjectsInfo.timeTrackData = response.map((item) => {
         //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
         
@@ -1016,7 +1095,24 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       });
       
-      this.processTimeEntries(trackMyProjectsInfo.timeTrackData);
+      if (this.state.userLoadStatus === "Complete") {
+        this.processTimeEntries(trackMyProjectsInfo.timeTrackData);
+
+      } else {
+
+        let loadData = this.state.loadData;
+        loadData.entries = trackMyProjectsInfo.timeTrackData;
+
+        this.setState({  
+          loadOrder: (this.state.loadOrder === "") ? 'Entries' : this.state.loadOrder + ' > Entries',
+          loadData:loadData,
+          timeTrackerLoadStatus: "Pending",
+        });
+
+        loadData = null;
+      }
+
+
 
     }).catch((e) => {
       this.processCatch(e);
@@ -1068,9 +1164,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       *   Put them into state.projects
       */
      let master: IProject[] = [];
-    let masterKeys: string[] = [];
+     let masterKeys: string[] = [];
 
-     let userId = 20;
+     let userId = this.state.currentUser.id;
+
+     //console.log('processProjects: userId',userId, typeof userId);
+     //console.log('projectData[1].leaderId:', projectData[1].leaderId, typeof projectData[1].leaderId);
+
      for (let i = 0; i < projectData.length; i++ ) {
       let countThese = "all";
       let fromProject = projectData[i];
@@ -1091,7 +1191,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       }
     }
 
-
      let all: IProject[] = master.concat(this.state.projects.all);
      let stateProjects = this.state.projects;
 
@@ -1107,21 +1206,14 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
      let masterPriority: IProject[] = [];
 
-     if (this.state.timeTrackerLoadStatus === "Complete") { 
-       console.log('all complete 1');
-        /*NEED TO MERGE PROJECTS */ 
-        console.log(this.state);
-        console.log(stateProjects);
-      } else { console.log('processProjects complete 2') ; }
-
     this.setState({  
+      loadOrder: (this.state.loadOrder === "") ? 'Process Projects' : this.state.loadOrder + ' > Process Projects',
       projects: stateProjects,
       projectsLoadStatus:"Complete",
       projectsLoadError: "",
       projectsListError: false,
       projectsItemsError: false,
     });
-
   }
 
   private createNewProjectCounts() {
@@ -1173,7 +1265,21 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     let stateProjects = this.state.projects;
     let stateEntries: IEntryInfo = this.state.entries;
-    let userId = 20;
+
+    let userId = this.state.currentUser.id;
+     //console.log('processTimeEntries: userId',userId, typeof userId);
+     //console.log('timeTrackData[1].userId:', timeTrackData[1].userId, typeof timeTrackData[1].userId);
+
+    let thisUserParam = this.props.urlVars['User'];
+    let thisUser = this.state.currentUser.title;
+    if (thisUser) {
+      //alert("User found thisUser: " + JSON.stringify(thisUser) )
+     }
+    else if (thisUserParam) {
+      //alert("User found thisUserParam: " + JSON.stringify(thisUserParam) );
+    } else { //alert("NOT found: " );
+    }
+
     let recentDays = 4;
 
     for (let i = 0; i < timeTrackData.length; i++ ) {
@@ -1278,21 +1384,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       } 
 
     }
-
-
-    //console.log('counts:', counts);
-    //console.log('userKeys:', userKeys);
-
-    /*
-     {   index: 0,   key: 'yourRecent', text: "Your most recently used"  },
-     {   index: 1,   key: 'yourToday', text: "Yours from today"  },
-     {   index: 2,   key: 'yourWeek', text: "Yours from last week"  },
-     {   index: 3,   key: 'allRecent', text: "All most recently used"  },
-     {   index: 4,   key: 'allToday', text: "All from today"  },
-     {   index: 5,   key: 'allWeek', text: "All from last week"  },
-    */
-
-
+    
    let all: IProject[] = this.state.projects.all.concat(user);
    stateProjects.all = all;
    stateProjects.user = user;
@@ -1303,26 +1395,20 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
    stateProjects.lastFiltered = stateProjects.newFiltered ;
 
    stateProjects.userKeys = userKeys;
-   
-   if (this.state.projectsLoadStatus === "Complete") { 
-    console.log('all complete 3');
-     /*NEED TO MERGE PROJECTS */ 
-     console.log(this.state);
-     console.log(stateProjects);
-   } else { console.log('processTimeEntries complete 4') ; }
 
        /* 2019-12-17: Testing here     2019-12-17: Testing here   */
-  stateEntries.all = allEntries;
-  stateEntries.user = yourEntries;
-  stateEntries.your = yourEntries;
-  stateEntries.team = teamEntries;
-  stateEntries.everyone = everyoneEntries;
-  stateEntries.other = otherEntries;  
-  stateEntries.today = todayEntries;
-  stateEntries.newFiltered = allEntries;
-  stateEntries.lastFiltered = allEntries;  
+    stateEntries.all = allEntries;
+    stateEntries.user = yourEntries;
+    stateEntries.your = yourEntries;
+    stateEntries.team = teamEntries;
+    stateEntries.everyone = everyoneEntries;
+    stateEntries.other = otherEntries;  
+    stateEntries.today = todayEntries;
+    stateEntries.newFiltered = allEntries;
+    stateEntries.lastFiltered = allEntries;  
 
    this.setState({
+    loadOrder: (this.state.loadOrder === "") ? 'Process Entries' : this.state.loadOrder + ' > Process Entries',
     projects: stateProjects,
     userCounts: counts,
     entries: stateEntries,

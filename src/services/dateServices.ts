@@ -44,7 +44,7 @@ export function msPerYr(){
 
 export function getTimeSpan(startTime: string,endTime: string){
   
-  console.log('getBestTimeDelta', startTime, endTime);
+  //console.log('getBestTimeDelta', startTime, endTime);
 
   let date = new Date(startTime).getTime();
   let startDate = new Date(startTime).getDate();
@@ -66,7 +66,7 @@ export function getBestTimeDelta(startTime: string,endTime: string){
   let end = new Date(endTime).getTime();
   let delta : number = end - start;
 
-  console.log('getBestTimeDelta', startTime, endTime);
+  //console.log('getBestTimeDelta', startTime, endTime);
 
   if (delta/(1000) < 60 ) {
     return delta/(1000) + ' seconds';
@@ -114,5 +114,62 @@ export function getAge(time, inWhat){
   let age = getTimeDelta(time, now, inWhat);
 
   return age;
+
+}
+
+export function getGreeting(name){
+  let hour = new Date().getHours();
+  let message = "";
+  if (hour < 1){
+    message = "Almost bedtimenick!";
+  } else if (hour < 2){
+    message = "Past your bedtimenick?";  
+  } else if (hour < 7){
+    message = "Top O the mornin to younick";    
+  } else if (hour < 12){
+    message = "Good morning SharePoint Usernick!";    
+  } else if (hour < 17){
+    message = "Afternoon partnernick";   
+  } else if (hour < 18){
+    message = "It's Five o'clock Somewhere...nick";    
+  } else if (hour < 19){
+    message = "I'm getting hungry... dinner time yetnick?";    
+  } else if (hour < 22){
+    message = "Some people start to get sleepy nownick";    
+  } else {
+    message = "https://en.wikipedia.org/wiki/Midnightnick";    
+  }
+
+  //console.log('getGreeting:', name);
+  let userName = name;
+  if (userName ){
+    if (userName.title.indexOf("Click") === 0 ) {
+      message = message.replace('Afternoon partner',"Servus");
+      message = message.replace('Top O the mornin to you',"Neata");
+      message = message.replace('nick'," BK");
+
+    } else if (userName.title.indexOf("Zimmerman") > 0 ) {
+      message = message.replace('nick'," BM");
+    }
+  }
+  return message;
+
+}
+
+export function getNicks(name){
+  let hour = new Date().getHours();
+  //console.log('getNicks:', name);
+  let message = name;
+  if ( message) {
+    if (message.title == 'Clickity McClickster'){
+      message = "Hey Sunshine!";
+    } else if (message.title == 'Mike Zimmerman'){
+      message = "Hey Zimmerman!";
+    } else {
+      message = 'Hi ' + message.split(' ')[0];
+    }
+  }
+
+  return message;
 
 }
