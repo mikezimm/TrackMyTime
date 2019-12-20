@@ -9,13 +9,6 @@ export interface theTime {
   milliseconds : number;
 }
 
-export interface IUser {
-  title: string;
-  initials?: string;  //Single person column
-  email?: string;  //Single person column
-  id: any;
-}
-
 export interface ILink {
   description: string;
   url: string;
@@ -25,7 +18,9 @@ export interface IUser {
   title: string;
   initials?: string;  //Single person column
   email?: string;  //Single person column
-  id: any;
+  id?: any;
+  Id?: any;
+  ID?: any;
   isSiteAdmin?:boolean;
   LoginName?: string;
 }
@@ -200,6 +195,11 @@ export interface ITrackMyTimeState {
   // 1 - Analytics options
   endTime?: theTime;
 
+  loadData?: {
+    user: any;
+    projects: any[];
+    entries: any[];
+  }
   // 2 - Source and destination list information
   projectListURL?: string; //Get from list item
   timeTrackerListURL?: string; //Get from list item
