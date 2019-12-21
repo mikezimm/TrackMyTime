@@ -143,6 +143,9 @@ export interface ISmartText {
   default: string;
   defaultIsPrefix: boolean;
   prefix?: string;
+  title?: string; //Required for building text fields
+  name?: string; //Required for building text fields
+  mask?: string; //Required for building text fields 
 }
 
 export interface IProjectTarget {

@@ -59,19 +59,22 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let link : ILink = {
       description: '',
       url: '',
-    }
+    };
 
     return link;
 
   }
-  private createSmartText() {
+  private createSmartText(title, name) {
     let smart : ISmartText = {
       value: '',
       required: false,
       default: '',
       defaultIsPrefix: false,
       prefix: '',
-    }
+      title: title, //Required for building text fields
+      name: name, //Required for building text fields
+      mask: '',  //Required for building text fields
+    };
     return smart;
 
   }
@@ -85,7 +88,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       ID: null,
       isSiteAdmin:null,
       LoginName: "",
-    }
+    };
     return user;
 
   }
@@ -96,15 +99,15 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let form : ISaveEntry = {
 
       titleProject:'',
-      comments: this.createSmartText(),
+      comments: this.createSmartText('Comments','comments'),
       category1:[],
       category2:[],
       leader:this.createUser(),
       team:[],
       leaderId:null,
       teamIds:[],
-      projectID1:this.createSmartText(),
-      projectID2:this.createSmartText(),
+      projectID1:this.createSmartText('Project ID1','projectID1'),
+      projectID2:this.createSmartText('Project ID2','projectID2'),
       sourceProject:this.createLink(),
       activity:this.createLink(),
       ccList:this.createLink(),
@@ -119,7 +122,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       location:'',
       settings:'',
 
-    }
+    };
 
     return form;
 
@@ -369,10 +372,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       />
     </div>;
 
-    let comments = formBuilders.createComment(this.props,this.state, this._updateComments.bind(this));
-    let projectTitle = formBuilders.createProjectTitle(this.props,this.state, this._updateProjectTitle.bind(this));
-    let projectID1 = formBuilders.createProjectID1(this.props,this.state, this._updateProjectID1.bind(this));
-    let projectID2 = formBuilders.createProjectID2(this.props,this.state, this._updateProjectID2.bind(this));
+    let comments = formBuilders.createSmartTextBox(this.props,this.state, 'comments',  this._updateComments.bind(this));
+    let projectTitle = formBuilders.createTextField(this.props,this.state,'title','Title', this._updateProjectTitle.bind(this));
+    let projectID1 = formBuilders.createSmartTextBox(this.props,this.state, "projectID1", this._updateProjectID1.bind(this));
+    let projectID2 = formBuilders.createSmartTextBox(this.props,this.state, "projectID2", this._updateProjectID2.bind(this));
+    let entryType = formBuilders.createTextField(this.props,this.state, 'entryType','EntryType', this._updateEntryType.bind(this));
 
     let listBuild = listBuilders.listViewBuilder(this.props,this.state,this.state.entries.newFiltered);
     let userName = this.state.currentUser
@@ -400,9 +404,9 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
               <Stack horizontal={false} horizontalAlign={"end"} tokens={stackButtonTokens}>{/* Stack for Buttons and Fields */}
                 { projectTitle }
                 { comments }
-
-                {projectID1}
-                {projectID2}
+                { entryType }
+                { projectID1 }
+                { projectID2 }
                 { saveButtons }
                 <div>More stuff below buttons</div>
               </Stack>  {/* Stack for Buttons and Fields */}
@@ -427,44 +431,33 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   private _updateComments(newValue: string){
     let formEntry = this.state.formEntry;
-    console.log('_updateComments' , this.state);
     formEntry.comments.value = newValue;
-
-    this.setState({
-      formEntry:formEntry,
-    })
+    this.setState({ formEntry:formEntry, });
   }
 
   private _updateProjectTitle(newValue: string){
     let formEntry = this.state.formEntry;
-    console.log('_updateProjectTitle' , this.state);
     formEntry.titleProject = newValue;
-
-    this.setState({
-      formEntry:formEntry,
-    })
+    this.setState({ formEntry:formEntry, });
   }
 
   private _updateProjectID1(newValue: string){
     let formEntry = this.state.formEntry;
-    console.log('_updateProjectID1' , this.state);
     formEntry.projectID1.value = newValue;
-
-    this.setState({
-      formEntry:formEntry,
-    })
+    this.setState({ formEntry:formEntry, });
   }
 
   private _updateProjectID2(newValue: string){
     let formEntry = this.state.formEntry;
-    console.log('_updateProjectID2' , this.state);
     formEntry.projectID2.value = newValue;
-
-    this.setState({
-      formEntry:formEntry,
-    })
+    this.setState({ formEntry:formEntry, });
   }
 
+  private _updateEntryType(newValue: string){
+    let formEntry = this.state.formEntry;
+    formEntry.entryType = newValue;
+    this.setState({ formEntry:formEntry, });
+  }
   
 
   private searchMe = (item: PivotItem): void => {
@@ -963,13 +956,14 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       projectString = isDefault ? projectString.substring(1) : projectString;
       let lastIndexOfDots : number = projectString ? projectString.lastIndexOf("...") : -1;
       let prefix : string = (projectString && lastIndexOfDots === projectString.length -3 ) ? projectString.substring(0,lastIndexOfDots) : null ;
-
+      let mask : string = (makeThisSmart && makeThisSmart.indexOf('mask=')===0) ? makeThisSmart.replace('mask=','') : '';
       let thisProj : ISmartText = {
         value: makeThisSmart,
         required: isRequired,
         default: projectString ,
         defaultIsPrefix: lastIndexOfDots > -1 ? true : false ,
         prefix: prefix,
+        mask: mask,
       };
 
       return thisProj;

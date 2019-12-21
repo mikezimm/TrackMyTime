@@ -11,7 +11,7 @@ import ButtonCompound from './createButtons/ICreateButtons';
 import { IButtonProps,ISingleButtonProps,IButtonState } from "./createButtons/ICreateButtons";
 import { CompoundButton, Stack, IStackTokens, elementContains } from 'office-ui-fabric-react';
 
-import { TextField } from "office-ui-fabric-react";
+import { TextField, MaskedTextField } from "office-ui-fabric-react";
 import styles from './TrackMyTime.module.scss';
 
 import {
@@ -19,7 +19,8 @@ import {
     ButtonType
   } from 'office-ui-fabric-react';
 
-  export function createBasicTextField(thisField, currentValue, updateField){
+
+ export function createBasicTextField(required, thisField, currentValue, updateField){
     let textField = 
     <TextField
       className={ styles.textField }
@@ -28,53 +29,62 @@ import {
       placeholder={ 'Enter ' + thisField }
       autoComplete='off'
       onChanged={ updateField }
-    />
+      required={required}
+    />;
     
     return textField;
   }
 
-export function createComment(parentProps: ITrackMyTimeProps, parentState : ITrackMyTimeState, updateField){
+  /**
+   * An object defining the format characters and corresponding regexp values.
+   * Default format characters: \{
+   *  '9': /[0-9]/,
+   *  'a': /[a-zA-Z]/,
+   *  '*': /[a-zA-Z0-9]/
+   * \}
+   */
 
-    //Return nothing if user has not been loaded because that is when formEntry gets created.
-    if ( parentState.userLoadStatus !== "Complete" ) { return "" }
-    let thisField = "Comments";
-    let currentValue = parentState.formEntry.comments.value;
-
-    return createBasicTextField(thisField, currentValue, updateField);
-
-  }
-
-  export function createProjectTitle(parentProps: ITrackMyTimeProps, parentState : ITrackMyTimeState, updateField){
-
-    //Return nothing if user has not been loaded because that is when formEntry gets created.
-    if ( parentState.userLoadStatus !== "Complete" ) { return "" }
-    let thisField = "Project Title";
-    let currentValue = parentState.formEntry.titleProject;
-
-    return createBasicTextField(thisField, currentValue, updateField);
-
-  }
-  
-  export function createProjectID1(parentProps: ITrackMyTimeProps, parentState : ITrackMyTimeState, updateField){
-
-    //Return nothing if user has not been loaded because that is when formEntry gets created.
-    if ( parentState.userLoadStatus !== "Complete" ) { return "" }
-    let thisField = "Project ID";
-    let currentValue = parentState.formEntry.projectID1.value;
+  export function createMaskedTextField(thisField, mask, currentValue, onChanged){
+    let label = thisField + " (" + mask + ")";
+    let textField = 
+    <MaskedTextField 
+      defaultValue={ currentValue }
+      className={ styles.textField }
+      label={ label }
+      mask={ mask }
+      maskChar="?"
+      onChanged={ onChanged }
+      autoComplete='off'
+     />;
     
-    return createBasicTextField(thisField, currentValue, updateField);
-
+    return textField;
   }
 
 
-
-  export function createProjectID2(parentProps: ITrackMyTimeProps, parentState : ITrackMyTimeState, updateField){
+export function createTextField(parentProps: ITrackMyTimeProps, parentState : ITrackMyTimeState, name: string, title: string, onChanged){
 
     //Return nothing if user has not been loaded because that is when formEntry gets created.
-    if ( parentState.userLoadStatus !== "Complete" ) { return "" }
-    let thisField = "Project ID";
-    let currentValue = parentState.formEntry.projectID2.value;
-    
-    return createBasicTextField(thisField, currentValue, updateField);
+    if ( parentState.userLoadStatus !== "Complete" ) { return ""; }
+    let thisField = title;
+    //console.log('name',name)
+    let currentValue = parentState.formEntry[name];
+    let required = currentValue === "*" ? true : false;
+    return createBasicTextField(required, thisField, currentValue, onChanged);
+
+  }
+
+  export function createSmartTextBox(parentProps: ITrackMyTimeProps, parentState : ITrackMyTimeState, smartFieldName: string, onChanged){
+
+    //Return nothing if user has not been loaded because that is when formEntry gets created.
+    if ( parentState.userLoadStatus !== "Complete" ) { return ""; }
+    let thisField = parentState.formEntry[smartFieldName]['title'];
+    let currentValue = parentState.formEntry[smartFieldName]['value'];
+    let required = parentState.formEntry[smartFieldName]['required'];
+    let mask = parentState.formEntry[smartFieldName]['mask'];
+    if (mask !== '') {
+      return createMaskedTextField(thisField, mask, currentValue, onChanged);
+    } else {
+      return createBasicTextField(required, thisField, currentValue, onChanged);
+    }
 
   }
