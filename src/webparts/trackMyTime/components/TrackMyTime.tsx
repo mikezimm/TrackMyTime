@@ -18,7 +18,7 @@ import Utils from './utils';
 import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
 import { getAge, getBestTimeDelta, getLocalMonths, getTimeSpan, getGreeting, getNicks} from '../../../services/dateServices';
 
-import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, ITrackMyTimeState, ISaveEntry} from './ITrackMyTimeState';
+import {IProject, ILink, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, ITrackMyTimeState, ISaveEntry} from './ITrackMyTimeState';
 import { pivotOptionsGroup, } from '../../../services/propPane';
 
 import ButtonCompound from './createButtons/ICreateButtons';
@@ -32,6 +32,7 @@ import {
 } from 'office-ui-fabric-react';
 
 import * as listBuilders from './ListView/ListView';
+import * as formBuilders from './fieldBuilder';
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
   
@@ -53,12 +54,74 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     return entryInfo;
 
   }
+
+  private createLink(){
+    let link : ILink = {
+      description: '',
+      url: '',
+    }
+
+    return link;
+
+  }
+  private createSmartText() {
+    let smart : ISmartText = {
+      value: '',
+      required: false,
+      default: '',
+      defaultIsPrefix: false,
+      prefix: '',
+    }
+    return smart;
+
+  }
+  private createUser() {
+    let user : IUser = {
+      title: "",
+      initials: "",  //Single person column
+      email: "",  //Single person column
+      id: null,
+      Id: null,
+      ID: null,
+      isSiteAdmin:null,
+      LoginName: "",
+    }
+    return user;
+
+  }
   private createFormEntry() {
 
     //https://stackoverflow.com/a/37802516/4210807
-    let formEntry = {} as ISaveEntry;
 
-    return formEntry;
+    let form : ISaveEntry = {
+
+      titleProject:'',
+      comments: this.createSmartText(),
+      category1:[],
+      category2:[],
+      leader:this.createUser(),
+      team:[],
+      leaderId:null,
+      teamIds:[],
+      projectID1:this.createSmartText(),
+      projectID2:this.createSmartText(),
+      sourceProject:this.createLink(),
+      activity:this.createLink(),
+      ccList:this.createLink(),
+      ccEmail:'',
+      userId: null,
+      startTime:'',
+      endTime:'',
+      entryType:'',
+      timeEntryTBD1:'',
+      timeEntryTBD2:'',
+      timeEntryTBD3:'',
+      location:'',
+      settings:'',
+
+    }
+
+    return form;
 
   }
 
@@ -123,7 +186,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       allEntries: [], // List of all entries
       filteredEntries: [],  //List of recent entries
 
-      formEntry: this.createFormEntry(),
+      formEntry: null,
 
       // 7 - Slider Options
       timeSliderValue: 0,  //incriment of time slider
@@ -173,6 +236,9 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     this.trackMyTime = this.trackMyTime.bind(this);
     this.clearMyInput = this.clearMyInput.bind(this);
+
+    this._updateComments = this._updateComments.bind(this);
+
     
   }
 
@@ -303,15 +369,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       />
     </div>;
 
-
-    let comments = <TextField
-      className={ styles.textField }
-      defaultValue={ this.state.formEntry.comments ? this.state.formEntry.comments.value : "" }
-      placeholder={ 'Enter Comments' }
-      autoComplete='off'          
-      //onChanged={ /* this._handleInputChange */}
-    />;
-
+    let comments = formBuilders.createComment(this.props,this.state, this._updateComments.bind(this));
+    let projectTitle = formBuilders.createProjectTitle(this.props,this.state, this._updateProjectTitle.bind(this));
+    let projectID1 = formBuilders.createProjectID1(this.props,this.state, this._updateProjectID1.bind(this));
+    let projectID2 = formBuilders.createProjectID2(this.props,this.state, this._updateProjectID2.bind(this));
 
     let listBuild = listBuilders.listViewBuilder(this.props,this.state,this.state.entries.newFiltered);
     let userName = this.state.currentUser
@@ -337,7 +398,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
               { this.createProjectChoices(this.state) }
 
               <Stack horizontal={false} horizontalAlign={"end"} tokens={stackButtonTokens}>{/* Stack for Buttons and Fields */}
+                { projectTitle }
                 { comments }
+
+                {projectID1}
+                {projectID2}
                 { saveButtons }
                 <div>More stuff below buttons</div>
               </Stack>  {/* Stack for Buttons and Fields */}
@@ -360,14 +425,47 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   }
 
 
+  private _updateComments(newValue: string){
+    let formEntry = this.state.formEntry;
+    console.log('_updateComments' , this.state);
+    formEntry.comments.value = newValue;
 
+    this.setState({
+      formEntry:formEntry,
+    })
+  }
 
+  private _updateProjectTitle(newValue: string){
+    let formEntry = this.state.formEntry;
+    console.log('_updateProjectTitle' , this.state);
+    formEntry.titleProject = newValue;
 
+    this.setState({
+      formEntry:formEntry,
+    })
+  }
 
+  private _updateProjectID1(newValue: string){
+    let formEntry = this.state.formEntry;
+    console.log('_updateProjectID1' , this.state);
+    formEntry.projectID1.value = newValue;
 
+    this.setState({
+      formEntry:formEntry,
+    })
+  }
+
+  private _updateProjectID2(newValue: string){
+    let formEntry = this.state.formEntry;
+    console.log('_updateProjectID2' , this.state);
+    formEntry.projectID2.value = newValue;
+
+    this.setState({
+      formEntry:formEntry,
+    })
+  }
 
   
-
 
   private searchMe = (item: PivotItem): void => {
     //This sends back the correct pivot category which matches the category on the tile.
@@ -901,8 +999,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         LoginName: r['LoginName'],
       };
 
-      //console.log('user.Id typeof:', typeof r['Id']);
+      let formEntry =this.createFormEntry();
+      console.log('formEntry', formEntry);
       this.setState({  
+        formEntry: formEntry,
         loadOrder: (this.state.loadOrder === "") ? 'User' : this.state.loadOrder + ' > User',
         currentUser: currentUser,
         userLoadStatus: "Complete"
