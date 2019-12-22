@@ -21,6 +21,8 @@ import { getAge, getBestTimeDelta, getLocalMonths, getTimeSpan, getGreeting, get
 import {IProject, ILink, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, ITrackMyTimeState, ISaveEntry} from './ITrackMyTimeState';
 import { pivotOptionsGroup, } from '../../../services/propPane';
 
+import { buildFormFields } from './fields/fieldDefinitions'
+
 import ButtonCompound from './createButtons/ICreateButtons';
 import { IButtonProps,ISingleButtonProps,IButtonState } from "./createButtons/ICreateButtons";
 import { CompoundButton, Stack, IStackTokens, elementContains } from 'office-ui-fabric-react';
@@ -32,7 +34,8 @@ import {
 } from 'office-ui-fabric-react';
 
 import * as listBuilders from './ListView/ListView';
-import * as formBuilders from './fieldBuilder';
+import * as formBuilders from './fields/textFieldBuilder';
+import * as choiceBuilders from './fields/choiceFieldBuilder';
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
   
@@ -171,6 +174,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         entries: [],
       },
 
+      fields: buildFormFields(this.props, this.state),
+
       pivtTitles:['Yours', 'Your Team','Everyone','Others'],
       filteredCategory: this.props.defaultProjectPicker,
       pivotDefSelKey:"",
@@ -264,8 +269,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let projectHeading: JSX.Element = <div>
         <h2> { this.state.projectType === false ? 'Pick from the Project List' : 'Or... Your recent history'}</h2>
       </div>;
-
-
     let elemnts = [];
 
     if (thisState.projects.all[0]){
@@ -326,7 +329,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   public render(): React.ReactElement<ITrackMyTimeProps> {
 
-
     let setPivot = !this.state.projectType ? this.state.projectMasterPriorityChoice :this.state.projectUserPriorityChoice ;
     console.log('render setPivot:', setPivot);
     console.log('render props:', this.props);
@@ -349,6 +351,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     const stackButtonTokensBody: IStackTokens = { childrenGap: 40 };
     const stackButtonTokens: IStackTokens = { childrenGap: 40 };
+    const stackFormRowTokens: IStackTokens = { childrenGap: 20 };
+    const stackFormRowsTokens: IStackTokens = { childrenGap: 20 };
 
     const buttons: ISingleButtonProps[] =
       [{
@@ -372,11 +376,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       />
     </div>;
 
-    let comments = formBuilders.createSmartTextBox(this.props,this.state, 'comments',  this._updateComments.bind(this));
-    let projectTitle = formBuilders.createTextField(this.props,this.state,'title','Title', this._updateProjectTitle.bind(this));
-    let projectID1 = formBuilders.createSmartTextBox(this.props,this.state, "projectID1", this._updateProjectID1.bind(this));
-    let projectID2 = formBuilders.createSmartTextBox(this.props,this.state, "projectID2", this._updateProjectID2.bind(this));
-    let entryType = formBuilders.createTextField(this.props,this.state, 'entryType','EntryType', this._updateEntryType.bind(this));
+    let entryOptions = choiceBuilders.creatEntryTypeChoices(this.props,this.state);
+
+    let comments = formBuilders.createThisField(this.props,this.state, this.state.fields.Comments,  this._updateComments.bind(this));
+    let projectTitle = formBuilders.createThisField(this.props,this.state,this.state.fields.Title, this._updateProjectTitle.bind(this));
+    let projectID1 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID1, this._updateProjectID1.bind(this));
+    let projectID2 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID2, this._updateProjectID2.bind(this));
+    //let entryType = formBuilders.createThisField(this.props,this.state, this.state.fields., this._updateEntryType.bind(this));
 
     let listBuild = listBuilders.listViewBuilder(this.props,this.state,this.state.entries.newFiltered);
     let userName = this.state.currentUser
@@ -401,12 +407,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
             <Stack padding={20} horizontal={true} horizontalAlign={"space-between"} tokens={stackButtonTokensBody}> {/* Stack for Projects and body */}
               { this.createProjectChoices(this.state) }
 
-              <Stack horizontal={false} horizontalAlign={"end"} tokens={stackButtonTokens}>{/* Stack for Buttons and Fields */}
+              <Stack horizontal={false} horizontalAlign={"end"} tokens={stackFormRowsTokens}>{/* Stack for Buttons and Fields */}
+                { entryOptions }
                 { projectTitle }
                 { comments }
-                { entryType }
-                { projectID1 }
-                { projectID2 }
+                { /* entryType */ }
+                <Stack horizontal={true} tokens={stackFormRowTokens}>{ projectID1 }{ projectID2 }</Stack>
+
                 { saveButtons }
                 <div>More stuff below buttons</div>
               </Stack>  {/* Stack for Buttons and Fields */}

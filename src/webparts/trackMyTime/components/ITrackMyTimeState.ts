@@ -3,6 +3,8 @@ import { ITrackMyTimeProps } from './ITrackMyTimeProps';
 import { string } from 'prop-types';
 import { CurrentUser } from '@pnp/sp/src/siteusers';
 
+import { IFormFields } from './fields/fieldDefinitions'
+
 export interface theTime {
   now: Date;
   theTime : string;
@@ -223,6 +225,8 @@ export interface ITrackMyTimeState {
 
   projects?: IProjectInfo;
   entries?: IEntryInfo;
+  fields?: IFormFields; //List of field defininitions for making form fields
+
   // 1 - Analytics options
   endTime?: theTime;
 
