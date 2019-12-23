@@ -35,6 +35,7 @@ export function creatEntryTypeChoices(parentProps:ITrackMyTimeProps , parentStat
   options.push(  {key: 'manual', text: 'Manual' + choiceSpacer });
 
   return (
+    
     <ChoiceGroup
       // className = "inlineflex" //This didn't do anything
       //className="defaultChoiceGroup" //This came with the example but does not seem to do anything
