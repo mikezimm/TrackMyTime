@@ -9,14 +9,23 @@ export const  initials : IViewField = {
     maxWidth: 30
 }
 
+export const  id : IViewField = {
+  name: "id",
+  displayName: "ID",
+  isResizable: true,
+  sorting: true,
+  minWidth: 10,
+  maxWidth: 30
+}
+
 export const  timeSpan : IViewField = {
   name: "listTimeSpan",
   displayName: "Timespan",
   //linkPropertyName: "c",
   isResizable: true,
   sorting: true,
-  minWidth: 30,
-  maxWidth: 150
+  minWidth: 150,
+  maxWidth: 200
 }
 
 export const  project : IViewField = {
@@ -24,8 +33,8 @@ export const  project : IViewField = {
   displayName: "Project",
   isResizable: true,
   sorting: true,
-  minWidth: 50,
-  maxWidth: 100
+  minWidth: 150,
+  maxWidth: 200
 }
 
 export const  projectWide : IViewField = {
@@ -48,7 +57,7 @@ export const  description : IViewField = {
 }
 
 export const  comments : IViewField = {
-  name: "comments",
+  name: "listComments",
   displayName: "Comments",
   //linkPropertyName: "c",
   isResizable: true,
@@ -85,6 +94,8 @@ export function viewFieldsFull() {
 
     let viewFields: IViewField[]=[];
 
+    
+    viewFields.push(id);
     viewFields.push(initials);
     viewFields.push(timeSpan);
     viewFields.push(project);
@@ -100,7 +111,7 @@ export function viewFieldsFull() {
 export function viewFieldsMin() {
 
     let viewFields: IViewField[]=[];
-
+    viewFields.push(id);
     viewFields.push(initials);
     viewFields.push(timeSpan);
     viewFields.push(project);

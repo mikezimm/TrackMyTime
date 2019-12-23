@@ -2,8 +2,6 @@
 
 .trackMyTime {
 
-
-
   .textField {
     display: table-cell;
     width: 100%;
@@ -14,7 +12,24 @@
     }
   }
 
+  .highlightBlink {
+    position: relative;
+    animation-name: slide;
+    animation-duration: 0.5s;
+    animation-timing-function: ease-in;
+  }
 
+  @keyframes slide {
+    0% {
+      background-color: white;
+    }
+    50% {
+      background-color: lightgrey;
+    }
+    100% {
+      background-color: white;
+    }
+  }
 
 
 
