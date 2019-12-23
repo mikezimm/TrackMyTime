@@ -1803,6 +1803,9 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let itemStartTime = new Date(this.state.lastEndTime.theTime).toLocaleString();
     let itemEndTime = new Date().toLocaleString();
 
+    trackTimeItem.startTime = itemStartTime;
+    trackTimeItem.endTime = itemEndTime;
+
     let saveThisItem = {
         //Values that would come from Project item
         //editLink : ILink, //Link to view/edit item link
@@ -1824,8 +1827,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         
         //Values specific to Time Entry
         UserId: this.state.currentUser.Id,  //Single person column
-        StartTime: itemStartTime, //Time stamp
-        EndTime: itemEndTime, // Time stamp
+        StartTime: trackTimeItem.startTime, //Time stamp
+        EndTime: trackTimeItem.endTime, // Time stamp
         //Duration: trackTimeItem.duration, //Number  -- May not be needed based on current testing with start and end dates.
 
         //Saves what entry option was used... Since Last, Slider, Manual
@@ -1893,7 +1896,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   private addThisItemToState (trackTimeItem: ISaveEntry , masterOrRemote : string) {
 
     if (masterOrRemote === 'master') {
-    
+      console.log('trackTimeItem', trackTimeItem);
       let created = new Date();
 
       let newEntry : ITimeEntry = {...trackTimeItem,
@@ -1923,7 +1926,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       let filteredEntries:  ITimeEntry[] = [];
       filteredEntries.push(newEntry);
       filteredEntries = filteredEntries.concat(this.state.filteredEntries);
-
+      console.log( 'newEntry', newEntry);
       let lastEndTime = makeTheTimeObject(newEntry.endTime); 
 
       this.setState({
