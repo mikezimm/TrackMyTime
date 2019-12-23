@@ -1,3 +1,27 @@
+
+
+export interface ITheTime {
+  now: Date;
+  theTime : string;
+  milliseconds : number;
+}
+
+
+export function makeTheTimeObject(timeString) {
+
+  let now = new Date();
+
+  if (timeString ) { now = new Date(timeString)}
+
+  let theTime : ITheTime = {
+    now: now,
+    theTime: now.toUTCString(),
+    milliseconds: now.getTime(),
+  }
+
+  return theTime;
+
+}
 export function getLocalMonths(local,format){
 
     let months = [];
