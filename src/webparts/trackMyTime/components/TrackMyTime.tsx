@@ -386,7 +386,9 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let projectID2 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID2, this._updateProjectID2.bind(this));
     //let entryType = formBuilders.createThisField(this.props,this.state, this.state.fields., this._updateEntryType.bind(this));
 
+    let listProjects = listBuilders.projectBuilder(this.props,this.state,this.state.projects.newFiltered, this._getSelectedProject.bind(this));
     let listBuild = listBuilders.listViewBuilder(this.props,this.state,this.state.entries.newFiltered);
+
     let userName = this.state.currentUser
       ? getNicks(this.state.currentUser) + " ( Id: " + this.state.currentUser.Id + " ) entry count: " + this.state.allEntries.length
       : "";
@@ -407,7 +409,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           <div>
 
             <Stack padding={20} horizontal={true} horizontalAlign={"space-between"} tokens={stackButtonTokensBody}> {/* Stack for Projects and body */}
-              { this.createProjectChoices(this.state) }
+              { /* this.createProjectChoices(this.state) */ }
+                { listProjects }
 
               <Stack horizontal={false} horizontalAlign={"end"} tokens={stackFormRowsTokens}>{/* Stack for Buttons and Fields */}
                 { entryOptions }
@@ -435,6 +438,39 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         </div>
       </div>
     );
+  }
+
+
+  private _getSelectedProject(items: any[]){
+    
+    if (items.length === 0 ) { return }
+
+    console.log('Selected items:', items);
+
+    let item : IProject;
+
+    for (let p of this.state.projects.newFiltered ) {
+      if (p.id === items[0].id) {
+        item = p;
+      }
+    }
+
+    let formEntry = this.state.formEntry;
+
+    formEntry.titleProject = item.titleProject;
+    formEntry.projectID1  = item.projectID1;
+    formEntry.projectID2  = item.projectID2;
+    formEntry.category1  = item.category1;
+    formEntry.category2  = item.category2;
+    formEntry.leaderId  = item.leaderId;
+    formEntry.leader  = item.leader;
+    formEntry.team  = item.team;
+    formEntry.teamIds  = item.teamIds;
+    formEntry.ccEmail  = item.ccEmail;
+    formEntry.ccList  = item.ccList;
+
+    this.setState({ formEntry:formEntry, });  
+
   }
 
   private _updateComments(newValue: string){
@@ -1160,7 +1196,15 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       trackMyProjectsInfo.timeTrackData = response.map((item) => {
         //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
         
+        let listCategory = "";
+       
+        if ( item.Category1 !== null && item.Category1 ) {
+          listCategory += item.Category1.join(', ')
+        }
 
+        if ( item.Category2 !== null && item.Category2 ) {
+          listCategory += item.Category2.join(', ')
+        }
 
         let timeEntry : ITimeEntry = {
 
@@ -1204,7 +1248,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           //This block for use in the history list component
           //Getting initials using:  https://stackoverflow.com/a/45867959/4210807
           userInitials: item.User.Title.split(" ").map((n)=>n[0]).join(""),
-          listCategory: (item.Category1 ? item.Category1.join(', ') + ' ' + item.Category2.join(', ') : ''),
+          listCategory: listCategory,
           listTimeSpan: getTimeSpan(item.StartTime, item.EndTime),
           listProjects: item.ProjectID1 + (item.ProjectID2 ? ' ' + item.ProjectID1 : ''),
           listTracking: '',

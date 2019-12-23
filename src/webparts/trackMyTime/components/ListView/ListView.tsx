@@ -6,7 +6,7 @@ import { Link } from 'office-ui-fabric-react/lib/Link';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 
 import { ListView, IViewField, SelectionMode, GroupOrder, IGrouping } from "@pnp/spfx-controls-react/lib/ListView";
-import {ITimeEntry} from '../ITrackMyTimeState';
+import {ITimeEntry, IProject} from '../ITrackMyTimeState';
 import * as fields from './ViewFields'
 
 /**
@@ -33,6 +33,32 @@ export function listViewBuilder(parentProps,parentState, theseAreItems: ITimeEnt
       //defaultFilter="John"
       filterPlaceHolder="Search..."
       groupByFields={groupByFields}
+    />;
+
+  return listView;
+
+}
+
+export function projectBuilder(parentProps,parentState, theseAreItems: IProject[], _getSelection){
+
+  //let groupByFields: IGrouping[] = [  {   name: 'timeGroup',   order: 1,   }  ]
+
+  let viewFields = fields.viewFieldsProject();
+
+  let listView = 
+    <ListView
+      
+      items={theseAreItems}
+      viewFields={viewFields}
+      compact={true}
+      selectionMode={SelectionMode.single}
+      selection={_getSelection}
+      showFilter={true}
+      //defaultFilter="John"
+      filterPlaceHolder="Search..."
+      //groupByFields={groupByFields}
+      
+      
     />;
 
   return listView;
