@@ -69,6 +69,7 @@ import {
         return findMe;
     }
     
+    //  These choices need to match up with /src/webparts/trackMyTime/components/fields/choiceFieldBuilder.tsx
     public defaultTimePickerChoices: IPropertyPaneDropdownOption[] = <IPropertyPaneDropdownOption[]>[
         {   index: 0,   key: 'sinceLast', text: "Since last entry"  },
         {   index: 1,   key: 'slider', text: "Slider - use Now as start or end"  },

@@ -43,7 +43,7 @@ export function createEntryField(name: string, title: string, column: string, ty
 export function buildFormFields(parentProps:ITrackMyTimeProps , parentState: ITrackMyTimeState ){
     let fields : IFormFields = {
         //createEntryField(name: string, title: string, column: string, type: string){
-        Title: createEntryField("title","Title","Title", "Text"),
+        Title: createEntryField("titleProject","Title","Title", "Text"),
         Comments: createEntryField("comments","Comments","Comments","Smart"),
         Category1: createEntryField("category1","Category 1","Category1","Text"),
         Category2: createEntryField("category2","Category 2","Category2","Text"),

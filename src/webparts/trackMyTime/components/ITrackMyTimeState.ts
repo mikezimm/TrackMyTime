@@ -4,12 +4,7 @@ import { string } from 'prop-types';
 import { CurrentUser } from '@pnp/sp/src/siteusers';
 
 import { IFormFields } from './fields/fieldDefinitions'
-
-export interface theTime {
-  now: Date;
-  theTime : string;
-  milliseconds : number;
-}
+import { ITheTime } from '../../../services/dateServices';
 
 export interface ILink {
   description: string;
@@ -228,7 +223,7 @@ export interface ITrackMyTimeState {
   fields?: IFormFields; //List of field defininitions for making form fields
 
   // 1 - Analytics options
-  endTime?: theTime;
+  endTime?: ITheTime;
 
   loadData?: {
     user: any;
@@ -266,7 +261,7 @@ export interface ITrackMyTimeState {
   currentUser?: IUser;  //Current user information
   showElapsedTimeSinceLast?: boolean;  // Idea is that it can be like a clock showing how long it's been since your last entry.
   lastEntry?: ITimeEntry;  //Should be a time entry
-  lastEndTime?: theTime; //Should be latest timestamp of the current user... used to create start time for next entry.
+  lastEndTime?: ITheTime; //Should be latest timestamp of the current user... used to create start time for next entry.
 
   elapsedTime?: any;  //Elapsed Time since last entry
 
