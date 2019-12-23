@@ -110,6 +110,7 @@ export interface ITimeEntry extends ISaveEntry {
     listTimeSpan?: string;
     listProjects?: string;
     listTracking?: string; 
+    listComments?: string;
   
     filterFlags?: string[]; // what flags does this match?  yourRecent, allRecent etc...
     timeGroup?: string; //Used for grouping the list of entries

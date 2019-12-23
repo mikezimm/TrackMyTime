@@ -39,25 +39,24 @@ export function listViewBuilder(parentProps,parentState, theseAreItems: ITimeEnt
 
 }
 
-export function projectBuilder(parentProps,parentState, theseAreItems: IProject[], _getSelection){
-
-  //let groupByFields: IGrouping[] = [  {   name: 'timeGroup',   order: 1,   }  ]
+export function projectBuilder(parentProps,parentState, theseAreItems: IProject[], _getSelectedProject){
 
   let viewFields = fields.viewFieldsProject();
 
+  if ( theseAreItems.length === 0 ) { return "";}
+
   let listView = 
     <ListView
-      
       items={theseAreItems}
       viewFields={viewFields}
       compact={true}
       selectionMode={SelectionMode.single}
-      selection={_getSelection}
+      selection={_getSelectedProject}
       showFilter={true}
+      //defaultSelection={[2]}
       //defaultFilter="John"
       filterPlaceHolder="Search..."
       //groupByFields={groupByFields}
-      
       
     />;
 

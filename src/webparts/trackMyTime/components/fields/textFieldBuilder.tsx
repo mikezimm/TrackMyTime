@@ -28,7 +28,7 @@ import {
    placeHolder = '';
     let textField = 
     <TextField
-      className={ styles.textField }
+      className={ [styles.textField,styles.highlightBlink].join(' ') }
       defaultValue={ currentValue ? currentValue : "" }
       label={field.title}
       disabled={field.disabled}

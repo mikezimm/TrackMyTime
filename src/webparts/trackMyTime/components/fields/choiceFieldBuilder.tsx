@@ -29,9 +29,10 @@ Entry Type Choices need to match these:  \src\services\propPane\WebPartSettingsP
 export function creatEntryTypeChoices(parentProps:ITrackMyTimeProps , parentState: ITrackMyTimeState, _onChange){
 
   let options : IChoiceGroupOption[] = [];
-  let choiceSpacer = '\u00A0\u00A0'
-  options.push(  {key: 'sinceLast', text: 'Since last' + choiceSpacer + choiceSpacer });
-  options.push(  {key: 'slider', text: 'Slider' + choiceSpacer + choiceSpacer });
+  let choiceSpacer = '\u00A0\u00A0';
+  let spacer4x = choiceSpacer + choiceSpacer + choiceSpacer + choiceSpacer;
+  options.push(  {key: 'sinceLast', text: 'Since last' + spacer4x });
+  options.push(  {key: 'slider', text: 'Slider' + spacer4x });
   options.push(  {key: 'manual', text: 'Manual' + choiceSpacer });
 
   return (
@@ -40,7 +41,7 @@ export function creatEntryTypeChoices(parentProps:ITrackMyTimeProps , parentStat
       // className = "inlineflex" //This didn't do anything
       //className="defaultChoiceGroup" //This came with the example but does not seem to do anything
       //https://github.com/OfficeDev/office-ui-fabric-react/issues/8079#issuecomment-479136073
-      styles={{ flexContainer: { display: "flex" } }}
+      styles={{ flexContainer: { display: "flex" , paddingLeft: 30} }}
       defaultSelectedKey={ parentState.currentTimePicker }
       options={options}
       onChange={_onChange}
