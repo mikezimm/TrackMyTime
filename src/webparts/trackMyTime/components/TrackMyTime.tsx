@@ -379,6 +379,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     </div>;
 
     let entryOptions = choiceBuilders.creatEntryTypeChoices(this.props,this.state, this._updateEntryType.bind(this));
+    let theTime = (this.state.timeTrackerLoadStatus === "Complete" && this.state.currentTimePicker === 'sinceLast') 
+        ?    <div>From: {this.state.lastEndTime.theTime} to NOW</div>  : "" //
 
     let comments = formBuilders.createThisField(this.props,this.state, this.state.fields.Comments,  this._updateComments.bind(this));
     let projectTitle = formBuilders.createThisField(this.props,this.state,this.state.fields.Title, this._updateProjectTitle.bind(this));
@@ -414,6 +416,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
               <Stack horizontal={false} horizontalAlign={"end"} tokens={stackFormRowsTokens}>{/* Stack for Buttons and Fields */}
                 { entryOptions }
+                { theTime }
                 { projectTitle }
                 { comments }
                 { /* entryType */ }
@@ -1453,7 +1456,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     let lastEndTime = makeTheTimeObject("2007");
     let nowEndTime = makeTheTimeObject(null);
-    console.log(JSON.stringify(lastEndTime));
+    //console.log(JSON.stringify(lastEndTime));
     //alert(lastEndTime);
 
     let recentDays = 4;
@@ -1466,7 +1469,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       let thisEndTime = makeTheTimeObject(thisEntry.endTime); 
       //alert(thisEndTime);
       //Check if timeTrackData is tagged to you
-      console.log(JSON.stringify(thisEndTime));
       if (thisEntry.userId === userId ) { yours = true; } 
       if (yours) { 
         fromProject.filterFlags.push('your');
