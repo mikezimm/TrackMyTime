@@ -28,6 +28,15 @@ export const  project : IViewField = {
   maxWidth: 100
 }
 
+export const  projectWide : IViewField = {
+  name: "titleProject",
+  displayName: "Project",
+  isResizable: true,
+  sorting: true,
+  minWidth: 250,
+  maxWidth: 400,
+}
+
 export const  description : IViewField = {
   name: "description",
   displayName: "Description",
@@ -103,7 +112,7 @@ export function viewFieldsMin() {
 export function viewFieldsProject() {
 
   let viewFields: IViewField[]=[];
-  viewFields.push(project);
+  viewFields.push(projectWide);
 
   return viewFields;
   

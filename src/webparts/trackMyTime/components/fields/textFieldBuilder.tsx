@@ -24,13 +24,15 @@ import {
 
  export function createBasicTextField(field: IFieldDef, currentValue, updateField){
    // it is possible to have an option to hide labels in lue of placeholder text for more compressed look
+   let placeHolder = 'Enter ' + field.title;
+   placeHolder = '';
     let textField = 
     <TextField
       className={ styles.textField }
       defaultValue={ currentValue ? currentValue : "" }
       label={field.title}
       disabled={field.disabled}
-      placeholder={ 'Enter ' + field.title }
+      placeholder={ placeHolder }
       autoComplete='off'
       onChanged={ updateField }
       required={field.required}

@@ -47,6 +47,7 @@ export function projectBuilder(parentProps,parentState, theseAreItems: IProject[
 
   let listView = 
     <ListView
+      
       items={theseAreItems}
       viewFields={viewFields}
       compact={true}
