@@ -99,3 +99,12 @@ export function viewFieldsMin() {
     return viewFields;
     
 }
+
+export function viewFieldsProject() {
+
+  let viewFields: IViewField[]=[];
+  viewFields.push(project);
+
+  return viewFields;
+  
+}
