@@ -18,7 +18,7 @@ import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
 import { saveTheTime, saveAnalytics } from '../../../services/createAnalytics';
-import { getAge, getBestTimeDelta, getLocalMonths, getTimeSpan, getGreeting, getNicks, makeTheTimeObject, getTimeDelta} from '../../../services/dateServices';
+import { getAge, getDayTimeToMinutes, getBestTimeDelta, getLocalMonths, getTimeSpan, getGreeting, getNicks, makeTheTimeObject, getTimeDelta} from '../../../services/dateServices';
 
 import {IProject, ILink, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, ITrackMyTimeState, ISaveEntry} from './ITrackMyTimeState';
 import { pivotOptionsGroup, } from '../../../services/propPane';
@@ -190,6 +190,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       currentProjectPicker: '', //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
       currentTimePicker: this.props.defaultTimePicker, //User selection of :defaultTimePicker  SinceLast, Slider, Manual???
       locationChoice: '',  //semi-colon separated choices
+      blinkOnProject: 0, //Tells text fields to blink when project is clicked on and values reset
 
       // 6 - User Feedback:
       showElapsedTimeSinceLast: true,  // Idea is that it can be like a clock showing how long it's been since your last entry.
@@ -358,14 +359,54 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     const stackFormRowTokens: IStackTokens = { childrenGap: 20 };
     const stackFormRowsTokens: IStackTokens = { childrenGap: 20 };
 
+    let hoursSinceLastTime = 0;
+    if ( this.state.timeTrackerLoadStatus === "Complete" ) {
+      hoursSinceLastTime = getTimeDelta( this.state.lastEndTime.theTime, new Date() , 'hours');
+    }
+
+    let isSaveDisabled = false;
+    if ( this.state.currentTimePicker === 'slider' ) {
+      if ( this.state.timeSliderValue == 0 ) { isSaveDisabled = true}
+
+      // Also need to add if the slider would put the start time before the last end time.
+    } else if ( this.state.currentTimePicker === 'sinceLast' ) {
+      if ( hoursSinceLastTime > 2 ) { isSaveDisabled = true}
+
+    } // else if  -- Need to add logic when Manual and days not filled out
+
+    let entryOptions = choiceBuilders.creatEntryTypeChoices(this.props,this.state, this._updateEntryType.bind(this));
+    let theTime;
+    if (this.state.timeTrackerLoadStatus === "Complete") {
+      if (this.state.currentTimePicker === 'sinceLast') {
+
+        theTime = <div className={(hoursSinceLastTime > 2 ? styles.timeError : styles.timeInPast )}>From: { getDayTimeToMinutes(this.state.lastEndTime.theTime) } until NOW</div> 
+
+      } else if  (this.state.currentTimePicker === 'slider' ) 
+        if (this.state.timeSliderValue > 0 ) {
+           //The START time IS NOW and the end time is in the future (based on slider)
+           theTime = <div className={ styles.timeInFuture }>From NOW until: { getDayTimeToMinutes(this.state.formEntry.endTime) }</div>
+        } else if ( this.state.timeSliderValue < 0 )  {
+          //The END time IS NOW and the end time is in the past (based on slider)
+          theTime = <div className={ styles.timeInPast }>From { getDayTimeToMinutes(this.state.formEntry.startTime) } until NOW</div>
+        } else { // Value can not be zero or the save button should not be visible.
+          theTime = <div className={ styles.timeError }>Adjust the slider before saving</div>
+        }
+      
+
+    } else { theTime = ""; }
+
     const buttons: ISingleButtonProps[] =
       [{
-        disabled: false,  checked: true, primary: false,
+        disabled: false,  
+        checked: true, 
+        primary: false,
         label: "Clear item",
         secondary: "Press to clear form",
         buttonOnClick: this.clearMyInput.bind(this),
       },{
-        disabled: false,  checked: true, primary: true,
+        disabled: isSaveDisabled,  
+        checked: true, 
+        primary: true,
         label: "Save item",
         secondary: "Press to Create entry",
         buttonOnClick: this.trackMyTime.bind(this),
@@ -380,18 +421,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       />
     </div>;
 
-    let entryOptions = choiceBuilders.creatEntryTypeChoices(this.props,this.state, this._updateEntryType.bind(this));
-    let theTime = (this.state.timeTrackerLoadStatus === "Complete" && this.state.currentTimePicker === 'sinceLast') 
-        ?    <div>From: {this.state.lastEndTime.theTime} to NOW</div>  : "" //
-    let timeSlider = sliderBuilders.createSlider(this.props,this.state, this._updateProjectID2.bind(this));
-
-    let timeElements = this.state.timeTrackerLoadStatus === "Complete" ?
-      this.state.currentTimePicker === 'sinceLast' ?
-        <div>From: {this.state.lastEndTime.theTime} to NOW</div>
-      : this.state.currentTimePicker === 'slider' ?
-        sliderBuilders.createSlider(this.props,this.state, this._updateTimeSlider.bind(this))
-      : ""
-    : "";
+     
+    let timeSlider = sliderBuilders.createSlider(this.props,this.state, this._updateTimeSlider.bind(this));
 
     let comments = formBuilders.createThisField(this.props,this.state, this.state.fields.Comments,  this._updateComments.bind(this));
     let projectTitle = formBuilders.createThisField(this.props,this.state,this.state.fields.Title, this._updateProjectTitle.bind(this));
@@ -429,7 +460,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
               <Stack horizontal={false} horizontalAlign={"end"} tokens={stackFormRowsTokens}>{/* Stack for Buttons and Fields */}
                 { entryOptions }
-                { timeElements }
+                { (timeSlider) }
+                { theTime }
                 { projectTitle }
                 { comments }
                 { /* entryType */ }
@@ -486,7 +518,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     formEntry.ccEmail  = item.ccEmail;
     formEntry.ccList  = item.ccList;
 
-    this.setState({ formEntry:formEntry, });  
+    this.setState({ formEntry:formEntry, blinkOnProject: this.state.blinkOnProject === 1 ? 2 : 1 });  
 
   }
 
@@ -512,31 +544,32 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     this.setState({
       timeSliderValue: newValue,
       formEntry: formEntry,
+      blinkOnProject: 0,
     });
   }
 
   private _updateComments(newValue: string){
     let formEntry = this.state.formEntry;
     formEntry.comments.value = newValue;
-    this.setState({ formEntry:formEntry, });
+    this.setState({ formEntry:formEntry, blinkOnProject: 0,});
   }
 
   private _updateProjectTitle(newValue: string){
     let formEntry = this.state.formEntry;
     formEntry.titleProject = newValue;
-    this.setState({ formEntry:formEntry, });
+    this.setState({ formEntry:formEntry, blinkOnProject: 0, });
   }
 
   private _updateProjectID1(newValue: string){
     let formEntry = this.state.formEntry;
     formEntry.projectID1.value = newValue;
-    this.setState({ formEntry:formEntry, });
+    this.setState({ formEntry:formEntry, blinkOnProject: 0, });
   }
 
   private _updateProjectID2(newValue: string){
     let formEntry = this.state.formEntry;
     formEntry.projectID2.value = newValue;
-    this.setState({ formEntry:formEntry, });
+    this.setState({ formEntry:formEntry, blinkOnProject: 0, });
   }
 
   private _updateEntryType(ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption){
@@ -544,7 +577,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     formEntry.entryType = option.text;
     this.setState({ 
       formEntry:formEntry, 
-      currentTimePicker : option.key
+      currentTimePicker : option.key,
+      blinkOnProject: 0,
      });
   }
   
@@ -573,6 +607,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       projects: projects,
       searchCount: searchCount,
       searchWhere: searchWhere,
+      blinkOnProject: 0,
     });
 
     
@@ -686,6 +721,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         searchType: '',
         searchWhere: ' in ' + item.props.headerText,
         //pivotDefSelKey: defaultSelectedKey,
+        blinkOnProject: 0,
 
       });
 
@@ -730,6 +766,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     this.setState({
       projectType: newProjectType,
       projects: projects,
+      blinkOnProject: 0,
     });
 
 
@@ -804,7 +841,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         projects: projects,
         searchCount: this.state.projects.all.length,
         pivotDefSelKey: "-100",
-        searchWhere: ' in all categories'
+        searchWhere: ' in all categories',
+        blinkOnProject: 0,
       });
     }
     
@@ -846,7 +884,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         projects: projects,
         searchCount: this.state.projects.all.length,
         pivotDefSelKey: "-100",
-        searchWhere: ' in all categories'
+        searchWhere: ' in all categories',
+        blinkOnProject: 0,
       });
     }
     
@@ -1645,11 +1684,22 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     stateEntries.newFiltered = allEntries;
     stateEntries.lastFiltered = allEntries;  
 
+    //Change from sinceLast if the time is longer than x- hours ago.
+    let hoursSinceLastTime = this.state.currentTimePicker === 'sinceLast' && getTimeDelta( lastEndTime.theTime, new Date() , 'hours');
+    console.log('currentTimePicker state:', this.state);
+    console.log('currentTimePicker hoursSinceLastTime:', hoursSinceLastTime);
+
+    let currentTimePicker = 
+    ( hoursSinceLastTime >  2 ) 
+    ?  'slider'
+    : this.state.currentTimePicker ;
+
    this.setState({
     loadOrder: (this.state.loadOrder === "") ? 'Process Entries' : this.state.loadOrder + ' > Process Entries',
     projects: stateProjects,
     userCounts: counts,
     entries: stateEntries,
+    currentTimePicker: currentTimePicker,
     lastEndTime: lastEndTime,
     allEntries: timeTrackData,
     filteredEntries: timeTrackData,
@@ -1851,8 +1901,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       itemStartTime = new Date(this.state.lastEndTime.theTime).toLocaleString();
       itemEndTime = new Date().toLocaleString();
     } else if (this.state.currentTimePicker === 'slider') {
-      this.state.formEntry.startTime;
-      this.state.formEntry.endTime;
+      itemStartTime = this.state.formEntry.startTime;
+      itemEndTime = this.state.formEntry.endTime;
     } else {
       itemStartTime = new Date(this.state.lastEndTime.theTime).toLocaleString();
       itemEndTime = new Date().toLocaleString();
@@ -1879,8 +1929,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         
         //Values specific to Time Entry
         UserId: this.state.currentUser.Id,  //Single person column
-        StartTime: trackTimeItem.startTime, //Time stamp
-        EndTime: trackTimeItem.endTime, // Time stamp
+        StartTime: itemStartTime, //Time stamp
+        EndTime: itemEndTime, // Time stamp
         //Duration: trackTimeItem.duration, //Number  -- May not be needed based on current testing with start and end dates.
 
         //Saves what entry option was used... Since Last, Slider, Manual
