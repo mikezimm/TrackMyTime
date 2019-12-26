@@ -22,13 +22,28 @@ import {
   } from 'office-ui-fabric-react';
 
 
- export function createBasicTextField(field: IFieldDef, currentValue, updateField){
+ export function createBasicTextField(field: IFieldDef, currentValue, updateField, blinkOnProject){
    // it is possible to have an option to hide labels in lue of placeholder text for more compressed look
    let placeHolder = 'Enter ' + field.title;
+   let classes = [styles.textField];
+
+   if (blinkOnProject === 1 && field.blinkOnProject === true ) {
+    classes.push(styles.highlightBlink1)
+   } else if (blinkOnProject === 2 && field.blinkOnProject === true ) {
+    classes.push(styles.highlightBlink2);
+   }
+   
+   
+   let classNames = classes.join(' ');
+   
+   console.log('classNames:' , field.title, classNames);
+//   console.log('classNames:' , field.title, [styles.textField,styles.highlightBlink1].join(' '));
+
    placeHolder = '';
     let textField = 
     <TextField
-      className={ [styles.textField,styles.highlightBlink].join(' ') }
+      //className={ [styles.textField, styles.highlightBlink].join(' ') }
+      className={ classNames }
       defaultValue={ currentValue ? currentValue : "" }
       label={field.title}
       disabled={field.disabled}
@@ -79,7 +94,7 @@ import {
     if (mask !== '') {
       return createMaskedTextField(thisField, mask, currentValue, onChanged);
     } else {
-      return createBasicTextField(field, currentValue, onChanged);
+      return createBasicTextField(field, currentValue, onChanged, parentState.blinkOnProject);
     }
     
   }
@@ -98,7 +113,7 @@ import {
       //let required = currentValue === "*" ? true : false;
       let currentValue = parentState.formEntry[field.name];
 
-      return createBasicTextField(field, currentValue, onChanged);
+      return createBasicTextField(field, currentValue, onChanged, parentState.blinkOnProject);
 
     } 
 

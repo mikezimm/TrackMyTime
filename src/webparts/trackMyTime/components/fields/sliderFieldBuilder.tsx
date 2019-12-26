@@ -18,11 +18,12 @@ export function createSlider(parentProps:ITrackMyTimeProps , parentState: ITrack
   return (
     <div style={{minWidth: 400, }}>
       <Slider 
-      label="Origin from zero" 
+      label={ ((parentState.timeSliderValue < 0)  ? "Start time is in the past" : "End time is Back to the future" ) }
       min={-120} 
       max={120} 
       step={5} 
-      defaultValue={2} 
+      defaultValue={0} 
+      valueFormat={value => `${value} mins`}
       showValue 
       originFromZero
       onChange={_onChange}

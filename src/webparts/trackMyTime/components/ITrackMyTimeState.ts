@@ -263,6 +263,7 @@ export interface ITrackMyTimeState {
   showElapsedTimeSinceLast?: boolean;  // Idea is that it can be like a clock showing how long it's been since your last entry.
   lastEntry?: ITimeEntry;  //Should be a time entry
   lastEndTime?: ITheTime; //Should be latest timestamp of the current user... used to create start time for next entry.
+  blinkOnProject?: number; //Tells text fields to blink when project is clicked on and values reset
 
   elapsedTime?: any;  //Elapsed Time since last entry
 
