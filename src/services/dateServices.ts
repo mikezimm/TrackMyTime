@@ -171,7 +171,7 @@ export function getGreeting(name){
   //console.log('getGreeting:', name);
   let userName = name;
   if (userName ){
-    if (userName.title.indexOf("Click") === 0 ) {
+    if (userName.title.indexOf("Click") > -1 ) {
       message = message.replace('Afternoon partner',"Servus");
       message = message.replace('Top O the mornin to you',"Neata");
       message = message.replace('nick'," BK");

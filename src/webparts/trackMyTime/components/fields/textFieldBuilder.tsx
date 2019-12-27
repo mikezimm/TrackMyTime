@@ -72,6 +72,32 @@ import {
     return textField;
   }
 
+  
+
+ export function createSmartLinkField(field: IFieldDef, currentValue, updateField, blinkOnProjectClassName){
+  // it is possible to have an option to hide labels in lue of placeholder text for more compressed look
+
+  let placeHolder = 'Enter ' + field.title;
+   let defaultValue = ""
+   if (currentValue && currentValue !== "*") { defaultValue = currentValue }
+  placeHolder = '';
+
+   let textField = 
+   <TextField
+     //className={ [styles.textField, styles.highlightBlink].join(' ') }
+     className={ blinkOnProjectClassName }
+     defaultValue={ defaultValue }
+     label={field.title}
+     disabled={field.disabled}
+     placeholder={ placeHolder }
+     autoComplete='off'
+     onChanged={ updateField }
+     required={field.required}
+   />;
+   
+   return textField;
+ }
+
   /**
    * An object defining the format characters and corresponding regexp values.
    * Default format characters: \{
@@ -85,6 +111,7 @@ import {
 
     let label = field.title + " (" + mask.replace('\\','') + ")";
     let textField = 
+
     <MaskedTextField 
       defaultValue={ currentValue }
       className={ blinkOnProjectClassName }
@@ -125,9 +152,12 @@ import {
     let currentValue = parentState.formEntry[field.name]['value'];
     // 2019-12-22:  Removed this line when I created fieldDefs... but don't yet have state for that in the new object
     field.required = parentState.formEntry[field.name]['required'];
+
     let mask = parentState.formEntry[field.name]['mask'];
     let blinkOnProjectClassName = getBlinkOnProjectClass(field, parentState.blinkOnProject);
+
     if (parentState.formEntry[field.name]['defaultIsPrefix'] === true ){
+      if (parentState.formEntry[field.name]['defaultIsPrefix'] === parentState.formEntry[field.name]['value'] )
       return createPrefixTextField(field, currentValue, onChanged, parentState.formEntry[field.name]['prefix'], blinkOnProjectClassName);
     } else if (mask !== '') {
       return createMaskedTextField(field, mask, currentValue, onChanged, blinkOnProjectClassName);
@@ -153,7 +183,13 @@ import {
 
       return createBasicTextField(field, currentValue, onChanged, blinkOnProjectClassName);
 
-    } 
+    }  else if (field.type === "SmartLink") {
+      let currentValue = parentState.formEntry[field.name];
+      let blinkOnProjectClassName = getBlinkOnProjectClass(field, parentState.blinkOnProject);
+
+      return createSmartLinkField(field, currentValue, onChanged, blinkOnProjectClassName);
+
+    }
 
     return ;
 

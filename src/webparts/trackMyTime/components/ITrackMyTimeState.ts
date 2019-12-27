@@ -6,6 +6,8 @@ import { CurrentUser } from '@pnp/sp/src/siteusers';
 import { IFormFields } from './fields/fieldDefinitions'
 import { ITheTime } from '../../../services/dateServices';
 
+import { ISmartLinkDef } from './ActivityURLMasks';
+
 export interface ILink {
   description: string;
   url: string;
@@ -257,6 +259,7 @@ export interface ITrackMyTimeState {
   currentProjectPicker: string; //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
   currentTimePicker: string; //User selection of :defaultTimePicker  SinceLast, Slider, Manual???
   locationChoice: string;  //semi-colon separated choices
+  smartLinkRules: ISmartLinkDef[];
 
   // 6 - User Feedback:
   currentUser?: IUser;  //Current user information
