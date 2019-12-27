@@ -39,6 +39,7 @@ export function createEntryField(name: string, title: string, column: string, ty
         disabled: false,
         blinkOnProject: blinkOnProject,
     }
+    console.log('createEntryField: ' + name, field)
     return field;
   }
 

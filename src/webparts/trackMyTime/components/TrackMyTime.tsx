@@ -1012,15 +1012,18 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let isRequired : boolean = ( projectText && projectText.indexOf("\*") === 0 ) ? true : false ;
     let projectString = isRequired ? makeThisSmart.substring(1) : makeThisSmart;
     let isDefault : boolean = (projectString && projectString.indexOf("\?") === 0 ) ? true : false ;
+
     projectString = isDefault ? projectString.substring(1) : projectString;
     let lastIndexOfDots : number = projectString ? projectString.lastIndexOf("...") : -1;
+    let defaultIsPrefix = lastIndexOfDots > -1 ? true : false;
+
     let prefix : string = (projectString && lastIndexOfDots === projectString.length -3 ) ? projectString.substring(0,lastIndexOfDots) : null ;
     let mask : string = (makeThisSmart && makeThisSmart.indexOf('mask=')===0) ? makeThisSmart.replace('mask=','') : '';
     let thisProj : ISmartText = {
-      value: makeThisSmart,
+      value: defaultIsPrefix ? "" : makeThisSmart,
       required: isRequired,
       default: projectString ,
-      defaultIsPrefix: lastIndexOfDots > -1 ? true : false ,
+      defaultIsPrefix: defaultIsPrefix,
       prefix: prefix,
       mask: mask,
     };
@@ -1280,15 +1283,23 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
         
         let listCategory = "";
-       
         if ( item.Category1 !== null && item.Category1 ) {
           listCategory += item.Category1.join(', ')
         }
-
         if ( item.Category2 !== null && item.Category2 ) {
           listCategory += item.Category2.join(', ')
         }
 
+        let listProjects = "";
+        if ( item.ProjectID1 !== null ) {
+          listProjects += item.ProjectID1;
+        }
+        if ( item.ProjectID2 !== null ) {
+          listProjects = listProjects !== "" ? listProjects += ", " : listProjects;
+          listProjects += item.ProjectID2 + ' ';
+        }   
+
+        
         let listComments = item.Comments ? item.Comments : "";
 
         let timeEntry : ITimeEntry = {
@@ -1335,7 +1346,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           userInitials: item.User.Title.split(" ").map((n)=>n[0]).join(""),
           listCategory: listCategory,
           listTimeSpan: getTimeSpan(item.StartTime, item.EndTime),
-          listProjects: item.ProjectID1 + (item.ProjectID2 ? ' ' + item.ProjectID1 : ''),
+          listProjects: listProjects,
           listTracking: '',
           listComments: listComments,
 
@@ -1908,18 +1919,26 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       itemEndTime = new Date().toLocaleString();
     }
 
+    let comments = trackTimeItem.comments ? trackTimeItem.comments.value : null
+    let projectID1 = trackTimeItem.projectID1 ? trackTimeItem.projectID1.value : null
+    let projectID2 = trackTimeItem.projectID2 ? trackTimeItem.projectID2.value : null
+
+    if (trackTimeItem.comments.defaultIsPrefix) {comments = trackTimeItem.comments.prefix + comments }
+    if (trackTimeItem.projectID1.defaultIsPrefix) {projectID1 = trackTimeItem.projectID1.prefix + projectID1 }
+    if (trackTimeItem.projectID2.defaultIsPrefix) {projectID2 = trackTimeItem.projectID2.prefix + projectID2 }
+
     let saveThisItem = {
         //Values that would come from Project item
         //editLink : ILink, //Link to view/edit item link
         Title: trackTimeItem.titleProject,
-        Comments: trackTimeItem.comments ? trackTimeItem.comments.value : null,
+        Comments: comments,
         Category1: category1,
         Category2: category2,
         LeaderId: trackTimeItem.leaderId,  //Likely single person column
         TeamId: teamId,  //Likely multi person column
 
-        ProjectID1: trackTimeItem.projectID1 ? trackTimeItem.projectID1.value : null,  //Example Project # - look for strings starting with * and ?
-        ProjectID2: trackTimeItem.projectID2 ? trackTimeItem.projectID2.value : null,  //Example Cost Center # - look for strings starting with * and ?
+        ProjectID1: projectID1,  //Example Project # - look for strings starting with * and ?
+        ProjectID2: projectID2,  //Example Cost Center # - look for strings starting with * and ?
 
         //Values that relate to project list item
         //SourceProject: trackTimeItem.sourceProject, //Link back to the source project list item.
@@ -2010,6 +2029,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       }
       let listTimeSpan = getTimeSpan(trackTimeItem.startTime, trackTimeItem.endTime);
       let listComments = trackTimeItem.comments ? trackTimeItem.comments.value : "";
+      let listProjects = "";
+      if ( trackTimeItem.projectID1 !== null && trackTimeItem.projectID1.value ) {
+        listProjects += trackTimeItem.projectID1.value + ' ';
+      }
+      if ( trackTimeItem.projectID2 !== null && trackTimeItem.projectID2.value ) {
+        listProjects += trackTimeItem.projectID2.value + ' ';
+      }   
 
       let newEntry : ITimeEntry = {...trackTimeItem,
         user: this.state.currentUser,
@@ -2027,6 +2053,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         listCategory: listCategory,
         listComments: listComments,
         listTimeSpan: listTimeSpan,
+        listProjects: listProjects,
         id: response.data.Id,
         entryType: response.data.EntryType,
         comments: this.buildSmartText(response.data.Comments),
