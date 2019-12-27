@@ -21,30 +21,46 @@ import {
     ButtonType
   } from 'office-ui-fabric-react';
 
-
- export function createBasicTextField(field: IFieldDef, currentValue, updateField, blinkOnProject){
-   // it is possible to have an option to hide labels in lue of placeholder text for more compressed look
-   let placeHolder = 'Enter ' + field.title;
-   let classes = [styles.textField];
-
-   if (blinkOnProject === 1 && field.blinkOnProject === true ) {
-    classes.push(styles.highlightBlink1)
-   } else if (blinkOnProject === 2 && field.blinkOnProject === true ) {
-    classes.push(styles.highlightBlink2);
+  
+ 
+  export function createPrefixTextField(field: IFieldDef, currentValue, updateField, prefix, blinkOnProjectClassName){
+    // it is possible to have an option to hide labels in lue of placeholder text for more compressed look
+ 
+    let placeHolder = 'Enter ' + field.title;
+ 
+    placeHolder = '';
+ 
+     let textField = 
+     <TextField
+       //className={ [styles.textField, styles.highlightBlink].join(' ') }
+       className={ blinkOnProjectClassName }
+       defaultValue={ currentValue ? currentValue : "" }
+       prefix= { prefix }
+       label={field.title}
+       disabled={field.disabled}
+       placeholder={ placeHolder }
+       autoComplete='off'
+       onChanged={ updateField }
+       required={field.required}
+     />;
+     
+     return textField;
    }
-   
-   
-   let classNames = classes.join(' ');
-   
-   console.log('classNames:' , field.title, classNames);
-//   console.log('classNames:' , field.title, [styles.textField,styles.highlightBlink1].join(' '));
 
+
+ export function createBasicTextField(field: IFieldDef, currentValue, updateField, blinkOnProjectClassName){
+   // it is possible to have an option to hide labels in lue of placeholder text for more compressed look
+
+   let placeHolder = 'Enter ' + field.title;
+    let defaultValue = ""
+    if (currentValue && currentValue !== "*") { defaultValue = currentValue }
    placeHolder = '';
+
     let textField = 
     <TextField
       //className={ [styles.textField, styles.highlightBlink].join(' ') }
-      className={ classNames }
-      defaultValue={ currentValue ? currentValue : "" }
+      className={ blinkOnProjectClassName }
+      defaultValue={ defaultValue }
       label={field.title}
       disabled={field.disabled}
       placeholder={ placeHolder }
@@ -65,12 +81,13 @@ import {
    * \}
    */
 
-  export function createMaskedTextField(thisField, mask, currentValue, onChanged){
-    let label = thisField + " (" + mask + ")";
+  export function createMaskedTextField(field: IFieldDef, mask, currentValue, onChanged, blinkOnProjectClassName){
+
+    let label = field.title + " (" + mask.replace('\\','') + ")";
     let textField = 
     <MaskedTextField 
       defaultValue={ currentValue }
-      className={ styles.textField }
+      className={ blinkOnProjectClassName }
       label={ label }
       mask={ mask }
       maskChar="?"
@@ -81,6 +98,24 @@ import {
     return textField;
   }
 
+  /**
+   * This was added to get className for any type of field
+   * @param field 
+   * @param blinkOnProject 
+   */
+  export function getBlinkOnProjectClass(field: IFieldDef, blinkOnProject) {
+
+    let classes = [styles.textField];
+    if (blinkOnProject === 1 && field.blinkOnProject === true ) {
+     classes = [styles.textField1];
+    } else if (blinkOnProject === 2 && field.blinkOnProject === true ) {
+     classes = [styles.textField2];
+    }
+    let classNames = classes.join(' ');
+
+    return classNames;
+
+  }
 
   export function createSmartTextBox(parentProps: ITrackMyTimeProps, parentState : ITrackMyTimeState, field: IFieldDef, onChanged){
 
@@ -89,12 +124,15 @@ import {
     let thisField = parentState.formEntry[field.name]['title'];
     let currentValue = parentState.formEntry[field.name]['value'];
     // 2019-12-22:  Removed this line when I created fieldDefs... but don't yet have state for that in the new object
-    //let required = parentState.formEntry[field.name]['required'];
+    field.required = parentState.formEntry[field.name]['required'];
     let mask = parentState.formEntry[field.name]['mask'];
-    if (mask !== '') {
-      return createMaskedTextField(thisField, mask, currentValue, onChanged);
+    let blinkOnProjectClassName = getBlinkOnProjectClass(field, parentState.blinkOnProject);
+    if (parentState.formEntry[field.name]['defaultIsPrefix'] === true ){
+      return createPrefixTextField(field, currentValue, onChanged, parentState.formEntry[field.name]['prefix'], blinkOnProjectClassName);
+    } else if (mask !== '') {
+      return createMaskedTextField(field, mask, currentValue, onChanged, blinkOnProjectClassName);
     } else {
-      return createBasicTextField(field, currentValue, onChanged, parentState.blinkOnProject);
+      return createBasicTextField(field, currentValue, onChanged, blinkOnProjectClassName);
     }
     
   }
@@ -104,7 +142,6 @@ import {
     //Return nothing if user has not been loaded because that is when formEntry gets created.
     if ( parentState.userLoadStatus !== "Complete" ) { return ""; }
 
-
     if (field.type === "Smart") {
       return createSmartTextBox(parentProps, parentState, field, onChanged );
 
@@ -112,8 +149,9 @@ import {
       // 2019-12-22:  Removed this line when I created fieldDefs... but don't yet have state for that in the new object
       //let required = currentValue === "*" ? true : false;
       let currentValue = parentState.formEntry[field.name];
+      let blinkOnProjectClassName = getBlinkOnProjectClass(field, parentState.blinkOnProject);
 
-      return createBasicTextField(field, currentValue, onChanged, parentState.blinkOnProject);
+      return createBasicTextField(field, currentValue, onChanged, blinkOnProjectClassName);
 
     } 
 

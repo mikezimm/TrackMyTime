@@ -28,9 +28,9 @@ export const  timeSpan : IViewField = {
   maxWidth: 200
 }
 
-export const  project : IViewField = {
+export const  title : IViewField = {
   name: "titleProject",
-  displayName: "Project",
+  displayName: "Title",
   isResizable: true,
   sorting: true,
   minWidth: 150,
@@ -49,6 +49,16 @@ export const  projectWide : IViewField = {
 export const  description : IViewField = {
   name: "description",
   displayName: "Description",
+  //linkPropertyName: "c",
+  isResizable: true,
+  sorting: true,
+  minWidth: 20,
+  maxWidth: 100
+}
+
+export const  projects : IViewField = {
+  name: "listProjects",
+  displayName: "Projects",
   //linkPropertyName: "c",
   isResizable: true,
   sorting: true,
@@ -98,8 +108,9 @@ export function viewFieldsFull() {
     viewFields.push(id);
     viewFields.push(initials);
     viewFields.push(timeSpan);
-    viewFields.push(project);
-    viewFields.push(description);
+    viewFields.push(title);
+    //viewFields.push(description);
+    viewFields.push(projects);    
     viewFields.push(category);
     viewFields.push(comments);
 
@@ -114,7 +125,7 @@ export function viewFieldsMin() {
     viewFields.push(id);
     viewFields.push(initials);
     viewFields.push(timeSpan);
-    viewFields.push(project);
+    viewFields.push(title);
 
     return viewFields;
     
