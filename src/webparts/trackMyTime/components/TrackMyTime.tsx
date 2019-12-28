@@ -568,13 +568,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let result = smartLinks.convertSmartLink(newValue, this.state.smartLinkRules);
 
     if ( result ) {
-      formEntry.comments.value = result.commentText;
-      formEntry.activity.description = result.activityDesc;
-      formEntry.activity.url = newValue;
-      formEntry.category1 = [ result.category1 ];
-      formEntry.category2 = [ result.category2 ];
-      formEntry.projectID1.value = result.projectID1;
-      formEntry.projectID2.value = result.projectID2;
+      formEntry.comments.value = result.commentText ? result.commentText : null;
+      formEntry.activity.description = result.activityDesc ? result.activityDesc : null;
+      formEntry.activity.url = newValue ? newValue : null ;
+      formEntry.category1 = [ result.category1 ] ? [ result.category1 ] : null;
+      formEntry.category2 = [ result.category2 ] ? [ result.category2 ] : null;
+      formEntry.projectID1.value = result.projectID1 ? result.projectID1 : null;
+      formEntry.projectID2.value = result.projectID2 ? result.projectID2 : null;
       console.log('updated formEntry: ', formEntry);
     } else {
       console.log('Did not update anthing based on activity.')

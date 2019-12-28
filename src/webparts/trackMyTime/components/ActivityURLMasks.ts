@@ -92,7 +92,7 @@ export function convertSmartLink(link : string, smartLinkRules: ISmartLinkDef[])
 
     let rule: ILinkRule = getHostRule(link,host.rules);
     if (rule === null) { return result; }
-    
+
     if (rule) { 
         result = applyHostRule(link,rule);
     }
@@ -103,7 +103,7 @@ export function convertSmartLink(link : string, smartLinkRules: ISmartLinkDef[])
 
 function applyHostRule(link : string, rule: ILinkRule) {
 
-    link = link.toLowerCase();
+    link = link;
     let result : ILinkRuleReturn = null;
 
     let split = link.split(rule.keyFolder);
@@ -143,11 +143,10 @@ function getTextFromLink(definition: string, rule: ILinkRule, parents: string[],
 
         if ( rule[member] && rule[member] !== 'na' ) {//This is a valid mapping
             let index = getFolderIndex(member);
-
+            
             let toUpperCase = rule[member].indexOf('^^^') > -1 ? true : false;
             let toLowerCase = rule[member].indexOf('vvv') > -1 ? true : false;
             let toProperCase = rule[member].indexOf('^v') > -1 ? true : false;
-            rule[member] = rule[member].replace('^^^','').replace('vvv','').replace('^v','');
 
             let prefix = rule[member].split('...x...')[0];
             prefix = prefix ? prefix.replace('...x...','') : prefix;
@@ -190,6 +189,7 @@ function getTextFromLink(definition: string, rule: ILinkRule, parents: string[],
                     thisText = suffix ? thisText + suffix : thisText;
                 }
             }
+            thisText = thisText.replace('^^^','').replace('vvv','').replace('^v','');
             result += thisText;
         }
     }
@@ -283,18 +283,18 @@ export const github : ISmartLinkDef = {
             projectID2Mapping: '',
         },        {
             order: 100,
-            title: "Github Pull Request",  // Rule title
+            title: "Github ",  // Rule title
             keyFolder: '/pull/', // Key folder in URL to apply rule too ( like /issues/ )
-            childFolderTitle: '#', // use 'na' to skip this rule.  '' to have no Title
+            childFolderTitle: 'Pull Request ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
-            parentFolderTitle: 'Repo: ', // use 'na' to skip this rule.  '' to have no Title
+            parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
-            commentTextMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
-            activityDescMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            commentTextMapping: 'title, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: 'childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: '',
             category2Mapping: '',
-            projectID1Mapping: '',
-            projectID2Mapping: '',
+            projectID1Mapping: 'parentFolderTitle',
+            projectID2Mapping: 'childFolderTitle',
         },        {
             order: 100,
             title: "Github Project",  // Rule title
@@ -327,7 +327,7 @@ export const github : ISmartLinkDef = {
             order: 100,
             title: "Github Commit",  // Rule title
             keyFolder: '/commit/', // Key folder in URL to apply rule too ( like /issues/ )
-            childFolderTitle: '#', // use 'na' to skip this rule.  '' to have no Title
+            childFolderTitle: '', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
             parentFolderTitle: 'Repo: ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
