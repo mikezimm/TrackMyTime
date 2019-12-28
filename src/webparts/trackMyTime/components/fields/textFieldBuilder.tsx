@@ -157,7 +157,7 @@ import {
     let blinkOnProjectClassName = getBlinkOnProjectClass(field, parentState.blinkOnProject);
 
     if (parentState.formEntry[field.name]['defaultIsPrefix'] === true ){
-      if (parentState.formEntry[field.name]['defaultIsPrefix'] === parentState.formEntry[field.name]['value'] )
+      if (parentState.formEntry[field.name]['defaultIsPrefix'] === parentState.formEntry[field.name]['value'] ) { parentState.formEntry[field.name]['value'] = '' }
       return createPrefixTextField(field, currentValue, onChanged, parentState.formEntry[field.name]['prefix'], blinkOnProjectClassName);
     } else if (mask !== '') {
       return createMaskedTextField(field, mask, currentValue, onChanged, blinkOnProjectClassName);
@@ -171,6 +171,8 @@ import {
 
     //Return nothing if user has not been loaded because that is when formEntry gets created.
     if ( parentState.userLoadStatus !== "Complete" ) { return ""; }
+
+    //console.log('Hey there!');
 
     if (field.type === "Smart") {
       return createSmartTextBox(parentProps, parentState, field, onChanged );
