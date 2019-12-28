@@ -17,6 +17,7 @@ export interface IFieldDef {
 
 export interface IFormFields {
     Title: IFieldDef;
+    Activity: IFieldDef;
     Comments: IFieldDef;
     Category1: IFieldDef;
     Category2: IFieldDef;
@@ -39,15 +40,16 @@ export function createEntryField(name: string, title: string, column: string, ty
         disabled: false,
         blinkOnProject: blinkOnProject,
     }
-    console.log('createEntryField: ' + name, field)
+    //console.log('createEntryField: ' + name, field)
     return field;
   }
 
 export function buildFormFields(parentProps:ITrackMyTimeProps , parentState: ITrackMyTimeState ){
     let fields : IFormFields = {
-        //createEntryField(name: string, title: string, column: string, type: string){
+        //createEntryField(name: string, title: string, column: string, type: string, blinkOnProject: boolean){
         Title: createEntryField("titleProject","Title","Title", "Text", true),
         Comments: createEntryField("comments","Comments","Comments","Smart", false),
+        Activity: createEntryField("activity","Activity","Activity","SmartLink", false),
         Category1: createEntryField("category1","Category 1","Category1","Text", true),
         Category2: createEntryField("category2","Category 2","Category2","Text", true),
 

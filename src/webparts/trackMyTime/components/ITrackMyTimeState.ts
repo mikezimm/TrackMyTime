@@ -6,6 +6,8 @@ import { CurrentUser } from '@pnp/sp/src/siteusers';
 import { IFormFields } from './fields/fieldDefinitions'
 import { ITheTime } from '../../../services/dateServices';
 
+import { ISmartLinkDef } from './ActivityURLMasks';
+
 export interface ILink {
   description: string;
   url: string;
@@ -257,6 +259,7 @@ export interface ITrackMyTimeState {
   currentProjectPicker: string; //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
   currentTimePicker: string; //User selection of :defaultTimePicker  SinceLast, Slider, Manual???
   locationChoice: string;  //semi-colon separated choices
+  smartLinkRules: ISmartLinkDef[];
 
   // 6 - User Feedback:
   currentUser?: IUser;  //Current user information
@@ -264,6 +267,7 @@ export interface ITrackMyTimeState {
   lastEntry?: ITimeEntry;  //Should be a time entry
   lastEndTime?: ITheTime; //Should be latest timestamp of the current user... used to create start time for next entry.
   blinkOnProject?: number; //Tells text fields to blink when project is clicked on and values reset
+  blinkOnActivity?: number; //Tells text fields to blink when project is clicked on and values reset
 
   elapsedTime?: any;  //Elapsed Time since last entry
 

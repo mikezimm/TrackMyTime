@@ -39,7 +39,7 @@ import * as listBuilders from './ListView/ListView';
 import * as formBuilders from './fields/textFieldBuilder';
 import * as choiceBuilders from './fields/choiceFieldBuilder';
 import * as sliderBuilders from './fields/sliderFieldBuilder';
-
+import * as smartLinks from './ActivityURLMasks';
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
   
@@ -186,11 +186,14 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       onlyActiveProjects: this.props.onlyActiveProjects,
       projectType: this.props.projectType,
       syncProjectPivotsOnToggle: this.props.syncProjectPivotsOnToggle, //always keep pivots in sync when toggling projects/history
+
       // 5 - UI Defaults
       currentProjectPicker: '', //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
       currentTimePicker: this.props.defaultTimePicker, //User selection of :defaultTimePicker  SinceLast, Slider, Manual???
       locationChoice: '',  //semi-colon separated choices
       blinkOnProject: 0, //Tells text fields to blink when project is clicked on and values reset
+      blinkOnActivity: 0, //Tells text fields to blink when project is clicked on and values reset
+      smartLinkRules: smartLinks.buildSmartLinkRules(this.props),
 
       // 6 - User Feedback:
       showElapsedTimeSinceLast: true,  // Idea is that it can be like a clock showing how long it's been since your last entry.
@@ -429,6 +432,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let projectID1 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID1, this._updateProjectID1.bind(this));
     let projectID2 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID2, this._updateProjectID2.bind(this));
 
+    let activity = formBuilders.createThisField(this.props,this.state, this.state.fields.Activity, this._updateActivity.bind(this));
+
     //let entryType = formBuilders.createThisField(this.props,this.state, this.state.fields., this._updateEntryType.bind(this));
 
     let listProjects =  (this.state.projects.newFiltered.length===0) ? "" :
@@ -463,6 +468,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
                 { (timeSlider) }
                 { theTime }
                 { projectTitle }
+                { activity }
                 { comments }
                 { /* entryType */ }
                 <Stack horizontal={true} tokens={stackFormRowTokens}>{ projectID1 }{ projectID2 }</Stack>
@@ -546,6 +552,36 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       formEntry: formEntry,
       blinkOnProject: 0,
     });
+  }
+
+
+  
+  private _updateActivity(newValue: string){
+
+    if (this.state.timeTrackerLoadStatus !== 'Complete' || 
+      this.state.userLoadStatus !== 'Complete'  || 
+      this.state.projectsLoadStatus !== 'Complete' ) {
+        return;
+      }
+
+    let formEntry = this.state.formEntry;
+    let result = smartLinks.convertSmartLink(newValue, this.state.smartLinkRules);
+
+    if ( result ) {
+      formEntry.comments.value = result.commentText;
+      formEntry.activity.description = result.activityDesc;
+      formEntry.activity.url = newValue;
+      formEntry.category1 = [ result.category1 ];
+      formEntry.category2 = [ result.category2 ];
+      formEntry.projectID1.value = result.projectID1;
+      formEntry.projectID2.value = result.projectID2;
+      console.log('updated formEntry: ', formEntry);
+    } else {
+      console.log('Did not update anthing based on activity.')
+    }
+
+
+    this.setState({ formEntry:formEntry, blinkOnProject: 0,});
   }
 
   private _updateComments(newValue: string){
@@ -1927,6 +1963,12 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     if (trackTimeItem.projectID1.defaultIsPrefix) {projectID1 = trackTimeItem.projectID1.prefix + projectID1 }
     if (trackTimeItem.projectID2.defaultIsPrefix) {projectID2 = trackTimeItem.projectID2.prefix + projectID2 }
 
+
+    let Activity = {
+      Description: trackTimeItem.activity.description ?  trackTimeItem.activity.description : null,
+      Url: trackTimeItem.activity.url ? trackTimeItem.activity.url : null,
+    }
+
     let saveThisItem = {
         //Values that would come from Project item
         //editLink : ILink, //Link to view/edit item link
@@ -1942,7 +1984,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
         //Values that relate to project list item
         //SourceProject: trackTimeItem.sourceProject, //Link back to the source project list item.
-        //Activity: trackTimeItem.activity, //Link to the activity you worked on
+        Activity: Activity, //Link to the activity you worked on
         //CCList: trackTimeItem.ccList, //Link to CC List to copy item
         //CCEmail: trackTimeItem.ccEmail, //Email to CC List to copy item 
         
