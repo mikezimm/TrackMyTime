@@ -167,13 +167,13 @@ import {
     
   }
 
-  export function createThisField(parentProps: ITrackMyTimeProps, parentState : ITrackMyTimeState, field: IFieldDef, onChanged){
+  export function createThisField(parentProps: ITrackMyTimeProps, parentState : ITrackMyTimeState, field: IFieldDef, isSaveDisabled:boolean = false ,onChanged){
 
     //Return nothing if user has not been loaded because that is when formEntry gets created.
     if ( parentState.userLoadStatus !== "Complete" ) { return ""; }
 
     //console.log('Hey there!');
-
+    field.disabled = isSaveDisabled;
     if (field.type === "Smart") {
       return createSmartTextBox(parentProps, parentState, field, onChanged );
 
