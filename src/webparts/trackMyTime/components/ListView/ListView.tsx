@@ -41,6 +41,7 @@ export function listViewBuilder(parentProps,parentState, theseAreItems: ITimeEnt
 
 export function projectBuilder(parentProps,parentState, theseAreItems: IProject[], _getSelectedProject){
 
+  //console.log('projectBuilder',parentState.selectedProjectIndex)
   let viewFields = fields.viewFieldsProject();
 
   if ( theseAreItems.length === 0 ) { return "";}
@@ -53,7 +54,7 @@ export function projectBuilder(parentProps,parentState, theseAreItems: IProject[
       selectionMode={SelectionMode.single}
       selection={_getSelectedProject}
       showFilter={true}
-      //defaultSelection={[2]}
+      defaultSelection={[parentState.selectedProjectIndex]}
       //defaultFilter="John"
       filterPlaceHolder="Search..."
       //groupByFields={groupByFields}

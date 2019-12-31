@@ -494,9 +494,21 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     );
   }
 
+  private _getProjectIndexFromArray(val,prop,array){
+
+    for (let index = 0; index < array.length; index++) {
+      if (array[index][prop] === val) {
+        //console.log('Found index: ', index);
+        return index;
+      }
+    }
+  }
 
   private _getSelectedProject(items: any[]){
 
+    if (this.state.userLoadStatus !== 'Complete') { return }
+    if (this.state.timeTrackerLoadStatus !== 'Complete') { return }
+    if (this.state.userLoadStatus !== 'Complete') { return }
     if (event) { event.preventDefault(); }
     if (items.length === 0 ) { return }
 
@@ -509,6 +521,9 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         item = p;
       }
     }
+
+    let selectedProjectIndex = this._getProjectIndexFromArray(item.id,'id',this.state.projects.newFiltered);
+    if (selectedProjectIndex === this.state.selectedProjectIndex) { return ;}
 
     let formEntry = this.state.formEntry;
 
@@ -524,7 +539,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     formEntry.ccEmail  = item.ccEmail;
     formEntry.ccList  = item.ccList;
 
-    this.setState({ formEntry:formEntry, blinkOnProject: this.state.blinkOnProject === 1 ? 2 : 1 });  
+    this.setState({ formEntry:formEntry, 
+      blinkOnProject: this.state.blinkOnProject === 1 ? 2 : 1,
+      selectedProjectIndex : selectedProjectIndex,
+      lastSelectedProjectIndex: this.state.selectedProjectIndex,
+     });  
 
   }
 

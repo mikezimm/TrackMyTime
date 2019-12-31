@@ -93,6 +93,7 @@ export interface ISaveEntry {
     //Other settings and information
     location?: string; // Location
     settings?: string;
+
   
 }
 
@@ -284,7 +285,8 @@ export interface ITrackMyTimeState {
 
   // 9 - Other web part options
 
-
+  selectedProjectIndex?: number;  //Index of selected project
+  lastSelectedProjectIndex?: number;  //Index of selected project
   loadStatus?: string;
 
   loadOrder?: string; //This just tells us what order the rest calls came back
