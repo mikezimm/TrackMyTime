@@ -311,6 +311,20 @@ export const github : ISmartLinkDef = {
             projectID2Mapping: 'childFolderTitle',
         },        {
             order: 100,
+            title: "Github Branch",  // Rule title
+            keyFolder: '/tree/', // Key folder in URL to apply rule too ( like /issues/ )
+            childFolderTitle: ' ...x..., ', // use 'na' to skip this rule.  '' to have no Title
+            child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
+            parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
+            parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
+            commentTextMapping: 'title, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: 'childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            category1Mapping: 'parentFolderTitle',
+            category2Mapping: 'title',
+            projectID1Mapping: 'parentFolderTitle',
+            projectID2Mapping: 'childFolderTitle',
+        },        {
+            order: 100,
             title: "Github Project",  // Rule title
             keyFolder: '/projects/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: '', // use 'na' to skip this rule.  '' to have no Title
