@@ -219,8 +219,21 @@ export interface IProjectInfo {
   
 }
 
+export interface IPivot {
+  headerText: string;
+  itemKey: string;
+  filter?: string;
+  data?: string;
+}
+
+export interface IMyPivots {
+  projects: IPivot[];
+  history: IPivot[];
+}
 
 export interface ITrackMyTimeState {
+
+  pivots?: IMyPivots;
 
   projects?: IProjectInfo;
   entries?: IEntryInfo;
