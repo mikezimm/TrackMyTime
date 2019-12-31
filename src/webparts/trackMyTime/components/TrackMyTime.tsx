@@ -6,6 +6,8 @@ import { sp, Web } from '@pnp/sp';
 import { CurrentUser } from '@pnp/sp/src/siteusers';
 
 import { Pivot, PivotItem, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabric-react/lib/Pivot';
+import { Label, ILabelStyles } from 'office-ui-fabric-react/lib/Label';
+import { IStyleSet } from 'office-ui-fabric-react/lib/Styling';
 
 import { IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
 
@@ -20,7 +22,7 @@ import Utils from './utils';
 import { saveTheTime, saveAnalytics } from '../../../services/createAnalytics';
 import { getAge, getDayTimeToMinutes, getBestTimeDelta, getLocalMonths, getTimeSpan, getGreeting, getNicks, makeTheTimeObject, getTimeDelta} from '../../../services/dateServices';
 
-import {IProject, ILink, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, ITrackMyTimeState, ISaveEntry} from './ITrackMyTimeState';
+import {IProject, ILink, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, IMyPivots, IPivot, ITrackMyTimeState, ISaveEntry} from './ITrackMyTimeState';
 import { pivotOptionsGroup, } from '../../../services/propPane';
 
 import { buildFormFields } from './fields/fieldDefinitions'
@@ -41,8 +43,13 @@ import * as choiceBuilders from './fields/choiceFieldBuilder';
 import * as sliderBuilders from './fields/sliderFieldBuilder';
 import * as smartLinks from './ActivityURLMasks';
 
-export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
   
+const labelStyles: Partial<IStyleSet<ILabelStyles>> = {
+  root: { marginTop: 10 }
+};
+
+export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
+
   private createEntryInfo() {
 
     let entryInfo = {} as IEntryInfo;
@@ -99,6 +106,64 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     return user;
 
   }
+
+  private createPivotData(){
+    // Using https://stackoverflow.com/questions/3103962/converting-html-string-into-dom-elements
+    let pivots : IMyPivots = {
+      projects: 
+        [
+          { headerText: "Yours",
+            filter: "your",
+            itemKey: "your",
+            data: "Projects where you are the Leader",
+          },
+          { headerText: "Your Team",
+            filter: "team",
+            itemKey: "team",
+            data: "Projects where you are in the Team",
+          },
+          { headerText: "Everyone",
+            filter: "everyone",
+            itemKey: "everyone",
+            data: "Projects where Everyone is marked Yes - overrides other categories",
+          },
+          { headerText: "Others",
+            filter: "otherPeople",
+            itemKey: "otherPeople",
+            data: "Projects where you are not the Leader, nor in the team, and not marked Everyone",
+          },
+        ]
+      ,
+      history: 
+        [
+          { headerText: "Yours",
+            filter: "your",
+            itemKey: "your",
+            data: "History where you are the User",
+          },
+          { headerText: "Your Team",
+            filter: "team",
+            itemKey: "team",
+            data: "History where you are part of the Team, but not the User",
+          },
+          { headerText: "Everyone",
+            filter: "everyone",
+            itemKey: "everyone",
+            data: "Currently not in use",
+          },
+          { headerText: "Others",
+            filter: "otherPeople",
+            itemKey: "otherPeople",
+            data: "History where you are not the Leader, nor in the team, and not marked Everyone",
+          },
+        ]
+      ,
+    }
+
+    return pivots;
+
+  }
+
   private createFormEntry() {
 
     //https://stackoverflow.com/a/37802516/4210807
@@ -169,6 +234,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       // 3 - General how accurate do you want this to be
 
       // 4 -Project options
+      pivots: this.createPivotData(),
       projects: this.createprojectInfo(),
       entries: this.createEntryInfo(),
       
@@ -335,6 +401,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   }
 
+
   public render(): React.ReactElement<ITrackMyTimeProps> {
 
     let setPivot = !this.state.projectType ? this.state.projectMasterPriorityChoice :this.state.projectUserPriorityChoice ;
@@ -360,7 +427,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     const stackButtonTokensBody: IStackTokens = { childrenGap: 40 };
     const stackButtonTokens: IStackTokens = { childrenGap: 40 };
     const stackFormRowTokens: IStackTokens = { childrenGap: 20 };
-    const stackFormRowsTokens: IStackTokens = { childrenGap: 20 };
+    const stackFormRowsTokens: IStackTokens = { childrenGap: 10 };
 
     let hoursSinceLastTime = 0;
     if ( this.state.timeTrackerLoadStatus === "Complete" ) {
@@ -384,7 +451,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
         theTime = <div className={( isSaveDisabled ? styles.timeError : styles.timeInPast )}>
           From: { getDayTimeToMinutes(this.state.lastEndTime.theTime) } until NOW<br/>
-          {( isSaveDisabled ? 'Is to far in the past.<br/>Use Slider or Manual Mode to save time.' : "" )}
+          {( isSaveDisabled ? <div>Is to far in the past.</div> : "" )}
+          {( isSaveDisabled ? <div>Use Slider or Manual Mode to save time.</div> : "" )}
           </div> 
 
       } else if  (this.state.currentTimePicker === 'slider' ) 
@@ -454,17 +522,21 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
             { this.createPivotObject(choice2, display2)  }
             { this.createPivotObject(choice1, display1)  }
+
             { /*this.createPivotObject(setPivot, "block") */ }
             <div><span style={{fontSize: 20, paddingRight: 30,}}>{ getGreeting(this.state.currentUser)}</span></div>
             { this.createProjectTypeToggle(this.state) }
-              
+            
         </div>
 
           <div>
 
             <Stack padding={20} horizontal={true} horizontalAlign={"space-between"} tokens={stackButtonTokensBody}> {/* Stack for Projects and body */}
               { /* this.createProjectChoices(this.state) */ }
+              <Stack horizontal={false} horizontalAlign={"start"} tokens={stackFormRowsTokens}>{/* Stack for Pivot Help and Projects */}
+                { this.getPivotHelpText(this.state, this.props)}
                 { listProjects }
+              </Stack>  {/* Stack for Pivot Help and Projects */}
 
               <Stack horizontal={false} horizontalAlign={"end"} tokens={stackFormRowsTokens}>{/* Stack for Buttons and Fields */}
                 { entryOptions }
@@ -482,8 +554,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
             </Stack> {/* Stack for Projects and body */}
           </div>
-                 
-          
+
           <div></div><div><br/><br/></div>
           <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
             <div><h2>Recent TrackYourTime History { userName }</h2></div>
@@ -735,31 +806,18 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     } else {
 
-      //Filter tiles per clicked category
-
-      /*
-      const defaultSelectedIndex = this.state.pivtTitles.indexOf(item.props.headerText);
-      let defaultSelectedKey = defaultSelectedIndex.toString();
-      defaultSelectedKey = item.props.headerText.toString();  // Added this because I think this needs to be the header text, not the index.
-      defaultSelectedKey = Utils.convertCategoryToIndex(defaultSelectedKey);
-*/
-
-
-//      newFiltered = this.getOnClickFilteredProjects(pivotProps, pivotState, newCollection, heroIds, newHeros, thisCatColumn, lastCategory)
-
-     // newFilteredProjects = this.getOnClickFilteredProjects(pivotProps, pivotState, this.state.projects.all, this.state.heroIds, this.state.heroTiles, this.state.thisCatColumn, item.props.headerText)
-
-
       console.log('onLinkClick: this.state', this.state);
-//      console.log('onLinkClick: item.props.headerText', item.props.headerText);
-//      console.log('onLinkClick: defaultSelectedIndex', defaultSelectedIndex);
-//      console.log('onLinkClick: defaultSelectedKey', defaultSelectedKey);
       
       let thisFilter = [];
-      if (item.props.headerText.toLowerCase().indexOf('team') > -1) { thisFilter.push('team'); }
-      else if (item.props.headerText.toLowerCase().indexOf('your') > -1) { thisFilter.push('your'); }
-      else if (item.props.headerText.toLowerCase().indexOf('everyone') > -1) { thisFilter.push('everyone'); }
-      else { thisFilter.push('otherPeople'); }
+      let pivots = this.state.projectType === false ? this.state.pivots.projects : this.state.pivots.history;  
+
+      for (let p of pivots){
+        if ( p.headerText === item.props.headerText ) {
+          thisFilter.push(p.filter);
+        }
+      }
+      console.log('pivots', pivots);
+      console.log('thisFilter', thisFilter);
 
       let projects = this.state.projects;
       projects.lastFiltered = projects.newFiltered;
@@ -1001,35 +1059,22 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   } //End toggleTips  
 
   //http://react.tips/how-to-create-reactjs-components-dynamically/ - based on createImage
-  public createPivot(pivT) {
-    //console.log('createPivot: ', pivT);
-    const thisItemKey :string = Utils.convertCategoryToIndex(pivT);
-    // const thisItemKey :string = pivT; //This does not change the effect (not calling convertCategory....)
+  public createPivot(pivT: IPivot) {
+
       return (
         <PivotItem 
-        headerText={pivT} 
-        itemKey={thisItemKey}
-        //https://github.com/OfficeDev/office-ui-fabric-react/issues/4066#issuecomment-487705294
-        //
-        /*
-        <Pivot styles={{ 
-          linkIsSelected: { width: '25%' }, 
-          link: { width: '25%' }, 
-          text: { overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }
-         }}
-        */
-        //style={linkIsSelected='true'}
-        
-        />
+          headerText={pivT.headerText} 
+          itemKey={pivT.itemKey}
+        >
+        </PivotItem>
       );
   }
 
   public createPivots(thisState,thisProps){
-
-    let piv = thisState.pivtTitles.map(this.createPivot);
-    //console.log('createPivots: ', piv);
+    let pivots = this.state.projectType === false ? this.state.pivots.projects : this.state.pivots.history;  
+    let piv2 = pivots.map(this.createPivot);
     return (
-      piv
+      piv2
     );
   }
 
@@ -1053,7 +1098,25 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
 
 
+  private getPivotHelpText (parentState: ITrackMyTimeState, parentProps: ITrackMyTimeProps) {
+          
+    let helpText = null;
+    let pivots = parentState.projectType === false ? parentState.pivots.projects : parentState.pivots.history;  
+    let setPivot = !this.state.projectType ? this.state.projectMasterPriorityChoice :this.state.projectUserPriorityChoice ;
 
+
+    for (let p of pivots){
+      if ( setPivot === p.itemKey ) {
+        //https://stackoverflow.com/questions/3103962/converting-html-string-into-dom-elements
+        // DOES NOT WORK helpText = new DOMParser().parseFromString(p.data, "text/xml");
+        helpText = p.data;
+      }
+    }
+    //return "";
+
+    return <div className={ styles.pivotLabel }>{ helpText }</div>;
+
+  }
 
 
 
