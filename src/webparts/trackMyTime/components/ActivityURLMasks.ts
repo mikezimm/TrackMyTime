@@ -190,6 +190,16 @@ function getTextFromLink(definition: string, rule: ILinkRule, parents: string[],
                 }
             }
             thisText = thisText.replace('^^^','').replace('vvv','').replace('^v','');
+
+            //This will trim the length of the total value (including label) to the length between 2 sets of << like <<8<<
+            let shorten = thisText.split('<<');
+            if (shorten.length === 3) {
+                thisText = shorten[0] + shorten[2];
+                if (thisText.length > parseInt(shorten[1])) {
+                    thisText = thisText.substr(0, parseInt(shorten[1]) ) + '...';
+                }
+            }
+
             result += thisText;
         }
     }
@@ -277,7 +287,7 @@ export const github : ISmartLinkDef = {
             keyFolder: '/issues/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: '#...x..., ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
-            parentFolderTitle: 'Repo: ', // use 'na' to skip this rule.  '' to have no Title
+            parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
             commentTextMapping: 'title, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             activityDescMapping: 'childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
@@ -287,9 +297,23 @@ export const github : ISmartLinkDef = {
             projectID2Mapping: 'childFolderTitle',
         },        {
             order: 100,
-            title: "Github ",  // Rule title
+            title: "Github Pull Request",  // Rule title
             keyFolder: '/pull/', // Key folder in URL to apply rule too ( like /issues/ )
-            childFolderTitle: 'Pull Request ', // use 'na' to skip this rule.  '' to have no Title
+            childFolderTitle: '#...x..., ', // use 'na' to skip this rule.  '' to have no Title
+            child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
+            parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
+            parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
+            commentTextMapping: 'title, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: 'childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            category1Mapping: 'parentFolderTitle',
+            category2Mapping: 'title',
+            projectID1Mapping: 'parentFolderTitle',
+            projectID2Mapping: 'childFolderTitle',
+        },        {
+            order: 100,
+            title: "Github Branch",  // Rule title
+            keyFolder: '/tree/', // Key folder in URL to apply rule too ( like /issues/ )
+            childFolderTitle: ' ...x..., ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
             parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
@@ -305,7 +329,7 @@ export const github : ISmartLinkDef = {
             keyFolder: '/projects/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: '', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
-            parentFolderTitle: 'Repo: ', // use 'na' to skip this rule.  '' to have no Title
+            parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
             commentTextMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             activityDescMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
@@ -319,7 +343,7 @@ export const github : ISmartLinkDef = {
             keyFolder: '/wiki', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: 'Page: ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
-            parentFolderTitle: 'Repo: ', // use 'na' to skip this rule.  '' to have no Title
+            parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
             commentTextMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             activityDescMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
@@ -331,16 +355,16 @@ export const github : ISmartLinkDef = {
             order: 100,
             title: "Github Commit",  // Rule title
             keyFolder: '/commit/', // Key folder in URL to apply rule too ( like /issues/ )
-            childFolderTitle: '', // use 'na' to skip this rule.  '' to have no Title
+            childFolderTitle: ' #...x...,<<8<< ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
-            parentFolderTitle: 'Repo: ', // use 'na' to skip this rule.  '' to have no Title
+            parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
             commentTextMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
-            activityDescMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: 'title, childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
             category2Mapping: 'title',
-            projectID1Mapping: '',
-            projectID2Mapping: '',
+            projectID1Mapping: 'parentFolderTitle',
+            projectID2Mapping: 'childFolderTitle',
         },        {
             order: 100,
             title: "",  // Rule title
