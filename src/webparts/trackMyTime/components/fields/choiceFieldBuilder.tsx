@@ -42,7 +42,7 @@ export function creatEntryTypeChoices(parentProps:ITrackMyTimeProps , parentStat
       //className="defaultChoiceGroup" //This came with the example but does not seem to do anything
       //https://github.com/OfficeDev/office-ui-fabric-react/issues/8079#issuecomment-479136073
       styles={{ flexContainer: { display: "flex" , paddingLeft: 30} }}
-      defaultSelectedKey={ parentState.currentTimePicker }
+      selectedKey={ parentState.currentTimePicker }
       options={options}
       onChange={_onChange}
       label="Time entry mode"

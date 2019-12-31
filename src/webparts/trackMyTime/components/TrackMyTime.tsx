@@ -382,7 +382,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     if (this.state.timeTrackerLoadStatus === "Complete") {
       if (this.state.currentTimePicker === 'sinceLast') {
 
-        theTime = <div className={(hoursSinceLastTime > 2 ? styles.timeError : styles.timeInPast )}>From: { getDayTimeToMinutes(this.state.lastEndTime.theTime) } until NOW</div> 
+        theTime = <div className={( isSaveDisabled ? styles.timeError : styles.timeInPast )}>
+          From: { getDayTimeToMinutes(this.state.lastEndTime.theTime) } until NOW<br/>
+          {( isSaveDisabled ? 'Is to far in the past.<br/>Use Slider or Manual Mode to save time.' : "" )}
+          </div> 
 
       } else if  (this.state.currentTimePicker === 'slider' ) 
         if (this.state.timeSliderValue > 0 ) {
@@ -427,12 +430,12 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
      
     let timeSlider = sliderBuilders.createSlider(this.props,this.state, this._updateTimeSlider.bind(this));
 
-    let comments = formBuilders.createThisField(this.props,this.state, this.state.fields.Comments,  this._updateComments.bind(this));
-    let projectTitle = formBuilders.createThisField(this.props,this.state,this.state.fields.Title, this._updateProjectTitle.bind(this));
-    let projectID1 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID1, this._updateProjectID1.bind(this));
-    let projectID2 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID2, this._updateProjectID2.bind(this));
+    let comments = formBuilders.createThisField(this.props,this.state, this.state.fields.Comments, isSaveDisabled, this._updateComments.bind(this));
+    let projectTitle = formBuilders.createThisField(this.props,this.state,this.state.fields.Title, isSaveDisabled,  this._updateProjectTitle.bind(this));
+    let projectID1 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID1, isSaveDisabled,  this._updateProjectID1.bind(this));
+    let projectID2 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID2, isSaveDisabled,  this._updateProjectID2.bind(this));
 
-    let activity = formBuilders.createThisField(this.props,this.state, this.state.fields.Activity, this._updateActivity.bind(this));
+    let activity = formBuilders.createThisField(this.props,this.state, this.state.fields.Activity, isSaveDisabled,  this._updateActivity.bind(this));
 
     //let entryType = formBuilders.createThisField(this.props,this.state, this.state.fields., this._updateEntryType.bind(this));
 
@@ -628,8 +631,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   }
 
   private _updateEntryType(ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption){
+
     let formEntry = this.state.formEntry;
-    formEntry.entryType = option.text;
+    formEntry.entryType = option.key;
+    console.log('_updateEntryType: this.state', this.state);
+    console.log('_updateEntryType: formEntry', formEntry);
+    console.log('_updateEntryType: formEntry.entryType', formEntry.entryType);
+
     this.setState({ 
       formEntry:formEntry, 
       currentTimePicker : option.key,
@@ -1755,10 +1763,15 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     console.log('currentTimePicker state:', this.state);
     console.log('currentTimePicker hoursSinceLastTime:', hoursSinceLastTime);
 
+
     let currentTimePicker = 
     ( hoursSinceLastTime >  2 ) 
     ?  'slider'
     : this.state.currentTimePicker ;
+
+    
+    let formEntry = this.state.formEntry;
+    formEntry.entryType = currentTimePicker;
 
    this.setState({
     loadOrder: (this.state.loadOrder === "") ? 'Process Entries' : this.state.loadOrder + ' > Process Entries',
@@ -1773,6 +1786,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     timeTrackerLoadError: "",
     timeTrackerListError: false,
     timeTrackerItemsError: false,
+    formEntry: formEntry,
    });
 
 
