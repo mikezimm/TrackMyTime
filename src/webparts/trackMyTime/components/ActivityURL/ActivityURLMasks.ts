@@ -25,7 +25,7 @@ export interface ILinkRuleReturn {
 export interface ILinkRule extends ILinkRuleReturn {
 
     order: number,  // To be used for sorting priority of rule
-    title: string,  // Rule title
+    ruleTitle: string,  // Rule title
 
     /**  These are the parts of the URL that can turned into strings.
      *      Examples of different syntax options
@@ -118,16 +118,19 @@ function applyHostRule(link : string, rule: ILinkRule) {
     let split = link.split(rule.keyFolder);
     let parents = split[0].split('/');
     let children = split[1].split('/');
-    let commentText = getTextFromLink(rule.commentTextMapping, rule, parents, children);
+    //This will update the ruleSet with actual values based on the link.
+    let rule2: ILinkRule = updateRuleLabels(link, rule, parents, children);
+
+    let commentText = getTextFromLink(rule2.commentTextMapping, rule2);
     console.table('getHostRuleApplication: commentText', commentText);
 
-    let activityDesc = getTextFromLink(rule.activityDescMapping, rule, parents, children);
+    let activityDesc = getTextFromLink(rule2.activityDescMapping, rule2);
     console.table('getHostRuleApplication: activityDesc', activityDesc);
 
-    let category1 = getTextFromLink(rule.category1Mapping, rule, parents, children);
-    let category2 = getTextFromLink(rule.category2Mapping, rule, parents, children);
-    let projectID1 = getTextFromLink(rule.projectID1Mapping, rule, parents, children);
-    let projectID2 = getTextFromLink(rule.projectID2Mapping, rule, parents, children);
+    let category1 = getTextFromLink(rule2.category1Mapping, rule2);
+    let category2 = getTextFromLink(rule2.category2Mapping, rule2);
+    let projectID1 = getTextFromLink(rule2.projectID1Mapping, rule2);
+    let projectID2 = getTextFromLink(rule2.projectID2Mapping, rule2);
 
     result = {
         commentText: commentText,
@@ -142,8 +145,114 @@ function applyHostRule(link : string, rule: ILinkRule) {
     return result;
 }
 
+function updateRuleLabels(link : string, rule: ILinkRule, parents: string[], children: string[]) {
 
-function getTextFromLink(definition: string, rule: ILinkRule, parents: string[], children: string[]){
+    let rule2 = <ILinkRule>{};
+    rule2 = JSON.parse(JSON.stringify(rule));;
+    rule2.childFolderTitle = updateFolderLabels(rule.childFolderTitle, 1,  rule, parents, children);
+    rule2.child2FolderTitle = updateFolderLabels(rule.child2FolderTitle, 2, rule, parents, children);
+    rule2.parentFolderTitle = updateFolderLabels(rule.parentFolderTitle, -1, rule, parents, children);
+    rule2.parent2FolderTitle = updateFolderLabels(rule.parent2FolderTitle, -2, rule, parents, children);
+
+    console.log('rule2:', rule2);
+
+    return rule2;
+
+}
+
+function updateFolderLabels(FolderDefinition: string, FolderIndex: number, rule: ILinkRule, parents: string[], children: string[]){
+/**
+ * Goal of this function is to take the definition and the folder, and return a new Folder Label
+ * childFolderTitle: '#...x..., ', // use 'na' to skip this rule.  '' to have no Title
+ * 
+ * would return
+ * childFolderTitle: '#33, ', // use 'na' to skip this rule.  '' to have no Title
+ */
+    let result = '';
+
+    if ( FolderDefinition && FolderDefinition !== 'na' ) {//This is a valid mapping
+        
+        let toUpperCase = FolderDefinition.indexOf('^^^') > -1 ? true : false;
+        let toLowerCase = FolderDefinition.indexOf('vvv') > -1 ? true : false;
+        let toProperCase = FolderDefinition.indexOf('^v') > -1 ? true : false;
+
+        let prefix = FolderDefinition.split('...x...')[0];
+        prefix = prefix ? prefix.replace('...x...','') : prefix;
+
+        let suffix = FolderDefinition.split('...x...')[1];
+        suffix = suffix ? suffix.replace('...x...','') : suffix;
+
+        let thisText: string = '';
+        
+        if (FolderIndex < 0 ) { //This is a parent
+            if (parents.length < FolderIndex) { // folder does not exist in URL
+            } else {
+
+                thisText = parents[parents.length + FolderIndex];
+
+                if (toUpperCase) { thisText = thisText.toLocaleUpperCase() }
+                else if (toLowerCase) { thisText = thisText.toLocaleLowerCase() }
+                //else if (toProperCase) { thisText = thisText.toProperCase() }
+
+                thisText = prefix ? prefix + thisText : thisText;
+                thisText = suffix ? thisText + suffix : thisText;
+            }
+        } else if (FolderIndex > 0 ) { //This is a child
+            if (children.length < FolderIndex) { // folder does not exist in URL
+            } else {
+
+                thisText = children[FolderIndex - 1];
+
+                if (toUpperCase) { thisText = thisText.toLocaleUpperCase() }
+                else if (toLowerCase) { thisText = thisText.toLocaleLowerCase() }
+                //else if (toProperCase) { thisText = thisText.toProperCase() }
+
+                thisText = prefix ? prefix + thisText : thisText;
+                thisText = suffix ? thisText + suffix : thisText;
+            }
+        }
+        thisText = thisText.replace('^^^','').replace('vvv','').replace('^v','');
+
+        //This will trim the length of the total value (including label) to the length between 2 sets of << like <<8<<
+        let shorten = thisText.split('<<');
+        if (shorten.length === 3) {
+            thisText = shorten[0] + shorten[2];
+            if (thisText.length > parseInt(shorten[1])) {
+                thisText = thisText.substr(0, parseInt(shorten[1]) ) + '...';
+            }
+        }
+
+        result += thisText;
+    }
+
+    // Remove any last commas, spaces, colons and semi colons
+    //https://stackoverflow.com/a/17720342/4210807
+    result = result.replace(/\s*$/, "").replace(/,*$/, "").replace(/;*$/, "").replace(/:*$/, "");
+
+    return result;
+}
+
+
+function getTextFromLink(columMapping: string, rule: ILinkRule){
+
+    let result = columMapping;
+
+    result = result.replace('keyFolder', rule.keyFolder);
+    result = result.replace('ruleTitle', rule.ruleTitle);
+    result = result.replace('childFolderTitle', rule.childFolderTitle);
+    result = result.replace('child2FolderTitle', rule.child2FolderTitle);
+    result = result.replace('parentFolderTitle', rule.parentFolderTitle);
+    result = result.replace('parent2FolderTitle', rule.parent2FolderTitle);
+
+    // Remove any last commas, spaces, colons and semi colons
+    //https://stackoverflow.com/a/17720342/4210807
+    result = result.replace(/\s*$/, "").replace(/,*$/, "").replace(/;*$/, "").replace(/:*$/, "");
+
+    return result;
+}
+
+
+function getTextFromLinkPre48(definition: string, rule: ILinkRule, parents: string[], children: string[]){
 
     let structure = definition.replace(/, /g,',').split(',');
 

@@ -7,7 +7,7 @@ export const github : ISmartLinkDef = {
     rules: [
         {
             order: 100,
-            title: "Github Issue ",  // Rule title
+            ruleTitle: "Github Issue ",  // Rule title
 
             keyFolder: '/issues/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: '#...x..., ', // use 'na' to skip this rule.  '' to have no Title
@@ -18,13 +18,13 @@ export const github : ISmartLinkDef = {
             commentTextMapping: 'title, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             activityDescMapping: 'childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: 'parentFolderTitle',
             projectID2Mapping: 'childFolderTitle',
 
         },        {
             order: 100,
-            title: "Github Pull Request",  // Rule title
+            ruleTitle: "Github Pull Request",  // Rule title
             keyFolder: '/pull/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: '#...x..., ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
@@ -33,12 +33,12 @@ export const github : ISmartLinkDef = {
             commentTextMapping: 'title, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             activityDescMapping: 'childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: 'parentFolderTitle',
             projectID2Mapping: 'childFolderTitle',
         },        {
             order: 100,
-            title: "Github Branch",  // Rule title
+            ruleTitle: "Github Branch",  // Rule title
             keyFolder: '/tree/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: ' ...x..., ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
@@ -47,12 +47,12 @@ export const github : ISmartLinkDef = {
             commentTextMapping: 'title, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             activityDescMapping: 'childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: 'parentFolderTitle',
             projectID2Mapping: 'childFolderTitle',
         },        {
             order: 100,
-            title: "Github Project",  // Rule title
+            ruleTitle: "Github Project",  // Rule title
             keyFolder: '/projects/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: '', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
@@ -61,12 +61,12 @@ export const github : ISmartLinkDef = {
             commentTextMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             activityDescMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: '',
             projectID2Mapping: '',
         },        {
             order: 100,
-            title: "Github Wiki",  // Rule title
+            ruleTitle: "Github Wiki",  // Rule title
             keyFolder: '/wiki', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: 'Page: ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
@@ -75,12 +75,12 @@ export const github : ISmartLinkDef = {
             commentTextMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             activityDescMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: '',
             projectID2Mapping: '',
         },        {
             order: 100,
-            title: "Github Commit",  // Rule title
+            ruleTitle: "Github Commit",  // Rule title
             keyFolder: '/commit/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: ' #...x...,<<8<< ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
@@ -89,12 +89,12 @@ export const github : ISmartLinkDef = {
             commentTextMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             activityDescMapping: 'title, childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: 'parentFolderTitle',
             projectID2Mapping: 'childFolderTitle',
         },        {
             order: 100,
-            title: "",  // Rule title
+            ruleTitle: "",  // Rule title
             keyFolder: '/blob/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: ' in \'...x...\' Branch,', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: ' File: ', // use 'na' to skip this rule.  '' to have no Title

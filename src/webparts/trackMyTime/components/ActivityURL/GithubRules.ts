@@ -7,101 +7,101 @@ export const github : ISmartLinkDef = {
     rules: [
         {
             order: 100,
-            title: "Github Issue ",  // Rule title
+            ruleTitle: "Github Issue ",  // Rule title
 
             keyFolder: '/issues/', // Key folder in URL to apply rule too ( like /issues/ )
-            childFolderTitle: '#...x..., ', // use 'na' to skip this rule.  '' to have no Title
+            childFolderTitle: '#...x...', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
-            parentFolderTitle: '^^^really ...x... long word ', // use 'na' to skip this rule.  '' to have no Title
-            parent2FolderTitle: 'U...x...ser: ', // use 'na' to skip this rule.  '' to have no Title
+            parentFolderTitle: '^^^...x..., ', // use 'na' to skip this rule.  '' to have no Title
+            parent2FolderTitle: '...x...', // use 'na' to skip this rule.  '' to have no Title
 
-            commentTextMapping: 'title, parent2FolderTitle, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
-            activityDescMapping: 'childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            commentTextMapping: 'The Cat raised issue: childFolderTitle on parentFolderTitle and parent2FolderTitle resolved it with PR 46!', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: 'childFolderTitle, parentFolderTitle', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title, parentFolderTitle',
-            projectID1Mapping: 'parentFolderTitle, title',
+            category2Mapping: 'ruleTitle, parentFolderTitle',
+            projectID1Mapping: 'parentFolderTitle, ruleTitle',
             projectID2Mapping: 'childFolderTitle, parent2FolderTitle',
 
         },        {
             order: 100,
-            title: "Github Pull Request",  // Rule title
+            ruleTitle: "Github Pull Request",  // Rule title
             keyFolder: '/pull/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: '#...x..., ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
             parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
-            commentTextMapping: 'title, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
-            activityDescMapping: 'childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            commentTextMapping: 'ruleTitle, childFolderTitle, parentFolderTitle', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: 'childFolderTitle', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: 'parentFolderTitle',
             projectID2Mapping: 'childFolderTitle',
         },        {
             order: 100,
-            title: "Github Branch",  // Rule title
+            ruleTitle: "Github Branch",  // Rule title
             keyFolder: '/tree/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: ' ...x..., ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
             parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
-            commentTextMapping: 'title, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
-            activityDescMapping: 'childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            commentTextMapping: 'ruleTitle, childFolderTitle, parentFolderTitle', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: 'childFolderTitle', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: 'parentFolderTitle',
             projectID2Mapping: 'childFolderTitle',
         },        {
             order: 100,
-            title: "Github Project",  // Rule title
+            ruleTitle: "Github Project",  // Rule title
             keyFolder: '/projects/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: '', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
             parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
-            commentTextMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
-            activityDescMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            commentTextMapping: '', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: '', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: '',
             projectID2Mapping: '',
         },        {
             order: 100,
-            title: "Github Wiki",  // Rule title
+            ruleTitle: "Github Wiki",  // Rule title
             keyFolder: '/wiki', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: 'Page: ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
             parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
-            commentTextMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
-            activityDescMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            commentTextMapping: '', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: '', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: '',
             projectID2Mapping: '',
         },        {
             order: 100,
-            title: "Github Commit",  // Rule title
+            ruleTitle: "Github Commit",  // Rule title
             keyFolder: '/commit/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: ' #...x...,<<8<< ', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: 'na', // use 'na' to skip this rule.  '' to have no Title
             parentFolderTitle: ' ', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: 'User: ', // use 'na' to skip this rule.  '' to have no Title
-            commentTextMapping: '', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
-            activityDescMapping: 'title, childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            commentTextMapping: '', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: 'ruleTitle, childFolderTitle', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'parentFolderTitle',
-            category2Mapping: 'title',
+            category2Mapping: 'ruleTitle',
             projectID1Mapping: 'parentFolderTitle',
             projectID2Mapping: 'childFolderTitle',
         },        {
             order: 100,
-            title: "",  // Rule title
+            ruleTitle: "",  // Rule title
             keyFolder: '/blob/', // Key folder in URL to apply rule too ( like /issues/ )
             childFolderTitle: ' in \'...x...\' Branch,', // use 'na' to skip this rule.  '' to have no Title
             child2FolderTitle: ' File: ', // use 'na' to skip this rule.  '' to have no Title
             parentFolderTitle: ' ^^^Repo: ...x...,', // use 'na' to skip this rule.  '' to have no Title
             parent2FolderTitle: ' from User: ...x...:', // use 'na' to skip this rule.  '' to have no Title
-            commentTextMapping: 'title, parentFolderTitle, childFolderTitle, keyFolder', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
-            activityDescMapping: 'title, parentFolderTitle, child2FolderTitle, childFolderTitle, parent2FolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            commentTextMapping: 'ruleTitle, parentFolderTitle, childFolderTitle, keyFolder', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
+            activityDescMapping: 'ruleTitle, parentFolderTitle, child2FolderTitle, childFolderTitle, parent2FolderTitle', // "ruleTitle, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
             category1Mapping: 'child2FolderTitle',
             category2Mapping: 'childFolderTitle',
             projectID1Mapping: 'parentFolderTitle',
