@@ -9,23 +9,41 @@ export const  initials : IViewField = {
     maxWidth: 30
 }
 
+export const  id : IViewField = {
+  name: "id",
+  displayName: "ID",
+  isResizable: true,
+  sorting: true,
+  minWidth: 10,
+  maxWidth: 30
+}
+
 export const  timeSpan : IViewField = {
   name: "listTimeSpan",
   displayName: "Timespan",
   //linkPropertyName: "c",
   isResizable: true,
   sorting: true,
-  minWidth: 30,
-  maxWidth: 150
+  minWidth: 150,
+  maxWidth: 200
 }
 
-export const  project : IViewField = {
+export const  title : IViewField = {
+  name: "titleProject",
+  displayName: "Title",
+  isResizable: true,
+  sorting: true,
+  minWidth: 150,
+  maxWidth: 200
+}
+
+export const  projectWide : IViewField = {
   name: "titleProject",
   displayName: "Project",
   isResizable: true,
   sorting: true,
-  minWidth: 50,
-  maxWidth: 100
+  minWidth: 250,
+  maxWidth: 400,
 }
 
 export const  description : IViewField = {
@@ -38,8 +56,18 @@ export const  description : IViewField = {
   maxWidth: 100
 }
 
+export const  projects : IViewField = {
+  name: "listProjects",
+  displayName: "Projects",
+  //linkPropertyName: "c",
+  isResizable: true,
+  sorting: true,
+  minWidth: 20,
+  maxWidth: 100
+}
+
 export const  comments : IViewField = {
-  name: "comments",
+  name: "listComments",
   displayName: "Comments",
   //linkPropertyName: "c",
   isResizable: true,
@@ -76,10 +104,13 @@ export function viewFieldsFull() {
 
     let viewFields: IViewField[]=[];
 
+    
+    viewFields.push(id);
     viewFields.push(initials);
     viewFields.push(timeSpan);
-    viewFields.push(project);
-    viewFields.push(description);
+    viewFields.push(title);
+    //viewFields.push(description);
+    viewFields.push(projects);    
     viewFields.push(category);
     viewFields.push(comments);
 
@@ -91,11 +122,20 @@ export function viewFieldsFull() {
 export function viewFieldsMin() {
 
     let viewFields: IViewField[]=[];
-
+    viewFields.push(id);
     viewFields.push(initials);
     viewFields.push(timeSpan);
-    viewFields.push(project);
+    viewFields.push(title);
 
     return viewFields;
     
+}
+
+export function viewFieldsProject() {
+
+  let viewFields: IViewField[]=[];
+  viewFields.push(projectWide);
+
+  return viewFields;
+  
 }

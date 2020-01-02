@@ -6,8 +6,12 @@ import { sp, Web } from '@pnp/sp';
 import { CurrentUser } from '@pnp/sp/src/siteusers';
 
 import { Pivot, PivotItem, PivotLinkSize, PivotLinkFormat } from 'office-ui-fabric-react/lib/Pivot';
+import { Label, ILabelStyles } from 'office-ui-fabric-react/lib/Label';
+import { IStyleSet } from 'office-ui-fabric-react/lib/Styling';
 
-import { DefaultButton, autobind, getLanguage } from 'office-ui-fabric-react';
+import { IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
+
+import { DefaultButton, autobind, getLanguage, ZIndexes } from 'office-ui-fabric-react';
 import { Spinner, SpinnerSize } from 'office-ui-fabric-react/lib/Spinner';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
@@ -15,20 +19,37 @@ import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 import * as strings from 'TrackMyTimeWebPartStrings';
 import Utils from './utils';
 
-import { saveTheTime, getTheCurrentTime, saveAnalytics } from '../../../services/createAnalytics';
-import { getAge, getBestTimeDelta, getLocalMonths, getTimeSpan, getGreeting, getNicks} from '../../../services/dateServices';
+import { saveTheTime, saveAnalytics } from '../../../services/createAnalytics';
+import { getAge, getDayTimeToMinutes, getBestTimeDelta, getLocalMonths, getTimeSpan, getGreeting, getNicks, makeTheTimeObject, getTimeDelta} from '../../../services/dateServices';
 
-import {IProject, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, ITrackMyTimeState} from './ITrackMyTimeState';
+import {IProject, ILink, ISmartText, ITimeEntry, IProjectTarget, IUser, IProjects, IProjectInfo, IEntryInfo, IEntries, IMyPivots, IPivot, ITrackMyTimeState, ISaveEntry} from './ITrackMyTimeState';
 import { pivotOptionsGroup, } from '../../../services/propPane';
+
+import { buildFormFields } from './fields/fieldDefinitions'
 
 import ButtonCompound from './createButtons/ICreateButtons';
 import { IButtonProps,ISingleButtonProps,IButtonState } from "./createButtons/ICreateButtons";
 import { CompoundButton, Stack, IStackTokens, elementContains } from 'office-ui-fabric-react';
 
+import {
+  TextField,
+  Button,
+  ButtonType
+} from 'office-ui-fabric-react';
+
 import * as listBuilders from './ListView/ListView';
+import * as formBuilders from './fields/textFieldBuilder';
+import * as choiceBuilders from './fields/choiceFieldBuilder';
+import * as sliderBuilders from './fields/sliderFieldBuilder';
+import * as smartLinks from './ActivityURLMasks';
+
+  
+const labelStyles: Partial<IStyleSet<ILabelStyles>> = {
+  root: { marginTop: 10 }
+};
 
 export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITrackMyTimeState> {
-  
+
   private createEntryInfo() {
 
     let entryInfo = {} as IEntryInfo;
@@ -45,6 +66,137 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     entryInfo.newFiltered = []; //New filtered for search
     
     return entryInfo;
+
+  }
+
+  private createLink(){
+    let link : ILink = {
+      description: '',
+      url: '',
+    };
+
+    return link;
+
+  }
+  private createSmartText(title, name) {
+    let smart : ISmartText = {
+      value: '',
+      required: false,
+      default: '',
+      defaultIsPrefix: false,
+      prefix: '',
+      title: title, //Required for building text fields
+      name: name, //Required for building text fields
+      mask: '',  //Required for building text fields
+    };
+    return smart;
+
+  }
+  private createUser() {
+    let user : IUser = {
+      title: "",
+      initials: "",  //Single person column
+      email: "",  //Single person column
+      id: null,
+      Id: null,
+      ID: null,
+      isSiteAdmin:null,
+      LoginName: "",
+    };
+    return user;
+
+  }
+
+  private createPivotData(){
+    // Using https://stackoverflow.com/questions/3103962/converting-html-string-into-dom-elements
+    let pivots : IMyPivots = {
+      projects: 
+        [
+          { headerText: "Yours",
+            filter: "your",
+            itemKey: "your",
+            data: "Projects where you are the Leader",
+          },
+          { headerText: "Your Team",
+            filter: "team",
+            itemKey: "team",
+            data: "Projects where you are in the Team",
+          },
+          { headerText: "Everyone",
+            filter: "everyone",
+            itemKey: "everyone",
+            data: "Projects where Everyone is marked Yes - overrides other categories",
+          },
+          { headerText: "Others",
+            filter: "otherPeople",
+            itemKey: "otherPeople",
+            data: "Projects where you are not the Leader, nor in the team, and not marked Everyone",
+          },
+        ]
+      ,
+      history: 
+        [
+          { headerText: "Yours",
+            filter: "your",
+            itemKey: "your",
+            data: "History where you are the User",
+          },
+          { headerText: "Your Team",
+            filter: "team",
+            itemKey: "team",
+            data: "History where you are part of the Team, but not the User",
+          },
+          { headerText: "Everyone",
+            filter: "everyone",
+            itemKey: "everyone",
+            data: "Currently not in use",
+          },
+          { headerText: "Others",
+            filter: "otherPeople",
+            itemKey: "otherPeople",
+            data: "History where you are not the Leader, nor in the team, and not marked Everyone",
+          },
+        ]
+      ,
+    }
+
+    return pivots;
+
+  }
+
+  private createFormEntry() {
+
+    //https://stackoverflow.com/a/37802516/4210807
+
+    let form : ISaveEntry = {
+
+      titleProject:'Track My Time Development',
+      comments: this.createSmartText('Comments','comments'),
+      category1:[],
+      category2:[],
+      leader:this.createUser(),
+      team:[],
+      leaderId:null,
+      teamIds:[],
+      projectID1:this.createSmartText('Project ID1','projectID1'),
+      projectID2:this.createSmartText('Project ID2','projectID2'),
+      sourceProject:this.createLink(),
+      activity:this.createLink(),
+      ccList:this.createLink(),
+      ccEmail:'',
+      userId: null,
+      startTime:'',
+      endTime:'',
+      entryType:this.props.defaultTimePicker,
+      timeEntryTBD1:'',
+      timeEntryTBD2:'',
+      timeEntryTBD3:'',
+      location:this.props.defaultLocation,
+      settings:'',
+
+    };
+
+    return form;
 
   }
 
@@ -66,9 +218,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   }
 
-  
-
-  
   public constructor(props:ITrackMyTimeProps){
     super(props);
     this.state = { 
@@ -85,6 +234,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       // 3 - General how accurate do you want this to be
 
       // 4 -Project options
+      pivots: this.createPivotData(),
       projects: this.createprojectInfo(),
       entries: this.createEntryInfo(),
       
@@ -94,16 +244,22 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         entries: [],
       },
 
+      fields: buildFormFields(this.props, this.state),
+
       pivtTitles:['Yours', 'Your Team','Everyone','Others'],
       filteredCategory: this.props.defaultProjectPicker,
       pivotDefSelKey:"",
       onlyActiveProjects: this.props.onlyActiveProjects,
       projectType: this.props.projectType,
       syncProjectPivotsOnToggle: this.props.syncProjectPivotsOnToggle, //always keep pivots in sync when toggling projects/history
+
       // 5 - UI Defaults
       currentProjectPicker: '', //User selection of defaultProjectPicker:  Recent, Your Projects, All Projects etc...
-      currentTimePicker: '', //User selection of :defaultTimePicker  SinceLast, Slider, Manual???
+      currentTimePicker: this.props.defaultTimePicker, //User selection of :defaultTimePicker  SinceLast, Slider, Manual???
       locationChoice: '',  //semi-colon separated choices
+      blinkOnProject: 0, //Tells text fields to blink when project is clicked on and values reset
+      blinkOnActivity: 0, //Tells text fields to blink when project is clicked on and values reset
+      smartLinkRules: smartLinks.buildSmartLinkRules(this.props),
 
       // 6 - User Feedback:
       showElapsedTimeSinceLast: true,  // Idea is that it can be like a clock showing how long it's been since your last entry.
@@ -111,6 +267,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
       allEntries: [], // List of all entries
       filteredEntries: [],  //List of recent entries
+      lastEndTime: null,
+      formEntry: null,
 
       // 7 - Slider Options
       timeSliderValue: 0,  //incriment of time slider
@@ -160,6 +318,9 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     this.trackMyTime = this.trackMyTime.bind(this);
     this.clearMyInput = this.clearMyInput.bind(this);
+
+    this._updateComments = this._updateComments.bind(this);
+
     
   }
 
@@ -182,8 +343,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let projectHeading: JSX.Element = <div>
         <h2> { this.state.projectType === false ? 'Pick from the Project List' : 'Or... Your recent history'}</h2>
       </div>;
-
-
     let elemnts = [];
 
     if (thisState.projects.all[0]){
@@ -242,8 +401,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   }
 
-  public render(): React.ReactElement<ITrackMyTimeProps> {
 
+  public render(): React.ReactElement<ITrackMyTimeProps> {
 
     let setPivot = !this.state.projectType ? this.state.projectMasterPriorityChoice :this.state.projectUserPriorityChoice ;
     console.log('render setPivot:', setPivot);
@@ -267,15 +426,61 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     const stackButtonTokensBody: IStackTokens = { childrenGap: 40 };
     const stackButtonTokens: IStackTokens = { childrenGap: 40 };
+    const stackFormRowTokens: IStackTokens = { childrenGap: 20 };
+    const stackFormRowsTokens: IStackTokens = { childrenGap: 10 };
+
+    let hoursSinceLastTime = 0;
+    if ( this.state.timeTrackerLoadStatus === "Complete" ) {
+      hoursSinceLastTime = getTimeDelta( this.state.lastEndTime.theTime, new Date() , 'hours');
+    }
+
+    let isSaveDisabled = false;
+    if ( this.state.currentTimePicker === 'slider' ) {
+      if ( this.state.timeSliderValue == 0 ) { isSaveDisabled = true}
+
+      // Also need to add if the slider would put the start time before the last end time.
+    } else if ( this.state.currentTimePicker === 'sinceLast' ) {
+      if ( hoursSinceLastTime > 2 ) { isSaveDisabled = true}
+
+    } // else if  -- Need to add logic when Manual and days not filled out
+
+    let entryOptions = choiceBuilders.creatEntryTypeChoices(this.props,this.state, this._updateEntryType.bind(this));
+    let theTime;
+    if (this.state.timeTrackerLoadStatus === "Complete") {
+      if (this.state.currentTimePicker === 'sinceLast') {
+
+        theTime = <div className={( isSaveDisabled ? styles.timeError : styles.timeInPast )}>
+          From: { getDayTimeToMinutes(this.state.lastEndTime.theTime) } until NOW<br/>
+          {( isSaveDisabled ? <div>Is to far in the past.</div> : "" )}
+          {( isSaveDisabled ? <div>Use Slider or Manual Mode to save time.</div> : "" )}
+          </div> 
+
+      } else if  (this.state.currentTimePicker === 'slider' ) 
+        if (this.state.timeSliderValue > 0 ) {
+           //The START time IS NOW and the end time is in the future (based on slider)
+           theTime = <div className={ styles.timeInFuture }>From NOW until: { getDayTimeToMinutes(this.state.formEntry.endTime) }</div>
+        } else if ( this.state.timeSliderValue < 0 )  {
+          //The END time IS NOW and the end time is in the past (based on slider)
+          theTime = <div className={ styles.timeInPast }>From { getDayTimeToMinutes(this.state.formEntry.startTime) } until NOW</div>
+        } else { // Value can not be zero or the save button should not be visible.
+          theTime = <div className={ styles.timeError }>Adjust the slider before saving</div>
+        }
+      
+
+    } else { theTime = ""; }
 
     const buttons: ISingleButtonProps[] =
       [{
-        disabled: false,  checked: true, primary: false,
+        disabled: false,  
+        checked: true, 
+        primary: false,
         label: "Clear item",
         secondary: "Press to clear form",
         buttonOnClick: this.clearMyInput.bind(this),
       },{
-        disabled: false,  checked: true, primary: true,
+        disabled: isSaveDisabled,  
+        checked: true, 
+        primary: true,
         label: "Save item",
         secondary: "Press to Create entry",
         buttonOnClick: this.trackMyTime.bind(this),
@@ -290,7 +495,22 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       />
     </div>;
 
+     
+    let timeSlider = sliderBuilders.createSlider(this.props,this.state, this._updateTimeSlider.bind(this));
+
+    let comments = formBuilders.createThisField(this.props,this.state, this.state.fields.Comments, isSaveDisabled, this._updateComments.bind(this));
+    let projectTitle = formBuilders.createThisField(this.props,this.state,this.state.fields.Title, isSaveDisabled,  this._updateProjectTitle.bind(this));
+    let projectID1 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID1, isSaveDisabled,  this._updateProjectID1.bind(this));
+    let projectID2 = formBuilders.createThisField(this.props,this.state, this.state.fields.ProjectID2, isSaveDisabled,  this._updateProjectID2.bind(this));
+
+    let activity = formBuilders.createThisField(this.props,this.state, this.state.fields.Activity, isSaveDisabled,  this._updateActivity.bind(this));
+
+    //let entryType = formBuilders.createThisField(this.props,this.state, this.state.fields., this._updateEntryType.bind(this));
+
+    let listProjects =  (this.state.projects.newFiltered.length===0) ? "" :
+        listBuilders.projectBuilder(this.props,this.state,this.state.projects.newFiltered, this._getSelectedProject.bind(this));
     let listBuild = listBuilders.listViewBuilder(this.props,this.state,this.state.entries.newFiltered);
+
     let userName = this.state.currentUser
       ? getNicks(this.state.currentUser) + " ( Id: " + this.state.currentUser.Id + " ) entry count: " + this.state.allEntries.length
       : "";
@@ -302,18 +522,31 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
             { this.createPivotObject(choice2, display2)  }
             { this.createPivotObject(choice1, display1)  }
+
             { /*this.createPivotObject(setPivot, "block") */ }
             <div><span style={{fontSize: 20, paddingRight: 30,}}>{ getGreeting(this.state.currentUser)}</span></div>
             { this.createProjectTypeToggle(this.state) }
-              
+            
         </div>
 
           <div>
 
             <Stack padding={20} horizontal={true} horizontalAlign={"space-between"} tokens={stackButtonTokensBody}> {/* Stack for Projects and body */}
-              { this.createProjectChoices(this.state) }
+              { /* this.createProjectChoices(this.state) */ }
+              <Stack horizontal={false} horizontalAlign={"start"} tokens={stackFormRowsTokens}>{/* Stack for Pivot Help and Projects */}
+                { this.getPivotHelpText(this.state, this.props)}
+                { listProjects }
+              </Stack>  {/* Stack for Pivot Help and Projects */}
 
-              <Stack horizontal={false} horizontalAlign={"end"} tokens={stackButtonTokens}>{/* Stack for Buttons and Fields */}
+              <Stack horizontal={false} horizontalAlign={"end"} tokens={stackFormRowsTokens}>{/* Stack for Buttons and Fields */}
+                { entryOptions }
+                { (timeSlider) }
+                { theTime }
+                { projectTitle }
+                { activity }
+                { comments }
+                { /* entryType */ }
+                <Stack horizontal={true} tokens={stackFormRowTokens}>{ projectID1 }{ projectID2 }</Stack>
 
                 { saveButtons }
                 <div>More stuff below buttons</div>
@@ -321,8 +554,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
             </Stack> {/* Stack for Projects and body */}
           </div>
-                 
-          
+
           <div></div><div><br/><br/></div>
           <div style={{ paddingLeft: '20px', paddingRight: '20px' }}>
             <div><h2>Recent TrackYourTime History { userName }</h2></div>
@@ -336,16 +568,154 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     );
   }
 
+  private _getProjectIndexFromArray(val,prop,array){
 
+    for (let index = 0; index < array.length; index++) {
+      if (array[index][prop] === val) {
+        //console.log('Found index: ', index);
+        return index;
+      }
+    }
+  }
 
+  private _getSelectedProject(items: any[]){
 
+    if (this.state.userLoadStatus !== 'Complete') { return }
+    if (this.state.timeTrackerLoadStatus !== 'Complete') { return }
+    if (this.state.userLoadStatus !== 'Complete') { return }
+    if (event) { event.preventDefault(); }
+    if (items.length === 0 ) { return }
 
+    console.log('Selected items:', items);
+    
+    let item : IProject;
 
+    for (let p of this.state.projects.newFiltered ) {
+      if (p.id === items[0].id) {
+        item = p;
+      }
+    }
+
+    let selectedProjectIndex = this._getProjectIndexFromArray(item.id,'id',this.state.projects.newFiltered);
+    if (selectedProjectIndex === this.state.selectedProjectIndex) { return ;}
+
+    let formEntry = this.state.formEntry;
+
+    formEntry.titleProject = item.titleProject;
+    formEntry.projectID1  = item.projectID1;
+    formEntry.projectID2  = item.projectID2;
+    formEntry.category1  = item.category1;
+    formEntry.category2  = item.category2;
+    formEntry.leaderId  = item.leaderId;
+    formEntry.leader  = item.leader;
+    formEntry.team  = item.team;
+    formEntry.teamIds  = item.teamIds;
+    formEntry.ccEmail  = item.ccEmail;
+    formEntry.ccList  = item.ccList;
+
+    this.setState({ formEntry:formEntry, 
+      blinkOnProject: this.state.blinkOnProject === 1 ? 2 : 1,
+      selectedProjectIndex : selectedProjectIndex,
+      lastSelectedProjectIndex: this.state.selectedProjectIndex,
+     });  
+
+  }
+
+  
+  private _updateTimeSlider(newValue: number){
+    let formEntry = this.state.formEntry;
+
+    let now = new Date();
+    let then = new Date();
+    then.setMinutes(then.getMinutes() + newValue);
+
+    if (newValue < 0) {
+
+      formEntry.startTime = then.toLocaleString();     
+      formEntry.endTime = now.toLocaleString();
+
+    } else if (newValue > 0 ) {
+      formEntry.startTime = now.toLocaleString();
+      formEntry.endTime = then.toLocaleString();
+
+    }
+
+    this.setState({
+      timeSliderValue: newValue,
+      formEntry: formEntry,
+      blinkOnProject: 0,
+    });
+  }
 
 
   
+  private _updateActivity(newValue: string){
+
+    if (this.state.timeTrackerLoadStatus !== 'Complete' || 
+      this.state.userLoadStatus !== 'Complete'  || 
+      this.state.projectsLoadStatus !== 'Complete' ) {
+        return;
+      }
+
+    let formEntry = this.state.formEntry;
+    let result = smartLinks.convertSmartLink(newValue, this.state.smartLinkRules);
+
+    if ( result ) {
+      formEntry.comments.value = result.commentText ? result.commentText : null;
+      formEntry.activity.description = result.activityDesc ? result.activityDesc : null;
+      formEntry.activity.url = newValue ? newValue : null ;
+      formEntry.category1 = [ result.category1 ] ? [ result.category1 ] : null;
+      formEntry.category2 = [ result.category2 ] ? [ result.category2 ] : null;
+      formEntry.projectID1.value = result.projectID1 ? result.projectID1 : null;
+      formEntry.projectID2.value = result.projectID2 ? result.projectID2 : null;
+      console.log('updated formEntry: ', formEntry);
+    } else {
+      console.log('Did not update anthing based on activity.')
+    }
 
 
+    this.setState({ formEntry:formEntry, blinkOnProject: 0,});
+  }
+
+  private _updateComments(newValue: string){
+    let formEntry = this.state.formEntry;
+    formEntry.comments.value = newValue;
+    this.setState({ formEntry:formEntry, blinkOnProject: 0,});
+  }
+
+  private _updateProjectTitle(newValue: string){
+    let formEntry = this.state.formEntry;
+    formEntry.titleProject = newValue;
+    this.setState({ formEntry:formEntry, blinkOnProject: 0, });
+  }
+
+  private _updateProjectID1(newValue: string){
+    let formEntry = this.state.formEntry;
+    formEntry.projectID1.value = newValue;
+    this.setState({ formEntry:formEntry, blinkOnProject: 0, });
+  }
+
+  private _updateProjectID2(newValue: string){
+    let formEntry = this.state.formEntry;
+    formEntry.projectID2.value = newValue;
+    this.setState({ formEntry:formEntry, blinkOnProject: 0, });
+  }
+
+  private _updateEntryType(ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption){
+
+    let formEntry = this.state.formEntry;
+    formEntry.entryType = option.key;
+    console.log('_updateEntryType: this.state', this.state);
+    console.log('_updateEntryType: formEntry', formEntry);
+    console.log('_updateEntryType: formEntry.entryType', formEntry.entryType);
+
+    this.setState({ 
+      formEntry:formEntry, 
+      currentTimePicker : option.key,
+      blinkOnProject: 0,
+     });
+  }
+  
   private searchMe = (item: PivotItem): void => {
     //This sends back the correct pivot category which matches the category on the tile.
     let e: any = event;
@@ -371,6 +741,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       projects: projects,
       searchCount: searchCount,
       searchWhere: searchWhere,
+      blinkOnProject: 0,
     });
 
     
@@ -435,31 +806,18 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     } else {
 
-      //Filter tiles per clicked category
-
-      /*
-      const defaultSelectedIndex = this.state.pivtTitles.indexOf(item.props.headerText);
-      let defaultSelectedKey = defaultSelectedIndex.toString();
-      defaultSelectedKey = item.props.headerText.toString();  // Added this because I think this needs to be the header text, not the index.
-      defaultSelectedKey = Utils.convertCategoryToIndex(defaultSelectedKey);
-*/
-
-
-//      newFiltered = this.getOnClickFilteredProjects(pivotProps, pivotState, newCollection, heroIds, newHeros, thisCatColumn, lastCategory)
-
-     // newFilteredProjects = this.getOnClickFilteredProjects(pivotProps, pivotState, this.state.projects.all, this.state.heroIds, this.state.heroTiles, this.state.thisCatColumn, item.props.headerText)
-
-
       console.log('onLinkClick: this.state', this.state);
-//      console.log('onLinkClick: item.props.headerText', item.props.headerText);
-//      console.log('onLinkClick: defaultSelectedIndex', defaultSelectedIndex);
-//      console.log('onLinkClick: defaultSelectedKey', defaultSelectedKey);
       
       let thisFilter = [];
-      if (item.props.headerText.toLowerCase().indexOf('team') > -1) { thisFilter.push('team'); }
-      else if (item.props.headerText.toLowerCase().indexOf('your') > -1) { thisFilter.push('your'); }
-      else if (item.props.headerText.toLowerCase().indexOf('everyone') > -1) { thisFilter.push('everyone'); }
-      else { thisFilter.push('otherPeople'); }
+      let pivots = this.state.projectType === false ? this.state.pivots.projects : this.state.pivots.history;  
+
+      for (let p of pivots){
+        if ( p.headerText === item.props.headerText ) {
+          thisFilter.push(p.filter);
+        }
+      }
+      console.log('pivots', pivots);
+      console.log('thisFilter', thisFilter);
 
       let projects = this.state.projects;
       projects.lastFiltered = projects.newFiltered;
@@ -484,6 +842,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         searchType: '',
         searchWhere: ' in ' + item.props.headerText,
         //pivotDefSelKey: defaultSelectedKey,
+        blinkOnProject: 0,
 
       });
 
@@ -528,6 +887,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     this.setState({
       projectType: newProjectType,
       projects: projects,
+      blinkOnProject: 0,
     });
 
 
@@ -602,7 +962,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         projects: projects,
         searchCount: this.state.projects.all.length,
         pivotDefSelKey: "-100",
-        searchWhere: ' in all categories'
+        searchWhere: ' in all categories',
+        blinkOnProject: 0,
       });
     }
     
@@ -644,7 +1005,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         projects: projects,
         searchCount: this.state.projects.all.length,
         pivotDefSelKey: "-100",
-        searchWhere: ' in all categories'
+        searchWhere: ' in all categories',
+        blinkOnProject: 0,
       });
     }
     
@@ -675,7 +1037,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
    */
   public trackMyTime = () : void => {
     //alert('trackMyTime');
-    this.saveMyTime (this.state.entries.all[0] , 'master');
+    this.saveMyTime (this.state.formEntry , 'master');
 
   }
 
@@ -697,35 +1059,22 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
   } //End toggleTips  
 
   //http://react.tips/how-to-create-reactjs-components-dynamically/ - based on createImage
-  public createPivot(pivT) {
-    //console.log('createPivot: ', pivT);
-    const thisItemKey :string = Utils.convertCategoryToIndex(pivT);
-    // const thisItemKey :string = pivT; //This does not change the effect (not calling convertCategory....)
+  public createPivot(pivT: IPivot) {
+
       return (
         <PivotItem 
-        headerText={pivT} 
-        itemKey={thisItemKey}
-        //https://github.com/OfficeDev/office-ui-fabric-react/issues/4066#issuecomment-487705294
-        //
-        /*
-        <Pivot styles={{ 
-          linkIsSelected: { width: '25%' }, 
-          link: { width: '25%' }, 
-          text: { overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }
-         }}
-        */
-        //style={linkIsSelected='true'}
-        
-        />
+          headerText={pivT.headerText} 
+          itemKey={pivT.itemKey}
+        >
+        </PivotItem>
       );
   }
 
   public createPivots(thisState,thisProps){
-
-    let piv = thisState.pivtTitles.map(this.createPivot);
-    //console.log('createPivots: ', piv);
+    let pivots = this.state.projectType === false ? this.state.pivots.projects : this.state.pivots.history;  
+    let piv2 = pivots.map(this.createPivot);
     return (
-      piv
+      piv2
     );
   }
 
@@ -749,7 +1098,25 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
 
 
+  private getPivotHelpText (parentState: ITrackMyTimeState, parentProps: ITrackMyTimeProps) {
+          
+    let helpText = null;
+    let pivots = parentState.projectType === false ? parentState.pivots.projects : parentState.pivots.history;  
+    let setPivot = !this.state.projectType ? this.state.projectMasterPriorityChoice :this.state.projectUserPriorityChoice ;
 
+
+    for (let p of pivots){
+      if ( setPivot === p.itemKey ) {
+        //https://stackoverflow.com/questions/3103962/converting-html-string-into-dom-elements
+        // DOES NOT WORK helpText = new DOMParser().parseFromString(p.data, "text/xml");
+        helpText = p.data;
+      }
+    }
+    //return "";
+
+    return <div className={ styles.pivotLabel }>{ helpText }</div>;
+
+  }
 
 
 
@@ -762,6 +1129,32 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     this.setState({
 
     });
+  }
+
+    
+  public buildSmartText (makeThisSmart) {
+
+    let projectText : string = makeThisSmart ;
+    let isRequired : boolean = ( projectText && projectText.indexOf("\*") === 0 ) ? true : false ;
+    let projectString = isRequired ? makeThisSmart.substring(1) : makeThisSmart;
+    let isDefault : boolean = (projectString && projectString.indexOf("\?") === 0 ) ? true : false ;
+
+    projectString = isDefault ? projectString.substring(1) : projectString;
+    let lastIndexOfDots : number = projectString ? projectString.lastIndexOf("...") : -1;
+    let defaultIsPrefix = lastIndexOfDots > -1 ? true : false;
+
+    let prefix : string = (projectString && lastIndexOfDots === projectString.length -3 ) ? projectString.substring(0,lastIndexOfDots) : null ;
+    let mask : string = (makeThisSmart && makeThisSmart.indexOf('mask=')===0) ? makeThisSmart.replace('mask=','') : '';
+    let thisProj : ISmartText = {
+      value: defaultIsPrefix ? "" : makeThisSmart,
+      required: isRequired,
+      default: projectString ,
+      defaultIsPrefix: defaultIsPrefix,
+      prefix: prefix,
+      mask: mask,
+    };
+
+    return thisProj;
   }
 
   //    private async loadListItems(): Promise<IPivotTileItemProps[]> {
@@ -832,27 +1225,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       projectData: loadProjectItems,
       timeTrackData: loadTrackMyTimeItems,
     };
-    
-    function buildSmartText (makeThisSmart) {
 
-      let projectText : string = makeThisSmart ;
-      let isRequired : boolean = ( projectText && projectText.indexOf("\*") === 0 ) ? true : false ;
-      let projectString = isRequired ? makeThisSmart.substring(1) : makeThisSmart;
-      let isDefault : boolean = (projectString && projectString.indexOf("\?") === 0 ) ? true : false ;
-      projectString = isDefault ? projectString.substring(1) : projectString;
-      let lastIndexOfDots : number = projectString ? projectString.lastIndexOf("...") : -1;
-      let prefix : string = (projectString && lastIndexOfDots === projectString.length -3 ) ? projectString.substring(0,lastIndexOfDots) : null ;
-
-      let thisProj : ISmartText = {
-        value: makeThisSmart,
-        required: isRequired,
-        default: projectString ,
-        defaultIsPrefix: lastIndexOfDots > -1 ? true : false ,
-        prefix: prefix,
-      };
-
-      return thisProj;
-    }
 /**
  * projectWeb.lists.getByTitle(useProjectList).items
  * 
@@ -878,8 +1251,10 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         LoginName: r['LoginName'],
       };
 
-      //console.log('user.Id typeof:', typeof r['Id']);
+      let formEntry =this.createFormEntry();
+      console.log('formEntry', formEntry);
       this.setState({  
+        formEntry: formEntry,
         loadOrder: (this.state.loadOrder === "") ? 'User' : this.state.loadOrder + ' > User',
         currentUser: currentUser,
         userLoadStatus: "Complete"
@@ -956,7 +1331,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           id: p.Id,
           editLink: null , //Link to view/edit item link
           titleProject: p.Title,
-          comments: buildSmartText(p.Comments),
+          comments: this.buildSmartText(p.Comments),
           active: p.Active,
           everyone: p.Everyone,
           sort: p.Sort,
@@ -972,8 +1347,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
           filterFlags: [],
 
-          projectID1: buildSmartText(p.ProjectID1),
-          projectID2: buildSmartText(p.ProjectID2),
+          projectID1: this.buildSmartText(p.ProjectID1),
+          projectID2: this.buildSmartText(p.ProjectID2),
 
           timeTarget: targetInfo,
           ccEmail: p.CCEmail,
@@ -1033,7 +1408,25 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       trackMyProjectsInfo.timeTrackData = response.map((item) => {
         //https://stackoverflow.com/questions/13142635/how-can-i-create-an-object-based-on-an-interface-file-definition-in-typescript
         
+        let listCategory = "";
+        if ( item.Category1 !== null && item.Category1 ) {
+          listCategory += item.Category1.join(', ')
+        }
+        if ( item.Category2 !== null && item.Category2 ) {
+          listCategory += item.Category2.join(', ')
+        }
 
+        let listProjects = "";
+        if ( item.ProjectID1 !== null ) {
+          listProjects += item.ProjectID1;
+        }
+        if ( item.ProjectID2 !== null ) {
+          listProjects = listProjects !== "" ? listProjects += ", " : listProjects;
+          listProjects += item.ProjectID2 + ' ';
+        }   
+
+        
+        let listComments = item.Comments ? item.Comments : "";
 
         let timeEntry : ITimeEntry = {
 
@@ -1041,7 +1434,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           id: item.Id ,
           editLink: null , //Link to view/edit item link
           titleProject : item.Title ,
-          comments: buildSmartText(item.Comments),
+          comments: this.buildSmartText(item.Comments),
           category1 : item.Category1 ,
           category2 : item.Category2 ,
 
@@ -1053,8 +1446,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
           filterFlags: [],
 
-          projectID1 : buildSmartText(item.ProjectID1) ,  //Example Project # - look for strings starting with * and ?
-          projectID2 : buildSmartText(item.ProjectID2) ,  //Example Cost Center # - look for strings starting with * and ?
+          projectID1 : this.buildSmartText(item.ProjectID1) ,  //Example Project # - look for strings starting with * and ?
+          projectID2 : this.buildSmartText(item.ProjectID2) ,  //Example Cost Center # - look for strings starting with * and ?
 
           //Values that relate to project list item
           sourceProject : item.SourceProject , //Link back to the source project list item.
@@ -1077,10 +1470,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
           //This block for use in the history list component
           //Getting initials using:  https://stackoverflow.com/a/45867959/4210807
           userInitials: item.User.Title.split(" ").map((n)=>n[0]).join(""),
-          listCategory: (item.Category1 ? item.Category1.join(', ') + ' ' + item.Category2.join(', ') : ''),
+          listCategory: listCategory,
           listTimeSpan: getTimeSpan(item.StartTime, item.EndTime),
-          listProjects: item.ProjectID1 + (item.ProjectID2 ? ' ' + item.ProjectID1 : ''),
+          listProjects: listProjects,
           listTracking: '',
+          listComments: listComments,
 
           //Other settings and information
           location : item.Location,
@@ -1280,6 +1674,11 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     } else { //alert("NOT found: " );
     }
 
+    let lastEndTime = makeTheTimeObject("2007");
+    let nowEndTime = makeTheTimeObject(null);
+    //console.log(JSON.stringify(lastEndTime));
+    //alert(lastEndTime);
+
     let recentDays = 4;
 
     for (let i = 0; i < timeTrackData.length; i++ ) {
@@ -1287,13 +1686,21 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       let countThese = "all";
       let fromProject = this.convertToProject(thisEntry);
       let yours, team, today, week, month, quarter, recent :boolean = false;
-
-      //Check if timeTrackData is tagged to you 
+      let thisEndTime = makeTheTimeObject(thisEntry.endTime); 
+      //alert(thisEndTime);
+      //Check if timeTrackData is tagged to you
       if (thisEntry.userId === userId ) { yours = true; } 
       if (yours) { 
         fromProject.filterFlags.push('your');
         thisEntry.filterFlags.push('your');
         countThese = 'your'; 
+        //Checks for latest end time
+        if ( thisEndTime.milliseconds > lastEndTime.milliseconds  ) {
+          //Only update lastEndTime if it's in the past.
+          if ( thisEndTime.milliseconds < nowEndTime.milliseconds) {
+            lastEndTime = thisEndTime;
+          }
+        }
       }
 
       //Check if project is tagged to you
@@ -1385,6 +1792,13 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
     }
     
+
+
+    console.log('nowEndTime', JSON.stringify(nowEndTime));
+    if ( lastEndTime.milliseconds > nowEndTime.milliseconds  ) {
+      lastEndTime = nowEndTime;
+    }
+
    let all: IProject[] = this.state.projects.all.concat(user);
    stateProjects.all = all;
    stateProjects.user = user;
@@ -1407,18 +1821,35 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     stateEntries.newFiltered = allEntries;
     stateEntries.lastFiltered = allEntries;  
 
+    //Change from sinceLast if the time is longer than x- hours ago.
+    let hoursSinceLastTime = this.state.currentTimePicker === 'sinceLast' && getTimeDelta( lastEndTime.theTime, new Date() , 'hours');
+    console.log('currentTimePicker state:', this.state);
+    console.log('currentTimePicker hoursSinceLastTime:', hoursSinceLastTime);
+
+
+    let currentTimePicker = 
+    ( hoursSinceLastTime >  2 ) 
+    ?  'slider'
+    : this.state.currentTimePicker ;
+
+    
+    let formEntry = this.state.formEntry;
+    formEntry.entryType = currentTimePicker;
+
    this.setState({
     loadOrder: (this.state.loadOrder === "") ? 'Process Entries' : this.state.loadOrder + ' > Process Entries',
     projects: stateProjects,
     userCounts: counts,
     entries: stateEntries,
-
+    currentTimePicker: currentTimePicker,
+    lastEndTime: lastEndTime,
     allEntries: timeTrackData,
     filteredEntries: timeTrackData,
     timeTrackerLoadStatus:"Complete",
     timeTrackerLoadError: "",
     timeTrackerListError: false,
     timeTrackerItemsError: false,
+    formEntry: formEntry,
    });
 
 
@@ -1508,7 +1939,7 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
       pivotDefSelKey: defaultSelectedKey,
       loadStatus:"Ready",
       loadError: "",
-      endTime: this.state.endTime ? this.state.endTime : getTheCurrentTime(),
+      endTime: this.state.endTime ? this.state.endTime : makeTheTimeObject(""),
       searchCount: projects.newFiltered.length,
       searchWhere: ' in ' + this.props.defaultProjectPicker,
       projectListName: projectListName,  // Static Name of list (for URL) - used for links and determined by first returned item
@@ -1594,7 +2025,8 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   }
 
-  private saveMyTime (trackTimeItem: ITimeEntry , masterOrRemote : string) {
+  private saveMyTime (trackTimeItem: ISaveEntry , masterOrRemote : string) {
+    //trackTimeItem = current this.state.formEntry
 
     let teamId = { results: [] };
     if (trackTimeItem.teamIds) { teamId = { results: trackTimeItem.teamIds } ; }
@@ -1605,34 +2037,62 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     let category2 = { results: [] };
     if (trackTimeItem.category2) { category2 = { results: trackTimeItem.category2 } ; }
 
+    let itemStartTime;
+    let itemEndTime;
+
+    if (this.state.currentTimePicker === 'sinceLast') {
+      itemStartTime = new Date(this.state.lastEndTime.theTime).toLocaleString();
+      itemEndTime = new Date().toLocaleString();
+    } else if (this.state.currentTimePicker === 'slider') {
+      itemStartTime = this.state.formEntry.startTime;
+      itemEndTime = this.state.formEntry.endTime;
+    } else {
+      itemStartTime = new Date(this.state.lastEndTime.theTime).toLocaleString();
+      itemEndTime = new Date().toLocaleString();
+    }
+
+    let comments = trackTimeItem.comments ? trackTimeItem.comments.value : null
+    let projectID1 = trackTimeItem.projectID1 ? trackTimeItem.projectID1.value : null
+    let projectID2 = trackTimeItem.projectID2 ? trackTimeItem.projectID2.value : null
+
+    if (trackTimeItem.comments.defaultIsPrefix) {comments = trackTimeItem.comments.prefix + comments }
+    if (trackTimeItem.projectID1.defaultIsPrefix) {projectID1 = trackTimeItem.projectID1.prefix + projectID1 }
+    if (trackTimeItem.projectID2.defaultIsPrefix) {projectID2 = trackTimeItem.projectID2.prefix + projectID2 }
+
+
+    let Activity = {
+      Description: trackTimeItem.activity.description ?  trackTimeItem.activity.description : null,
+      Url: trackTimeItem.activity.url ? trackTimeItem.activity.url : null,
+    }
+
     let saveThisItem = {
         //Values that would come from Project item
         //editLink : ILink, //Link to view/edit item link
         Title: trackTimeItem.titleProject,
-        Comments: trackTimeItem.comments ? trackTimeItem.comments.value : null,
+        Comments: comments,
         Category1: category1,
         Category2: category2,
         LeaderId: trackTimeItem.leaderId,  //Likely single person column
         TeamId: teamId,  //Likely multi person column
 
-        ProjectID1: trackTimeItem.projectID1 ? trackTimeItem.projectID1.value : null,  //Example Project # - look for strings starting with * and ?
-        ProjectID2: trackTimeItem.projectID2 ? trackTimeItem.projectID2.value : null,  //Example Cost Center # - look for strings starting with * and ?
+        ProjectID1: projectID1,  //Example Project # - look for strings starting with * and ?
+        ProjectID2: projectID2,  //Example Cost Center # - look for strings starting with * and ?
 
         //Values that relate to project list item
         //SourceProject: trackTimeItem.sourceProject, //Link back to the source project list item.
-        Activity: trackTimeItem.activity, //Link to the activity you worked on
-        CCList: trackTimeItem.ccList, //Link to CC List to copy item
-        CCEmail: trackTimeItem.ccEmail, //Email to CC List to copy item 
+        Activity: Activity, //Link to the activity you worked on
+        //CCList: trackTimeItem.ccList, //Link to CC List to copy item
+        //CCEmail: trackTimeItem.ccEmail, //Email to CC List to copy item 
         
         //Values specific to Time Entry
-        UserId: trackTimeItem.userId,  //Single person column
-        StartTime: trackTimeItem.startTime, //Time stamp
-        EndTime: trackTimeItem.endTime, // Time stamp
+        UserId: this.state.currentUser.Id,  //Single person column
+        StartTime: itemStartTime, //Time stamp
+        EndTime: itemEndTime, // Time stamp
         //Duration: trackTimeItem.duration, //Number  -- May not be needed based on current testing with start and end dates.
 
         //Saves what entry option was used... Since Last, Slider, Manual
         EntryType: trackTimeItem.entryType,
-        DeltaT: trackTimeItem.deltaT, //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
+        DeltaT: 999, //Could be used to indicate how many hours entry was made (like now, or 10 2 days in the past)
         //timeEntryTBD1: string,
         //timeEntryTBD2: string,
         //timeEntryTBD3: string,  
@@ -1664,15 +2124,15 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
     //console.log('this.state',this.state);
     console.log('trackTimeItem',trackTimeItem);
     console.log('saveThisItem',saveThisItem);
-
     
     let trackTimeWeb = new Web(useTrackMyTimeWeb);
 
     if (masterOrRemote === 'master'){
       trackTimeWeb.lists.getByTitle(useTrackMyTimeList).items.add( saveThisItem ).then((response) => {
         //Reload the page
-        //location.reload();
-          this.addThisItemToState(trackTimeItem,masterOrRemote);
+        console.log('save response', response);
+
+          this.addThisItemToState(trackTimeItem,masterOrRemote, response);
           alert('save successful');
         }).catch((e) => {
         //Throw Error
@@ -1692,21 +2152,74 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
 
   }
 
-  private addThisItemToState (trackTimeItem: ITimeEntry , masterOrRemote : string) {
+  private addThisItemToState (trackTimeItem: ISaveEntry , masterOrRemote : string, response) {
 
     if (masterOrRemote === 'master') {
+      console.log('trackTimeItem', trackTimeItem);
+      let created = new Date();
 
-      let allEntries: ITimeEntry[] = [];
-      allEntries.push(trackTimeItem);
-      allEntries = allEntries.concat(this.state.allEntries);
+      let listCategory = "";
+      if ( trackTimeItem.category1 !== null && trackTimeItem.category1 ) {
+        listCategory += trackTimeItem.category1.join(', ')
+      }
+      if ( trackTimeItem.category2 !== null && trackTimeItem.category2 ) {
+        listCategory += trackTimeItem.category2.join(', ')
+      }
+      let listTimeSpan = getTimeSpan(trackTimeItem.startTime, trackTimeItem.endTime);
+      let listComments = trackTimeItem.comments ? trackTimeItem.comments.value : "";
+      let listProjects = "";
+      if ( trackTimeItem.projectID1 !== null && trackTimeItem.projectID1.value ) {
+        listProjects += trackTimeItem.projectID1.value + ' ';
+      }
+      if ( trackTimeItem.projectID2 !== null && trackTimeItem.projectID2.value ) {
+        listProjects += trackTimeItem.projectID2.value + ' ';
+      }   
+
+      let newEntry : ITimeEntry = {...trackTimeItem,
+        user: this.state.currentUser,
+        userInitials: "You!",
+        userId: response.data.UserId,
+        filterFlags: ["your","session"],
+        timeGroup: "0. This browser session",
+        duration: getTimeDelta( trackTimeItem.endTime , trackTimeItem.startTime , 'hours').toString(),
+        age: getAge(trackTimeItem.endTime,"days"),
+        deltaT: response.data.DeltaT,
+        created: created,
+        modified: created,
+        createdBy: this.state.currentUser.Id,
+        modifiedBy: this.state.currentUser.Id,
+        listCategory: listCategory,
+        listComments: listComments,
+        listTimeSpan: listTimeSpan,
+        listProjects: listProjects,
+        id: response.data.Id,
+        entryType: response.data.EntryType,
+        comments: this.buildSmartText(response.data.Comments),
+        projectID1 : this.buildSmartText(response.data.ProjectID1) ,  //Example Project # - look for strings starting with * and ?
+        projectID2 : this.buildSmartText(response.data.ProjectID2) ,  //Example Cost Center # - look for strings starting with * and ?
+      
+      }
+
+      let entries = this.state.entries;
+
+      let thisEntry: ITimeEntry[] = [];
+      thisEntry.push(newEntry);
+      entries.all = thisEntry.concat(entries.all);
+      entries.lastFiltered = thisEntry.concat(entries.lastFiltered);
+      entries.user = thisEntry.concat(entries.user);
+      entries.session = thisEntry.concat(entries.session);      
+      entries.newFiltered = thisEntry.concat(entries.newFiltered);   
 
       let filteredEntries:  ITimeEntry[] = [];
-      filteredEntries.push(trackTimeItem);
+      filteredEntries.push(newEntry);
       filteredEntries = filteredEntries.concat(this.state.filteredEntries);
+      console.log( 'newEntry', newEntry);
+      let lastEndTime = makeTheTimeObject(newEntry.endTime); 
 
       this.setState({
-        allEntries:allEntries,
+        entries:entries,
         filteredEntries:filteredEntries,
+        lastEndTime: lastEndTime,
       });
     } else {
       //Currently do nothing

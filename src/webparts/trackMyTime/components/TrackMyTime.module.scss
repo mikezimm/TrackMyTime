@@ -2,6 +2,102 @@
 
 .trackMyTime {
 
+    .pivotLabel {
+      padding-bottom: 10px,
+    }
+
+  .timeValue {
+    font-size: 20px,
+  }
+
+  .timeInPast {
+    @extend .timeValue;
+    color: purple;
+  }
+
+  .timeInFuture {
+    @extend .timeValue;
+    color: green;
+  }
+
+  .timeError {
+    @extend .timeValue;
+    color: red;
+  }
+
+
+  .textField {
+    display: table-cell;
+    width: 100%;
+
+    label {
+      font-weight: bold;
+    }
+
+    input {
+      height: 32px;
+      min-width: 80px;
+    }
+  }
+
+  .textField1 {
+    display: table-cell;
+    width: 100%;
+
+    label {
+      font-weight: bold;
+    }
+
+    input {
+      @extend .highlightBlink1;
+      height: 32px;
+      min-width: 80px;
+    }
+  }
+  
+  .textField2 {
+    display: table-cell;
+    width: 100%;
+
+    label {
+      font-weight: bold;
+    }
+
+    input {
+      @extend .highlightBlink2;
+      height: 32px;
+      min-width: 80px;
+    }
+  }
+
+  .highlightBlink1 {
+    position: relative;
+    animation-name: slide1;
+    animation-duration: .3s;
+    animation-timing-function: ease-in;
+  }
+
+  .highlightBlink2 {
+    position: relative;
+    animation-name: slide2;
+    animation-duration: .3s;
+    animation-timing-function: ease-in;
+  }
+
+  @keyframes slide1 {
+    0% {      background-color: white;    }
+    50% {      background-color: darkgrey;    }
+    100% {      background-color: white;    }
+  }
+
+
+  @keyframes slide2 {
+    0% {      background-color: white;    }
+    50% {      background-color: rgb(153, 153, 153);    }
+    100% {      background-color: white;    }
+  }
+
+
   //Copied from pivot-tiles
 
   .hideMe {

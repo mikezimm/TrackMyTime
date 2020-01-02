@@ -1,3 +1,27 @@
+
+
+export interface ITheTime {
+  now: Date;
+  theTime : string;
+  milliseconds : number;
+}
+
+
+export function makeTheTimeObject(timeString) {
+
+  let now = new Date();
+
+  if (timeString ) { now = new Date(timeString)}
+
+  let theTime : ITheTime = {
+    now: now,
+    theTime: now.toUTCString(),
+    milliseconds: now.getTime(),
+  }
+
+  return theTime;
+
+}
 export function getLocalMonths(local,format){
 
     let months = [];
@@ -41,23 +65,27 @@ export function msPerYr(){
   return 31536000000;
 }
 
+export function getDayTimeToMinutes (startTime){
 
-export function getTimeSpan(startTime: string,endTime: string){
-  
-  //console.log('getBestTimeDelta', startTime, endTime);
-
-  let date = new Date(startTime).getTime();
-  let startDate = new Date(startTime).getDate();
-  let endDate = new Date(endTime).getDate();
   let thisYear = new Date().getUTCFullYear();
   let startYear = new Date(startTime).getUTCFullYear();
   let replaceYear = (thisYear === startYear) ? "/" + thisYear : "";
   let dateString : string = (new Date(startTime)).toLocaleDateString('short').replace(replaceYear,'');
   let timeString : string = (new Date(startTime)).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+  return [dateString,timeString].join(' ');
+
+}
+
+export function getTimeSpan(startTime: string,endTime: string){
+  
+  //console.log('getBestTimeDelta', startTime, endTime);
+
+  let theStartTime = getDayTimeToMinutes(startTime);
   let forString = '- for';
   let deltaString : string = getBestTimeDelta(startTime,endTime);
 
-  return [dateString,timeString,forString,deltaString].join(' ');
+  return [theStartTime,forString,deltaString].join(' ');
 
 }
 
@@ -96,7 +124,7 @@ export function getBestTimeDelta(startTime: string,endTime: string){
 
 export function getTimeDelta(time1, time2, inWhat){
   let date = new Date(time1).getTime();
-  let now = new Date().getTime();
+  let now = new Date(time2).getTime();
   let age : number = (now - date);
   if (inWhat === 'days') { age =  age/(1000 * 60 * 60 * 24) ; }
   else if (inWhat === 'hours') { age =  age/(1000 * 60 * 60) ; }
@@ -143,7 +171,7 @@ export function getGreeting(name){
   //console.log('getGreeting:', name);
   let userName = name;
   if (userName ){
-    if (userName.title.indexOf("Click") === 0 ) {
+    if (userName.title.indexOf("Click") > -1 ) {
       message = message.replace('Afternoon partner',"Servus");
       message = message.replace('Top O the mornin to you',"Neata");
       message = message.replace('nick'," BK");
