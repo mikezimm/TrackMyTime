@@ -6,7 +6,7 @@ import { CurrentUser } from '@pnp/sp/src/siteusers';
 import { IFormFields } from './fields/fieldDefinitions'
 import { ITheTime } from '../../../services/dateServices';
 
-import { ISmartLinkDef } from './ActivityURLMasks';
+import { ISmartLinkDef } from './ActivityURL/ActivityURLMasks';
 
 export interface ILink {
   description: string;

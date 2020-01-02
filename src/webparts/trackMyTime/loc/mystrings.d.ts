@@ -75,6 +75,12 @@ declare interface ITrackMyTimeWebPartStrings {
   FieldLabel_PivFormat: string;
   FieldLabel_PivOptions: string;
 
+  //Testing
+  T_help_ThisMessage: string;
+  T_help2_ThisMessage: string;
+  T_help3_ThisMessage: string;
+  T_tool_ThisMessage: string;
+
 }
 
 declare module 'TrackMyTimeWebPartStrings' {

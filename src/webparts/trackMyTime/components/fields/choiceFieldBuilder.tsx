@@ -13,8 +13,6 @@ import styles from '../TrackMyTime.module.scss';
 
 import { IFieldDef } from './fieldDefinitions'
 
-import  choiceStyles from './choice.module.scss';
-
 /*
 Entry Type Choices need to match these:  \src\services\propPane\WebPartSettingsPage.ts
 

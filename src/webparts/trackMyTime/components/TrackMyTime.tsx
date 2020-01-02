@@ -41,7 +41,7 @@ import * as listBuilders from './ListView/ListView';
 import * as formBuilders from './fields/textFieldBuilder';
 import * as choiceBuilders from './fields/choiceFieldBuilder';
 import * as sliderBuilders from './fields/sliderFieldBuilder';
-import * as smartLinks from './ActivityURLMasks';
+import * as smartLinks from './ActivityURL/ActivityURLMasks';
 
   
 const labelStyles: Partial<IStyleSet<ILabelStyles>> = {
@@ -494,7 +494,6 @@ export default class TrackMyTime extends React.Component<ITrackMyTimeProps, ITra
         buttons={buttons} horizontal={true}
       />
     </div>;
-
      
     let timeSlider = sliderBuilders.createSlider(this.props,this.state, this._updateTimeSlider.bind(this));
 
