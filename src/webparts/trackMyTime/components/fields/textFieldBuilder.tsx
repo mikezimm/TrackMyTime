@@ -186,7 +186,7 @@ import {
       return createBasicTextField(field, currentValue, onChanged, blinkOnProjectClassName);
 
     }  else if (field.type === "SmartLink") {
-      let currentValue = parentState.formEntry[field.name];
+      let currentValue = parentState.formEntry[field.name]['url'];
       let blinkOnProjectClassName = getBlinkOnProjectClass(field, parentState.blinkOnProject);
 
       return createSmartLinkField(field, currentValue, onChanged, blinkOnProjectClassName);

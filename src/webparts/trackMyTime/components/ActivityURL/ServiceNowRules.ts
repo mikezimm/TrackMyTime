@@ -5,7 +5,7 @@ import { ITrackMyTimeProps } from '../ITrackMyTimeProps';
  * Example from github 
  * {
     order: 100,
-    title: "Github Issue ",  // Rule title
+    ruleTitle: "Github Issue ",  // Rule title
 
     keyFolder: '/issues/', // Key folder in URL to apply rule too ( like /issues/ )
     childFolderTitle: '#...x..., ', // use 'na' to skip this rule.  '' to have no Title
@@ -16,7 +16,7 @@ import { ITrackMyTimeProps } from '../ITrackMyTimeProps';
     commentTextMapping: 'title, childFolderTitle, parentFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
     activityDescMapping: 'childFolderTitle', // "title, parentFolderTitle, keyFolder, childFolderTitle" - properties from this interface to build up
     category1Mapping: 'parentFolderTitle',
-    category2Mapping: 'title',
+    category2Mapping: 'ruleTitle',
     projectID1Mapping: 'parentFolderTitle',
     projectID2Mapping: 'childFolderTitle',
  * }
